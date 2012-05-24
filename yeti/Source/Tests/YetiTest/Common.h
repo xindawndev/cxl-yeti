@@ -8,6 +8,13 @@
 #include <vector>
 #include <iostream>
 
+#define CHECK(x) {                                  \
+    if (!(x)) {                                     \
+    printf("TEST FAILED line %d\n", __LINE__);      \
+    return 1;                                       \
+    }                                               \
+}
+
 enum _eErrorCode
 {
     EC_SUCCESS = 0,

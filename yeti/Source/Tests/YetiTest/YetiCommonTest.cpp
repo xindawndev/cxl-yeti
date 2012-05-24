@@ -1,6 +1,7 @@
 #include "Common.h"
 
 #include "Yeti.h"
+#include <string.h>
 
 USINGNAMESPACE2;
 
@@ -21,6 +22,13 @@ public:
         }
     }
 
+    bool operator==(const A<T> & others) const {
+        if (!memcmp(others.m_member_, m_member_, ARRAY_SIZE)) {
+            return true;
+        }
+        return false;
+    }
+
     iterator find(element elm, YETI_Ordinal n = 0) {
         int i;
         if (n < 0 || n >= ARRAY_SIZE) return NULL;
@@ -29,8 +37,8 @@ public:
             if (m_member_[i] == elm) {
                 return m_member_ + i;
             }
-            return NULL;
         }
+        return NULL;
     }
 
 private:
@@ -48,8 +56,30 @@ void test_ObjectDeleter()
 void test_ObjectComparator()
 {
     A<int> a, b;
-    ObjectComparator o1(a);
-    CHECK(!o1(b));
+    ObjectComparator< A< int > > o1(a);
+    CHECK(o1(b));
+}
+
+void test_container_find()
+{
+    A<int> a;
+    A<int>::element elm;
+    YETI_Result result = container_find(a, 5, elm, 2);
+    CHECK(YETI_SUCCESS == result);
+    CHECK(elm == 5);
+    result = container_find(a, 5, elm, 6);
+    CHECK(YETI_SUCCESS != result);
+}
+
+void test_container_find1()
+{
+    A<int> a;
+    A<int>::iterator iter;
+    YETI_Result result = container_find(a, 5, iter, 2);
+    CHECK(YETI_SUCCESS == result);
+    CHECK(*iter == 5);
+    result = container_find(a, 5, iter, 6);
+    CHECK(YETI_SUCCESS != result);
 }
 
 int common_test(std::vector<std::string> args)
@@ -57,11 +87,13 @@ int common_test(std::vector<std::string> args)
     size_t argc = args.size();
     for (size_t i = 0; i < argc; ++i)
     {
-        std::cout << i << " : " << args[i] << std::endl;
+        std::cout << "Param[" << i << "] : " << args[i] << std::endl;
     }
 
     test_ObjectDeleter();
     test_ObjectComparator();
+    test_container_find();
+    test_container_find1();
 
     return 0;
 }

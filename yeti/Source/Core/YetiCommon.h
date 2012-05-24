@@ -9,7 +9,7 @@ NAMEBEG
 template < class T >
 class ObjectDeleter {
 public:
-    void operator()(T * object) const {
+    void operator()(T *& object) const {
         if (NULL != object) {
             delete object;
             object = NULL;
@@ -47,7 +47,7 @@ YETI_Result container_find(T &                      container,
 template < typename T, typename P >
 YETI_Result container_find(T &                  container,
                            const P &            predicate,
-                           typename T::iterator iter,
+                           typename T::iterator &iter,
                            YETI_Ordinal         n = 0)
 {
     iter = container.find(predicate, n);

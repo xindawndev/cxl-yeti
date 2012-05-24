@@ -173,7 +173,7 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\..\Source\Tests\NeptuneTest\AppMain.cpp"
+				RelativePath="..\..\..\..\Source\Tests\YetiTest\AppMain.cpp"
 				>
 			</File>
 		</Filter>
@@ -183,11 +183,11 @@
 			UniqueIdentifier="{93995380-89BD-4b04-88EB-625FBE52EBFB}"
 			>
 			<File
-				RelativePath="..\..\..\..\Source\Tests\NeptuneTest\Common.cpp"
+				RelativePath="..\..\..\..\Source\Tests\YetiTest\Common.cpp"
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Source\Tests\NeptuneTest\Common.h"
+				RelativePath="..\..\..\..\Source\Tests\YetiTest\Common.h"
 				>
 			</File>
 		</Filter>
@@ -197,10 +197,10 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<Filter
-				Name="ListsTest1"
+				Name="ArrayTest"
 				>
 				<File
-					RelativePath="..\..\..\..\Source\Tests\NeptuneTest\ListsTest1.cpp"
+					RelativePath="..\..\..\..\Source\Tests\YetiTest\ArrayTest.cpp"
 					>
 				</File>
 			</Filter>

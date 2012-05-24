@@ -37,6 +37,21 @@ private:
     T m_member_[ARRAY_SIZE];
 };
 
+void test_ObjectDeleter()
+{
+    A<int> * pa = new A<int>();
+
+    ObjectDeleter< A< int > >()(pa);
+    CHECK(pa == NULL);
+}
+
+void test_ObjectComparator()
+{
+    A<int> a, b;
+    ObjectComparator o1(a);
+    CHECK(!o1(b));
+}
+
 int common_test(std::vector<std::string> args)
 {
     size_t argc = args.size();
@@ -45,9 +60,8 @@ int common_test(std::vector<std::string> args)
         std::cout << i << " : " << args[i] << std::endl;
     }
 
-    A<int> * pa = new A<int>();
-
-    ObjectDeleter< A< int > >()(pa);
+    test_ObjectDeleter();
+    test_ObjectComparator();
 
     return 0;
 }

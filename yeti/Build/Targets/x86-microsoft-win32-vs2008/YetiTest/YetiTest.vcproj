@@ -197,10 +197,18 @@
 			UniqueIdentifier="{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}"
 			>
 			<Filter
-				Name="ArrayTest"
+				Name="YetiArrayTest"
 				>
 				<File
-					RelativePath="..\..\..\..\Source\Tests\YetiTest\ArrayTest.cpp"
+					RelativePath="..\..\..\..\Source\Tests\YetiTest\YetiArrayTest.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="YetiCommonTest"
+				>
+				<File
+					RelativePath="..\..\..\..\Source\Tests\YetiTest\YetiCommonTest.cpp"
 					>
 				</File>
 			</Filter>

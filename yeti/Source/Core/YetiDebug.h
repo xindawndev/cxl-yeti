@@ -10,7 +10,7 @@
 #define YETI_ASSERT(x) ((void)0)
 #endif
 
-extern void yeti_debug(const char* format, ...);
-extern void yeti_debug_output(const char* message);
+extern void yeti_debug(const char * format, ...);
+extern void yeti_debug_output(const char * message);
 
 #endif // _CXL_YETI_DEBUG_H_

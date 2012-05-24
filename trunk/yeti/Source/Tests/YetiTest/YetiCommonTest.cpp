@@ -37,8 +37,6 @@ private:
     T m_member_[ARRAY_SIZE];
 };
 
-
-
 int common_test(std::vector<std::string> args)
 {
     size_t argc = args.size();
@@ -49,7 +47,7 @@ int common_test(std::vector<std::string> args)
 
     A<int> * pa = new A<int>();
 
-    ObjectDeleter< A< int > >(pa);
+    ObjectDeleter< A< int > >()(pa);
 
     return 0;
 }

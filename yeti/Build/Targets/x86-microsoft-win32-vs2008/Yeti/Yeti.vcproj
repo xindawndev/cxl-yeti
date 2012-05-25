@@ -202,6 +202,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiArray.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiCommon.h"
 				>
 			</File>

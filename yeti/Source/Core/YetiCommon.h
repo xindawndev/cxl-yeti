@@ -20,13 +20,13 @@ public:
 template < class T >
 class ObjectComparator {
 public:
-    ObjectComparator(T & object) : m_object(object) {}
+    ObjectComparator(T & object) : m_object_(object) {}
     bool operator()(const T & object) const {
-        return object == m_object;
+        return object == m_object_;
     }
 
 private:
-    T & m_object;
+    T & m_object_;
 };
 
 template < typename T, typename P >

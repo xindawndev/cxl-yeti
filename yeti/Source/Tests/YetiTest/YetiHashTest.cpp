@@ -32,12 +32,12 @@ int hash_test(std::vector<std::string> args)
     test_hash_data();
     test_hash_str();
 
-    //YETI_UInt32 h32 = cxl::yeti::fnv1a_hash32((const YETI_UInt8*)"curds and whey", 14);
-    //h32 = fnv1a_hashstr32("curds and whey");
-    //h32 = Hash<const char*>()("curds and whey");
+    YETI_UInt32 h32 = cxl::yeti::fnv1a_hash32((const YETI_UInt8*)"curds and whey", 14);
+    h32 = fnv1a_hashstr32("curds and whey");
+    h32 = Hash<const char*>()("curds and whey");
 
-    //YETI_UInt64 h64 = fnv1a_hash64((const YETI_UInt8*)"curds and whey", 14);
-    //h64 = fnv1a_hashstr64("curds and whey");
+    YETI_UInt64 h64 = fnv1a_hash64((const YETI_UInt8*)"curds and whey", 14);
+    h64 = fnv1a_hashstr64("curds and whey");
 
     return 0;
 }

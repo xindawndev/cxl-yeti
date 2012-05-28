@@ -153,7 +153,7 @@ Array<T> & Array<T>::operator =(const Array<T> & copy)
     reserve(copy.get_item_count());
     m_item_count_ = copy.m_item_count_;
     for (YETI_Ordinal i = 0; i < copy.m_item_count_; ++i) {
-        new ((void *)m_items_[i]) T(copy.m_items_[i]);
+        new ((void *)&m_items_[i]) T(copy.m_items_[i]);
     }
     return *this;
 }

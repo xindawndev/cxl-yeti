@@ -1,0 +1,45 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\Common.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\AppMain.cpp">
+      <Filter>appmain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiArrayTest.cpp">
+      <Filter>test\YetiArrayTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiCommonTest.cpp">
+      <Filter>test\YetiCommonTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiHashTest.cpp">
+      <Filter>test\YetiHashTest</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <Filter Include="common">
+      <UniqueIdentifier>{63ce2b73-54f3-41e2-a26a-a4f11b363083}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="appmain">
+      <UniqueIdentifier>{604f569b-0e26-4ee7-acd4-51c7907117cd}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test">
+      <UniqueIdentifier>{28ea0d06-7e84-40f4-b917-9b98aa69c8ed}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test\YetiArrayTest">
+      <UniqueIdentifier>{4310fd1a-51c7-46ff-ab76-fedb5a925616}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test\YetiCommonTest">
+      <UniqueIdentifier>{1620ffc9-418c-4372-94b6-061e1482d4e8}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="test\YetiHashTest">
+      <UniqueIdentifier>{1a945d17-091c-4f53-8ca7-fd7ddfa7ac44}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\Source\Tests\YetiTest\Common.h">
+      <Filter>common</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

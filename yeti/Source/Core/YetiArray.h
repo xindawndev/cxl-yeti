@@ -244,7 +244,7 @@ YETI_Result Array<T>::erase(iterator first, iterator last)
         m_items_[i].~T();
     }
 
-    m_items_ -= interval;
+    m_item_count_ -= interval;
 
     return YETI_SUCCESS;
 }
@@ -275,7 +275,7 @@ YETI_Result Array<T>::insert(iterator where, const T & item, YETI_Cardinal repea
         ::operator delete((void *)m_items_);
         m_items_ = new_items;
     } else {
-        for (YETI_Ordinal i = m_item_count_; i > where_index; ++i) {
+        for (YETI_Ordinal i = m_item_count_; i > where_index; --i) {
             new((void *)&m_items_[i + repeat - 1]) T(m_items_[i - 1]);
             m_items_[i - 1].~T();
         }

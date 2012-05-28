@@ -91,6 +91,63 @@ void test_array()
     CHECK(g_count == 11);
     CHECK(a_array[1] == A(3, 110));
     CHECK(a_array[5] == A(9, 10));
+
+    a_array.erase(1, 3);
+    CHECK(a_array.get_item_count() == 3);
+    CHECK(g_count == 8);
+    CHECK(a_array[2] == A(9, 10));
+
+    a_array.insert(a_array.get_first_item(), A(34, 0), 4);
+    CHECK(a_array.get_item_count() == 7);
+    CHECK(g_count == 12);
+    CHECK(a_array[6] == A(9, 10));
+
+    a_array.insert(a_array.get_item(5), A(116, 'e'), 200);
+    CHECK(a_array.get_item_count() == 207);
+    CHECK(a_array[206] == A(9, 10));
+
+    a_array.clear();
+    a_array.insert(a_array.get_first_item(), A(1, 'c'));
+    CHECK(a_array.get_item_count() == 1);
+    CHECK(a_array[0] == A(1, 'c'));
+
+    a_array.insert(a_array.get_item(1), A(2, 'd'));
+    CHECK(a_array.get_item_count() == 2);
+    CHECK(a_array[0] == A(1, 'c'));
+    CHECK(a_array[1] == A(2, 'd'));
+
+    Array<int> * int_array = new Array<int>(100);
+    CHECK(int_array->get_item_count() == 0);
+    int_array->add(1);
+    int_array->add(2);
+    CHECK(int_array->get_item_count() == 2);
+    CHECK((*int_array)[0] == 1);
+    CHECK((*int_array)[1] == 2);
+    int_array->clear();
+    CHECK(int_array->get_item_count() == 0);
+    delete int_array;
+
+    Array<A *> c_carray;
+    A * o = new A(3, 2);
+    c_carray.add(o);
+    CHECK(c_carray.get_item_count() == 1);
+    for (int i = 0; i < 4; ++i) {
+        c_carray.insert(0, new A(55, 'a'));
+    }
+
+    CHECK(c_carray.contains(o));
+    A * a66 = new A(66, 'b');
+    CHECK(!c_carray.contains(a66));
+    delete a66;
+
+    A ** ai = c_carray.find(ObjectComparator<A *>(o));
+    CHECK(ai);
+    CHECK(**ai == *o);
+    c_carray.erase(ai);
+    delete o;
+    CHECK(c_carray.get_item_count() == 4);
+
+    c_carray.apply(ObjectDeleter<A>());
 }
 
 int array_test(std::vector<std::string> args)

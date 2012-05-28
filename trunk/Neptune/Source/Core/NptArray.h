@@ -194,7 +194,7 @@ NPT_Array<T>::NPT_Array(const T* items, NPT_Cardinal item_count) :
 {
     Reserve(item_count);
     for (NPT_Ordinal i=0; i<item_count; i++) {
-        new ((void*)&m_Items[i]) T(items[i]);
+          new ((void*)&m_Items[i]) T(items[i]);
     }
 }
 

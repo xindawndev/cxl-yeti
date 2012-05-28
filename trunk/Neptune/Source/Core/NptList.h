@@ -27,7 +27,7 @@
 | (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE OF THIS
 | SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
 |
- ****************************************************************/
+****************************************************************/
 
 #ifndef _NPT_LIST_H_
 #define _NPT_LIST_H_
@@ -109,9 +109,9 @@ public:
     };
 
     // methods
-                 NPT_List<T>();
-                 NPT_List<T>(const NPT_List<T>& list);
-                ~NPT_List<T>();
+    NPT_List<T>();
+    NPT_List<T>(const NPT_List<T>& list);
+    ~NPT_List<T>();
     NPT_Result   Add(const T& data);
     NPT_Result   Insert(const Iterator where, const T& data);
     NPT_Result   Remove(const T& data, bool all=false);
@@ -130,7 +130,7 @@ public:
     NPT_Result   Add(NPT_List<T>& list);
     NPT_Result   Remove(const NPT_List<T>& list, bool all=false);
     NPT_Result   Cut(NPT_Cardinal keep, NPT_List<T>& cut);
-    
+
     // item manipulation
     NPT_Result   Add(Item& item);
     NPT_Result   Detach(Item& item);
@@ -163,7 +163,7 @@ public:
             }
             item = item->m_Next;
         }
-        
+
         if (match) *match = false;
         return NPT_SUCCESS;
     }
@@ -191,16 +191,16 @@ public:
     NPT_Result Sort(const X& function)
     {   
         if (GetItemCount() <= 1) return NPT_SUCCESS;
-        
+
         NPT_List<T> right;
         NPT_CHECK(Cut(GetItemCount() >> 1, right));
-        
+
         // Sort ourselves again
         Sort(function);
-        
+
         // sort the right side
         right.Sort(function);
-        
+
         // merge the two back inline
         if (function(m_Tail->m_Data, right.m_Head->m_Data) > 0) {
             Merge(right, function);
@@ -211,11 +211,11 @@ public:
             if (!m_Head) m_Head = right.m_Head;
             m_Tail = right.m_Tail;
             m_ItemCount += right.m_ItemCount;
-            
+
             right.m_ItemCount = 0;
             right.m_Head = right.m_Tail = NULL;
         }
-        
+
         return NPT_SUCCESS;
     }
 
@@ -234,7 +234,7 @@ public:
                 Insert(left, *head);
             }
         }
-        
+
         // add what's left of other if any
         if (other.m_Head) {
             other.m_Head->m_Prev = m_Tail;
@@ -305,7 +305,7 @@ NPT_List<T>::~NPT_List()
 {
     Clear();
 }
- 
+
 /*----------------------------------------------------------------------
 |   NPT_List<T>::operator=
 +---------------------------------------------------------------------*/
@@ -342,7 +342,7 @@ NPT_List<T>::operator==(const NPT_List<T>& other) const
         our_item   = our_item->m_Next;
         their_item = their_item->m_Next;
     }
-    
+
     return our_item == NULL && their_item == NULL;
 }
 
@@ -401,7 +401,7 @@ NPT_List<T>::Add(Item& item)
 
     // one more item in the list now
     ++m_ItemCount;
- 
+
     return NPT_SUCCESS;
 }
 
@@ -442,7 +442,7 @@ NPT_List<T>::GetItem(NPT_Ordinal n) const
 {
     Iterator result;
     if (n >= m_ItemCount) return result;
-    
+
     result = m_Head;
     for (unsigned int i=0; i<n; i++) {
         ++result;
@@ -489,7 +489,7 @@ NPT_List<T>::Insert(Iterator where, Item& item)
         // insert at tail
         return Add(item);
     }
- 
+
     return NPT_SUCCESS;
 }
 
@@ -525,7 +525,7 @@ NPT_List<T>::Remove(const T& data, bool all)
 
             // detach item
             Detach(*item);
-            
+
             // destroy the item
             delete item;
 
@@ -533,7 +533,7 @@ NPT_List<T>::Remove(const T& data, bool all)
         }
         item = next;
     }
- 
+
     return matches?NPT_SUCCESS:NPT_ERROR_NO_SUCH_ITEM;
 }
 
@@ -675,30 +675,30 @@ NPT_Result
 NPT_List<T>::Cut(NPT_Cardinal keep, NPT_List<T>& cut) 
 {
     cut.Clear();
-    
+
     // shortcut
     if (keep >= GetItemCount()) return NPT_SUCCESS;
-    
+
     // update new counts first
     cut.m_ItemCount = m_ItemCount-keep;
     m_ItemCount = keep;
-    
+
     // look for the cut-point item
     Item* item = m_Head;
     while (keep--) { item = item->m_Next;}
-    
+
     // the cut list goes from the cut-point item to the tail
     cut.m_Head = item;
     cut.m_Tail = m_Tail;
-    
+
     // update the portion of the list we keep
     if (item == m_Head) m_Head = NULL;
     m_Tail = item->m_Prev;
-    
+
     // update the cut list
     if (item->m_Prev) item->m_Prev->m_Next = NULL;
     item->m_Prev = NULL;
-    
+
     return NPT_SUCCESS;
 }
 

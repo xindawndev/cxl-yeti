@@ -148,6 +148,29 @@ void test_array()
     CHECK(c_carray.get_item_count() == 4);
 
     c_carray.apply(ObjectDeleter<A>());
+
+    Array<int> i_array;
+    CHECK(YETI_SUCCEEDED(i_array.resize(4, 0)));
+    CHECK(i_array.get_item_count() == 4);
+    i_array[0] = 3;
+    i_array[1] = 7;
+    i_array[2] = 9;
+    i_array[3] = 12;
+
+    Array<int> j_array = i_array;
+    CHECK(i_array == j_array);
+    i_array[2] = 7;
+    CHECK(i_array != j_array);
+    CHECK(!(i_array == j_array));
+    i_array[2] = 9;
+    CHECK(i_array == j_array);
+    j_array.add(12);
+    CHECK(i_array != j_array);
+    CHECK(!(i_array == j_array));
+
+    Array<int> k_array;
+    k_array = i_array;
+    CHECK(k_array == i_array);
 }
 
 int array_test(std::vector<std::string> args)

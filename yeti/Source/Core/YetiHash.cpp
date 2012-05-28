@@ -6,7 +6,6 @@ NAMEBEG
 
 const YETI_UInt32 FNV_32_PRIME = 0x01000193;
 
-// 注意：如果data的长度不是YETI_UInt32/YETI_UInt8的整数倍？？？
 YETI_UInt32 fnv1a_hash32(const YETI_UInt8 * data, YETI_Size data_size, YETI_UInt32 hash_init)
 {
     const YETI_UInt8 *  data_end = data + data_size;
@@ -24,7 +23,6 @@ YETI_UInt32 fnv1a_hash32(const YETI_UInt8 * data, YETI_Size data_size, YETI_UInt
     return hash_value;
 }
 
-// 注意：如果data的长度不是YETI_UInt32/const char *的整数倍？？？
 YETI_UInt32 fnv1a_hashstr32(const char * data, YETI_UInt32 hash_init)
 {
     YETI_UInt32 hash_value = hash_init;

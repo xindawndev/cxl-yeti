@@ -3,6 +3,9 @@ Microsoft Visual Studio Solution File, Format Version 11.00
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Yeti", "Yeti\Yeti.vcxproj", "{12AFF2E5-6D95-4809-9728-9551677C078A}"
 EndProject
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YetiTest", "YetiTest\YetiTest.vcxproj", "{4D9420BD-7B2D-48CD-8051-D0FC210A4A25}"
+	ProjectSection(ProjectDependencies) = postProject
+		{12AFF2E5-6D95-4809-9728-9551677C078A} = {12AFF2E5-6D95-4809-9728-9551677C078A}
+	EndProjectSection
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

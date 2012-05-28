@@ -14,15 +14,18 @@
     <ClCompile Include="..\..\..\..\Source\Core\Yeti.cpp" />
     <ClCompile Include="..\..\..\..\Source\Core\YetiCommon.cpp" />
     <ClCompile Include="..\..\..\..\Source\Core\YetiDebug.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiHash.cpp" />
     <ClCompile Include="..\..\..\..\Source\Core\YetiResults.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Source\Core\Yeti.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiArray.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiCommon.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiConfig.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiConstants.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiDebug.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiDefs.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiHash.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiResults.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiTypes.h" />
   </ItemGroup>

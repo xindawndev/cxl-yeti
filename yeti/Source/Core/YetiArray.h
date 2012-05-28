@@ -227,7 +227,126 @@ YETI_Result Array<T>::erase(iterator first, iterator last)
 
     YETI_Ordinal first_index = (YETI_Ordinal)(YETI_POINTER_TO_LONG(first - m_items_));
     YETI_Ordinal last_index = (YETI_Ordinal)(YETI_POINTER_TO_LONG(last - m_items_));
+
+    if (first_index >= m_item_count_ || 
+        last_index  >= m_item_count_ ||
+        first_index > last_index) {
+            return YETI_ERROR_INVALID_PARAMETERS;
+    }
+
+    YETI_Cardinal interval = last_index - first_index + 1;
+    YETI_Cardinal shifted = m_item_count_ - last_index - 1;
+    for (YETI_Ordinal i = first_index; i < first_index + shifted; ++i) {
+        m_items_[i] = m_items_[i + interval];
+    }
+
+    for (YETI_Ordinal i = first_index + shifted; i < m_item_count_; ++i) {
+        m_items_[i].~T();
+    }
+
+    m_items_ -= interval;
+
     return YETI_SUCCESS;
+}
+
+template < typename T >
+YETI_Result Array<T>::insert(iterator where, const T & item, YETI_Cardinal repeat)
+{
+    YETI_Ordinal where_index = where ? ((YETI_Ordinal)YETI_POINTER_TO_LONG(where - m_items_)) : m_item_count_;
+    if (where > &m_items_[m_item_count_] || repeat == 0) return YETI_ERROR_INVALID_PARAMETERS;
+
+    YETI_Cardinal needed = m_item_count_ + repeat;
+    if (needed > m_capacity_) {
+        YETI_Cardinal new_capacity;
+        T * new_items = allocate(needed, new_capacity);
+        if (new_items == NULL) return YETI_ERROR_OUT_OF_MEMORY;
+        m_capacity_ = new_capacity;
+
+        for (YETI_Ordinal i = 0; i < where_index; ++i) {
+            new((void *)&new_items[i]) T(m_items_[i]);
+            m_items_[i].~T();
+        }
+
+        for (YETI_Ordinal i = where_index; i < m_item_count_; ++i) {
+            new((void *)&new_items[i + repeat]) T(m_items_[i]);
+            m_items_[i].~T();
+        }
+
+        ::operator delete((void *)m_items_);
+        m_items_ = new_items;
+    } else {
+        for (YETI_Ordinal i = m_item_count_; i > where_index; ++i) {
+            new((void *)&m_items_[i + repeat - 1]) T(m_items_[i - 1]);
+            m_items_[i - 1].~T();
+        }
+    }
+
+    for (YETI_Cardinal i = where_index; i < where_index + repeat; ++i) {
+        new((void *)&m_items_[i]) T(item);
+    }
+
+    m_item_count_ += repeat;
+
+    return YETI_SUCCESS;
+}
+
+template < typename T >
+YETI_Result Array<T>::resize(YETI_Cardinal size)
+{
+    if (size < m_item_count_) {
+        for (YETI_Ordinal i = size; i < m_item_count_; ++i) {
+            m_items_[i].~T();
+        }
+        m_item_count_ = size;
+    } else if (size > m_item_count_) {
+        return resize(size, T());
+    }
+
+    return YETI_SUCCESS;
+}
+
+template < typename T >
+YETI_Result Array<T>::resize(YETI_Cardinal size, const T & fill)
+{
+    if (size < m_item_count_) {
+        return resize(size);
+    } else if (size > m_item_count_) {
+        reserve(size);
+        for (YETI_Ordinal i = m_item_count_; i < size; ++i) {
+            new ((void *)&m_items_[i]) T(fill);
+        }
+        m_item_count_ = size;
+    }
+
+    return YETI_SUCCESS;
+}
+
+template < typename T >
+bool Array<T>::contains(const T & data) const
+{
+    for (YETI_Ordinal i = 0; i < m_item_count_; ++i) {
+        if (m_items_[i] == data) return true;
+    }
+
+    return false;
+}
+
+template < typename T >
+bool Array<T>::operator ==(const Array<T> & other) const
+{
+    if (other.m_item_count_ != m_item_count_) return false;
+
+    for (YETI_Ordinal i = 0; i < m_item_count_; ++i) {
+        if (!(m_items_[i] == other.m_items_[i])) return false;
+    }
+
+    return true;
+}
+
+template < typename T >
+inline bool Array<T>::operator !=(const Array<T> & other) const
+{
+    return !(*this == other);
 }
 
 NAMEEND

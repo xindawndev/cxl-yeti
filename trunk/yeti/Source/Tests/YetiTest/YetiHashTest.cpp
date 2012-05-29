@@ -4,20 +4,24 @@
 
 USINGNAMESPACE2;
 
-void test_hash_data()
+int test_hash_data()
 {
     int hashdata1           = 0xabcd1234;
     unsigned int hashdata2  = 0xabcd1234;
     printf("Hash<int>(0xabcd1234)             = 0x%x\n", Hash<int>()(hashdata1));
     printf("Hash<unsigned int>(0xabcd1234)    = 0x%x\n", Hash<unsigned int>()(hashdata2));
+
+    return 0;
 }
 
-void test_hash_str()
+int test_hash_str()
 {
     char * hashstr1 = "12345678";
     const char * hashstr2 = "12345678";
     printf("Hash<char *>(\"12345678\")          = 0x%llx\n", Hash<char *>()(hashstr1));
     printf("Hash<const char *>(\"12345678\")    = 0x%llx\n",Hash<const char *>()(hashstr2));
+
+    return 0;
 }
 
 int hash_test(std::vector<std::string> args)

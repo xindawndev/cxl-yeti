@@ -28,10 +28,10 @@ const char * error_message(int result)
         case YETI_ERROR_NOT_ENOUGH_SPACE: return "YETI_ERROR_NOT_ENOUGH_SPACE";
         case YETI_ERROR_INTERRUPTED: return "YETI_ERROR_INTERRUPTED";
         case YETI_ERROR_CANCELLED: return "YETI_ERROR_CANCELLED";
-            //    // list
-            //case YETI_ERROR_LIST_EMPTY: return "YETI_ERROR_LIST_EMPTY";
-            //case YETI_ERROR_LIST_OPERATION_ABORTED: return "YETI_ERROR_LIST_OPERATION_ABORTED";
-            //case YETI_ERROR_LIST_OPERATION_CONTINUE: return "YETI_ERROR_LIST_OPERATION_CONTINUE";
+            // list
+        case YETI_ERROR_LIST_EMPTY: return "YETI_ERROR_LIST_EMPTY";
+        case YETI_ERROR_LIST_OPERATION_ABORTED: return "YETI_ERROR_LIST_OPERATION_ABORTED";
+        case YETI_ERROR_LIST_OPERATION_CONTINUE: return "YETI_ERROR_LIST_OPERATION_CONTINUE";
             //    // file
             //case YETI_ERROR_NO_SUCH_FILE: return "YETI_ERROR_NO_SUCH_FILE";
             //case YETI_ERROR_FILE_NOT_OPEN: return "YETI_ERROR_FILE_NOT_OPEN";

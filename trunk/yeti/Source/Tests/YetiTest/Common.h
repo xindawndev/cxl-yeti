@@ -11,7 +11,7 @@
 #define CHECK(x) {                                  \
     if (!(x)) {                                     \
     printf("TEST FAILED line %d\n", __LINE__);      \
-    return;                                         \
+    return -1;                                         \
     }                                               \
 }
 

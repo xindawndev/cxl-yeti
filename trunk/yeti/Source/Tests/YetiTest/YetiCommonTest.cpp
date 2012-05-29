@@ -45,22 +45,26 @@ private:
     T m_member_[ARRAY_SIZE];
 };
 
-void test_ObjectDeleter()
+int test_ObjectDeleter()
 {
     A<int> * pa = new A<int>();
 
     ObjectDeleter< A< int > >()(pa);
     CHECK(pa == NULL);
+
+    return 0;
 }
 
-void test_ObjectComparator()
+int test_ObjectComparator()
 {
     A<int> a, b;
     ObjectComparator< A< int > > o1(a);
     CHECK(o1(b));
+
+    return 0;
 }
 
-void test_container_find()
+int test_container_find()
 {
     A<int> a;
     A<int>::element elm;
@@ -69,9 +73,11 @@ void test_container_find()
     CHECK(elm == 5);
     result = container_find(a, 5, elm, 6);
     CHECK(YETI_SUCCESS != result);
+
+    return 0;
 }
 
-void test_container_find1()
+int test_container_find1()
 {
     A<int> a;
     A<int>::iterator iter;
@@ -80,6 +86,8 @@ void test_container_find1()
     CHECK(*iter == 5);
     result = container_find(a, 5, iter, 6);
     CHECK(YETI_SUCCESS != result);
+
+    return 0;
 }
 
 int common_test(std::vector<std::string> args)

@@ -10,5 +10,6 @@
 #include "YetiConstants.h"
 #include "YetiHash.h"
 #include "YetiArray.h"
+#include "YetiList.h"
 
 #endif // _CXL_YETI_H_

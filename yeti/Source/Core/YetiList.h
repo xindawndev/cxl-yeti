@@ -32,7 +32,7 @@ public:
         T * operator->() const {return &m_item_->m_data_; }
 
         iterator & operator++() {
-            m_item_ = m_item_->n_next_;
+            m_item_ = m_item_->m_next_;
             return (*this);
         }
 
@@ -378,7 +378,7 @@ YETI_Result List<T>::insert(const iterator where, Item & item)
         item.m_prev_ = pos->m_prev_;
         pos->m_prev_ = &item;
         if (item.m_prev_) {
-            item.m_prev_->n_next_ = &item;
+            item.m_prev_->m_next_ = &item;
         } else {
             // this is the new head
             m_head_ = &item;

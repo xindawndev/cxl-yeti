@@ -220,6 +220,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="YetiListTest"
+				>
+				<File
+					RelativePath="..\..\..\..\Source\Tests\YetiTest\YetiListTest.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

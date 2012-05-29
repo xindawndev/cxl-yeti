@@ -34,7 +34,7 @@ public:
     char b_;
     int * c_;
 };
-void test_array()
+int test_array()
 {
     YETI_Result res;
     Array<int> aint;
@@ -171,6 +171,8 @@ void test_array()
     Array<int> k_array;
     k_array = i_array;
     CHECK(k_array == i_array);
+
+    return 0;
 }
 
 int array_test(std::vector<std::string> args)

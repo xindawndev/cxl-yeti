@@ -118,7 +118,7 @@
 #define YETI_ERROR_INTERRUPTED         (YETI_ERROR_BASE_GENERAL - 20)    // interrupted
 #define YETI_ERROR_CANCELLED           (YETI_ERROR_BASE_GENERAL - 21)    // cancelled
 
-#define YETI_ERROR_BASE_ERRNO          (YETI_ERROR_BASE - 2000)            // base errno
+#define YETI_ERROR_BASE_ERRNO          (YETI_ERROR_BASE - 2000)          // base errno
 #define YETI_ERROR_ERRNO(e)            (YETI_ERROR_BASE_ERRNO - (e))     // errno
 
 const char * error_message(int result);

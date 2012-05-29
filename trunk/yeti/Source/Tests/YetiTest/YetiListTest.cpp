@@ -69,6 +69,12 @@ int test_list()
     a_list.add(A(1, 2));
     a_list.add(A(2, 3));
     a_list.add(A(3, 4));
+    CHECK(a_list.get_item_count() == 3);
+    CHECK(a_list.contains(A(2, 3)));
+    CHECK(!a_list.contains(A(7, 8)));
+
+    A a;
+    CHECK(YETI_SUCCEEDED(a_list.pop_head(a)));
 
     return 0;
 }

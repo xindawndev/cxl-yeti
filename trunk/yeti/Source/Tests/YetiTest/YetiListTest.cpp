@@ -109,6 +109,29 @@ int test_list()
     CHECK(res == YETI_SUCCESS);
     CHECK(g_apply_counter == 2);
 
+    g_apply_counter = 0;
+    res = a_list.apply_until(Test1(), UnitlResultEquals(YETI_FAILURE), &applied);
+    CHECK(applied == false);
+    CHECK(res == YETI_SUCCESS);
+    CHECK(g_apply_counter == 3);
+
+    a_list.insert(List<A>::iterator(NULL), A(3, 4));
+    CHECK(a_list.get_item_count() == 4);
+    CHECK(*a_list.get_last_item() == A(3, 4));
+
+    a_list.insert(a_list.get_first_item(), A(7, 8));
+    CHECK(a_list.get_item_count() == 5);
+    CHECK(*a_list.get_first_item() == A(7, 8));
+
+    a_list.insert(a_list.get_item(2), A(9, 10));
+    CHECK(a_list.get_item_count() == 6);
+    CHECK(*a_list.get_item(2) == A(9, 10));
+
+    a_list.erase(a_list.get_item(1));
+    CHECK(a_list.get_item_count() == 5);
+    CHECK(*a_list.get_item(1) == A(9, 10));
+    //CHECK(g_count == 1 + a_list.get_item_count());
+
     return 0;
 }
 

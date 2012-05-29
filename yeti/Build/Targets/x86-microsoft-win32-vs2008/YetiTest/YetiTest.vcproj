@@ -231,6 +231,10 @@
 			<Filter
 				Name="YetiStackTest"
 				>
+				<File
+					RelativePath="..\..\..\..\Source\Tests\YetiTest\YetiStackTest.cpp"
+					>
+				</File>
 			</Filter>
 		</Filter>
 	</Files>

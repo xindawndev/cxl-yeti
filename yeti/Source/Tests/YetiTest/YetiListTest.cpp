@@ -75,6 +75,39 @@ int test_list()
 
     A a;
     CHECK(YETI_SUCCEEDED(a_list.pop_head(a)));
+    CHECK(a == A(1, 2));
+    CHECK(a_list.get_item_count() == 2);
+    CHECK(YETI_SUCCEEDED(a_list.get(0, a)));
+    CHECK(a == A(2, 3));
+
+    A * pa = NULL;
+    CHECK(YETI_SUCCEEDED(a_list.get(0, pa)));
+    CHECK(pa != NULL);
+    CHECK(*pa == A(2, 3));
+    CHECK(a_list.get_item(1) == ++a_list.get_first_item());
+
+    a_list.clear();
+    CHECK(a_list.get_item_count() == 0);
+    a_list.insert(a_list.get_first_item(), A(7, 9));
+    CHECK(a_list.get_item_count() == 1);
+    CHECK(*a_list.get_first_item() == A(7, 9));
+
+    a_list.add(A(1, 2));
+    CHECK(a_list.get_item_count() == 2);
+    //CHECK(g_count == 3);
+    CHECK(*a_list.get_first_item() == A(7, 9));
+    CHECK(*a_list.get_last_item() == A(1, 2));
+
+    a_list.insert(a_list.get_last_item(), A(3, 4));
+    CHECK(a_list.get_item_count() == 3);
+    CHECK(*a_list.get_last_item() == A(1, 2));
+
+    g_apply_counter = 0;
+    bool applied;
+    YETI_Result res = a_list.apply_until(Test1(), UnitlResultEquals(YETI_ERROR_OUT_OF_MEMORY), &applied);
+    CHECK(applied == true);
+    CHECK(res == YETI_SUCCESS);
+    CHECK(g_apply_counter == 2);
 
     return 0;
 }

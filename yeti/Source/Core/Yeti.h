@@ -12,5 +12,6 @@
 #include "YetiArray.h"
 #include "YetiList.h"
 #include "YetiStack.h"
+#include "YetiMap.h"
 
 #endif // _CXL_YETI_H_

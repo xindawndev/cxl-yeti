@@ -242,6 +242,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiStack.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiTypes.h"
 				>
 			</File>

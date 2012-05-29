@@ -132,6 +132,21 @@ int test_list()
     CHECK(*a_list.get_item(1) == A(9, 10));
     //CHECK(g_count == 1 + a_list.get_item_count());
 
+    List<int> i1_list;
+    List<int> i2_list;
+    CHECK(i1_list == i2_list);
+    i1_list.add(3);
+    CHECK(i1_list != i2_list);
+    CHECK(!(i1_list == i2_list));
+    i2_list.add(3);
+    CHECK(i1_list == i2_list);
+    i2_list.add(4);
+    CHECK(i1_list != i2_list);
+    i1_list.add(4);
+    i1_list.add(5);
+    i2_list.add(6);
+    CHECK(i1_list != i2_list);
+
     return 0;
 }
 

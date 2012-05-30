@@ -109,6 +109,8 @@ public:
             function(item->m_data_);
             item = item->m_next_;
         }
+
+        return YETI_SUCCESS;
     }
 
     template < typename X, typename P >

@@ -41,6 +41,12 @@ public:
 
 int test_map()
 {
+    Map<int, int> i_map;
+    int *o;
+    i_map.put(1, 2);
+    CHECK(i_map.get_entry_count() == 1);
+    i_map.get(1,o);
+    CHECK(*o == 2);
     return 0;
 }
 

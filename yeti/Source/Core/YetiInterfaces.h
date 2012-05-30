@@ -14,7 +14,7 @@ class InterfaceId
 {
 public:
     bool operator ==(const InterfaceId & id) const {
-        return ((id.m_id_ = m_id_) && (id.m_version_ == m_version_));
+        return ((id.m_id_ == m_id_) && (id.m_version_ == m_version_));
     }
 
     unsigned long m_id_;
@@ -26,7 +26,7 @@ class Polymorphic
 public:
     virtual ~Polymorphic() {}
 
-    virtual YETI_Result get_interface()
+    virtual YETI_Result get_interface(const InterfaceId & id, YETI_Interface *& iface) = 0;
 };
 
 class Interruptible

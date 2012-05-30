@@ -13,5 +13,6 @@
 #include "YetiList.h"
 #include "YetiStack.h"
 #include "YetiMap.h"
+#include "YetiThreads.h"
 
 #endif // _CXL_YETI_H_

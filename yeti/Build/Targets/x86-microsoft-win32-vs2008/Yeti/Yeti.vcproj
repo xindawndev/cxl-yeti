@@ -254,7 +254,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiThreads.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiTypes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiVersion.h"
 				>
 			</File>
 		</Filter>

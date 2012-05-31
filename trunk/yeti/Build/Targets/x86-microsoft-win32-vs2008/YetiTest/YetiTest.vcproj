@@ -244,6 +244,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="YetiSocketTest"
+				>
+				<File
+					RelativePath="..\..\..\..\Source\Tests\YetiTest\YetiSocketTest.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

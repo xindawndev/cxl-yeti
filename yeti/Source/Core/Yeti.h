@@ -3,6 +3,8 @@
 
 #define YETI_EXTERNAL_USE
 
+#include "YetiVersion.h"
+#include "YetiDefs.h"
 #include "YetiConfig.h"
 #include "YetiTypes.h"
 #include "YetiResults.h"
@@ -13,6 +15,10 @@
 #include "YetiList.h"
 #include "YetiStack.h"
 #include "YetiMap.h"
+#include "YetiQueue.h"
+#include "YetiDataBuffer.h"
+#include "YetiConsole.h"
 #include "YetiThreads.h"
+#include "YetiAutoreleasePool.h"
 
 #endif // _CXL_YETI_H_

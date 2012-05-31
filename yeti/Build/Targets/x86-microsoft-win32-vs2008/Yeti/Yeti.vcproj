@@ -188,6 +188,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiQueue.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiResults.cpp"
 				>
 			</File>
@@ -214,6 +218,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiAutoreleasePool.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiCommon.h"
 				>
 			</File>
@@ -222,7 +230,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiConsole.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiConstants.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiDataBuffer.h"
 				>
 			</File>
 			<File

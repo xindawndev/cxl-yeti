@@ -10,7 +10,11 @@
 #define YETI_ASSERT(x) ((void)0)
 #endif
 
+NAMEBEG
+
 extern void yeti_debug(const char * format, ...);
 extern void yeti_debug_output(const char * message);
+
+NAMEEND
 
 #endif // _CXL_YETI_DEBUG_H_

@@ -13,6 +13,9 @@
 #define NAMEEND1        }
 #define NAMEEND         NAMEEND1 NAMEEND1
 
+#define NAMEPREFIX      MYNAME1_::MYNAME2_
+
+
 #define USINGNAMESPACE1          using namespace MYNAME1_
 #define USINGNAMESPACE2          using namespace MYNAME1_::MYNAME2_
 

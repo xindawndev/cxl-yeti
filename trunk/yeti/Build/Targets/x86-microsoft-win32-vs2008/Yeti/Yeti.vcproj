@@ -176,6 +176,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiDataBuffer.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiDebug.cpp"
 				>
 			</File>
@@ -197,6 +201,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiThreads.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiUtil.cpp"
 				>
 			</File>
 			<File
@@ -278,11 +286,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiString.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiThreads.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiTypes.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiUtil.h"
 				>
 			</File>
 			<File

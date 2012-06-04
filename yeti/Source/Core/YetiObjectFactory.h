@@ -5,21 +5,28 @@
 
 NAMEBEG
 
-template
-<
-    class AbstractProduct,
-    typename IdentifierType,
-    typename ProductCreator
->
+template < class AbstractProduct, typename IdentifierType, typename ProductCreator >
 class ObjectFactory
 {
 public:
-    bool register(const IdentifierType & id, ProductCreator creator) {
-        return m_associations_.put(id, creator);
+    ObjectFactory() {
+        m_associations_.clear();
     }
 
-    bool unregister(const IdentifierType & id) {
+    ~ObjectFactory() {
+        m_associations_.clear();
+    }
+
+    bool reg(const IdentifierType & id, ProductCreator creator) {
+        return m_associations_.put(id, creator) == YETI_SUCCESS;
+    }
+
+    bool unreg(const IdentifierType & id) {
         return m_associations_.erase(id) == YETI_SUCCESS;
+    }
+
+    bool is_reg(const IdentifierType & id) {
+        return m_associations_.has_key(id);
     }
 
     AbstractProduct * create_object(const IdentifierType & id) {

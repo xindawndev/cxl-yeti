@@ -20,5 +20,7 @@
 #include "YetiConsole.h"
 #include "YetiThreads.h"
 #include "YetiAutoreleasePool.h"
+#include "YetiObjectFactory.h"
+#include "YetiStateMachine.h"
 
 #endif // _CXL_YETI_H_

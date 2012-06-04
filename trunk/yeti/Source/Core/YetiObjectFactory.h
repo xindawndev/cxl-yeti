@@ -1,5 +1,5 @@
-#ifndef _CXL_YETI_FACTORY_H_
-#define _CXL_YETI_FACTORY_H_
+#ifndef _CXL_YETI_OBJECT_FACTORY_H_
+#define _CXL_YETI_OBJECT_FACTORY_H_
 
 #include "YetiMap.h"
 
@@ -11,7 +11,7 @@ template
     typename IdentifierType,
     typename ProductCreator
 >
-class Factory
+class ObjectFactory
 {
 public:
     bool register(const IdentifierType & id, ProductCreator creator) {
@@ -37,4 +37,4 @@ private:
 
 NAMEEND
 
-#endif // _CXL_YETI_FACTORY_H_
+#endif // _CXL_YETI_OBJECT_FACTORY_H_

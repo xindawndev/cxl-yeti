@@ -125,4 +125,30 @@ String::String(char c, YETI_Cardinal repeat)
         m_chars_ = NULL;
     }
 }
+
+YETI_Result String::set_length(YETI_Size length, bool pad /* = false */)
+{
+    if (length == 0) {
+        _reset();
+        return YETI_SUCCESS;
+    }
+
+    reserve(length);
+
+    char * chars = use_chars();
+    if (pad) {
+        unsigned int current_length = get_length();
+        if (length > current_length) {
+            unsigned int pad_length = length - current_length;
+            // Ê¹ÓÃ¿Õ¸ñÌî³ä
+            SetMemory(chars + current_length, ' ', pad_length);
+        }
+    }
+
+    _get_buffer()->set_length(length);
+    chars[length] = '\n';
+
+    return YETI_SUCCESS;
+}
+
 NAMEEND

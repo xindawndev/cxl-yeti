@@ -89,4 +89,40 @@ String::String(const char * str)
     m_chars_ = ((str == NULL) ? NULL : Buffer::create(str));
 }
 
+String::String(const char * str, YETI_Size length)
+{
+    if (str == NULL || length == 0) {
+        m_chars_ = NULL;
+    } else {
+        for (unsigned int i = 0; i < length - 1; ++i) {
+            if (str[i] == '\0') {
+                if (i == 0) {
+                    m_chars_ = NULL;
+                    return;
+                }
+                length = i;
+                break;
+            }
+        }
+        m_chars_ = Buffer::create(str, length);
+    }
+}
+
+String::String(const String & str)
+{
+    if (str.get_length() == 0) {
+        m_chars_ = NULL;
+    } else {
+        m_chars_ = Buffer::create(str.get_chars(), str.get_length());
+    }
+}
+
+String::String(char c, YETI_Cardinal repeat)
+{
+    if (repeat != 0) {
+        m_chars_ = Buffer::create(c, repeat);
+    } else {
+        m_chars_ = NULL;
+    }
+}
 NAMEEND

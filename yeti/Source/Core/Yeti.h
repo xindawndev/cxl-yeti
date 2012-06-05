@@ -20,6 +20,7 @@
 #include "YetiConsole.h"
 #include "YetiThreads.h"
 #include "YetiAutoreleasePool.h"
+#include "YetiString.h"
 #include "YetiObjectFactory.h"
 #include "YetiStateMachine.h"
 

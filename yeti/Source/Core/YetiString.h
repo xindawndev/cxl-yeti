@@ -79,32 +79,64 @@ public:
     const String &  replace(char a, char b);
     const String &  replace(char a, const char * s);
 
-    int find(char c, YETI_Ordinal start = 0, bool ignore_case = false) const;
-    int find(const char * s, YETI_Ordinal start = 0, bool ignore_case = false) const;
-    int find_any(const char * s, YETI_Ordinal start, bool ignore_case = false) const;
-    int reverse_find(char c, YETI_Ordinal start = 0, bool ignore_case = false) const;
-    int reverse_find(const char * s, YETI_Ordinal start = 0, bool ignore_case = false) const;
-    bool starts_with(const char * s, bool ignore_case = false) const;
-    bool ends_with(const char * s, bool ignore_case = false) const;
+    int             find(char c, YETI_Ordinal start = 0, bool ignore_case = false) const;
+    int             find(const char * s, YETI_Ordinal start = 0, bool ignore_case = false) const;
+    int             find_any(const char * s, YETI_Ordinal start, bool ignore_case = false) const;
+    int             reverse_find(char c, YETI_Ordinal start = 0, bool ignore_case = false) const;
+    int             reverse_find(const char * s, YETI_Ordinal start = 0, bool ignore_case = false) const;
+    bool            starts_with(const char * s, bool ignore_case = false) const;
+    bool            ends_with(const char * s, bool ignore_case = false) const;
 
-    const String & insert(const char * s, YETI_Ordinal where = 0);
-    const String & erase(YETI_Ordinal start, YETI_Cardinal count = 1);
-    const String & replace(const char * before, const char * after);
+    const String &  insert(const char * s, YETI_Ordinal where = 0);
+    const String &  erase(YETI_Ordinal start, YETI_Cardinal count = 1);
+    const String &  replace(const char * before, const char * after);
     //void replace(YETI_Ordinal start, YETI_Cardinal count, const char * s);
-    const String & trim_left();
-    const String & trim_left(char c);
-    const String & trim_left(const char * chars);
-    const String & trim_right();
-    const String & trim_right(char c);
-    const String & trim_right(const char * chars);
-    const String & trim();
-    const String & trim(char c);
-    const String & trim(const char * chars);
+    const String &  trim_left();
+    const String &  trim_left(char c);
+    const String &  trim_left(const char * chars);
+    const String &  trim_right();
+    const String &  trim_right(char c);
+    const String &  trim_right(const char * chars);
+    const String &  trim();
+    const String &  trim(char c);
+    const String &  trim(const char * chars);
 
-    operator char*() const          { return m_chars_ ? m_chars_ : &empty_string_; }
-    operator const char *() const   { return m_chars_ ? m_chars_ : &empty_string_; }
-    const char * get_chars() const  { return m_chars_ ? m_chars_ : &empty_string_; }
-    char * use_chars()              { return m_chars_ ? m_chars_ : &empty_string_; }
+    operator        char*() const           { return m_chars_ ? m_chars_ : &empty_string_; }
+    operator const  char *() const          { return m_chars_ ? m_chars_ : &empty_string_; }
+    const char *    get_chars() const       { return m_chars_ ? m_chars_ : &empty_string_; }
+    char *          use_chars()             { return m_chars_ ? m_chars_ : &empty_string_; }
+
+    String &        operator =(const char * str);
+    String &        operator =(const String & str);
+    String &        operator =(char c);
+    const String &  operator +=(const String & s) {
+        append(s.get_chars(), s.get_length());
+        return *this;
+    }
+    const String &  operator +=(const char * s) {
+        append(s);
+        return *this;
+    }
+    const String &  operator +=(char c) {
+        append(&c, 1);
+        return *this;
+    }
+    char            operator [](int index) const {
+        YETI_ASSERT((unsigned int)index < get_length());
+        return get_chars()[index];
+    }
+    char &          operator [](int index) {
+        YETI_ASSERT((unsigned int)index < get_length());
+        return use_chars()[index];
+    }
+
+    friend String   operator +(const String & s1, const String & s2) {
+        return s1 + s2.get_chars();
+    }
+    friend String   operator +(const String & s1, const char * s2);
+    friend String   operator +(const char * s1, const String & s2);
+    friend String   operator +(const String & s, char c);
+    friend String   operator +(char c, const String & s);
 
 protected:
     class Buffer {
@@ -187,6 +219,67 @@ private:
         return length;
     }
 
+};
+
+inline bool operator==(const String& s1, const String& s2) { 
+    return s1.compare(s2) == 0; 
+}
+inline bool operator==(const String& s1, const char* s2) {
+    return s1.compare(s2) == 0; 
+}
+inline bool operator==(const char* s1, const String& s2) {
+    return s2.compare(s1) == 0; 
+}
+inline bool operator!=(const String& s1, const String& s2) {
+    return s1.compare(s2) != 0; 
+}
+inline bool operator!=(const String& s1, const char* s2) {
+    return s1.compare(s2) != 0; 
+}
+inline bool operator!=(const char* s1, const String& s2) {
+    return s2.compare(s1) != 0; 
+}
+inline bool operator<(const String& s1, const String& s2) {
+    return s1.compare(s2) < 0; 
+}
+inline bool operator<(const String& s1, const char* s2) {
+    return s1.compare(s2) < 0; 
+}
+inline bool operator<(const char* s1, const String& s2) {
+    return s2.compare(s1) > 0; 
+}
+inline bool operator>(const String& s1, const String& s2) {
+    return s1.compare(s2) > 0; 
+}
+inline bool operator>(const String& s1, const char* s2) {
+    return s1.compare(s2) > 0; 
+}
+inline bool operator>(const char* s1, const String& s2) {
+    return s2.compare(s1) < 0; 
+}
+inline bool operator<=(const String& s1, const String& s2) {
+    return s1.compare(s2) <= 0; 
+}
+inline bool operator<=(const String& s1, const char* s2) {
+    return s1.compare(s2) <= 0; 
+}
+inline bool operator<=(const char* s1, const String& s2) {
+    return s2.compare(s1) >= 0; 
+}
+inline bool operator>=(const String& s1, const String& s2) {
+    return s1.compare(s2) >= 0; 
+}
+inline bool operator>=(const String& s1, const char* s2) {
+    return s1.compare(s2) >= 0; 
+}
+inline bool operator>=(const char* s1, const String& s2) {
+    return s2.compare(s1) <= 0; 
+}
+
+template <>
+struct Hash<String>
+{
+    YETI_UInt32 operator()(const String & s) { return s.get_hash32(); }
 };
 
 NAMEEND

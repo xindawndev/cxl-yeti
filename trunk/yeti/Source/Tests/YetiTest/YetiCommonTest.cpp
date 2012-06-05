@@ -1,7 +1,6 @@
 #include "Common.h"
 
 #include "Yeti.h"
-#include <string.h>
 
 USINGNAMESPACE2;
 

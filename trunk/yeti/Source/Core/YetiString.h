@@ -158,6 +158,13 @@ protected:
             return shared->get_chars();
         }
 
+        static char * create(const char * copy, YETI_Size length) {
+            Buffer * shared = allocate(length, length);
+            _copy_buffer(shared->get_chars(), copy, length);
+            shared->get_chars()[length] = '\0';
+            return shared->get_chars();
+        }
+
         static char * create(char c, YETI_Cardinal repeat) {
             Buffer * shared = allocate(repeat, repeat);
             char * s = shared->get_chars();

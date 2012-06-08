@@ -565,4 +565,53 @@ String String::to_uppercase() const
     return result;
 }
 
+const String & String::replace(char a, char b)
+{
+    if (m_chars_ == NULL || a == '\0' || b == '\0') return *this;
+    char * src = m_chars_;
+    while (*src) {
+        if (*src == a) *src = b;
+        src++;
+    }
+    return *this;
+}
+
+const String & String::replace(char a, const char * s)
+{
+    if (m_chars_ ==  NULL || a == '\0' || s == NULL || s[0] == '\0') return *this;
+    if (StringLength(s) == 1) return replace(a, s[0]);
+
+    String dst;
+    char * src = m_chars_;
+
+    dst.reserve(get_length());
+    while (*src) {
+        if (*src == a) {
+            dst += src;
+        } else {
+            dst += *src;
+        }
+        src++;
+    }
+
+    assign(dst.get_chars(), dst.get_length());
+    return *this;
+}
+
+const String & String::replace(const char * before, const char * after)
+{
+    YETI_Size size_before = StringLength(before);
+    YETI_Size size_after = StringLength(after);
+    int index = find(before);
+    while (index != YETI_STRING_SEARCH_FAILED) {
+        erase(index, size_before);
+        insert(after, index);
+        index = find(before, index + size_after);
+    }
+
+    return *this;
+}
+
+
+
 NAMEEND

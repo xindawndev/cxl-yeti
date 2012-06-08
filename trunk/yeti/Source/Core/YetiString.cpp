@@ -357,4 +357,212 @@ Array<String> String::split_any(const char * separator) const
     return result;
 }
 
+String String::join(List<String> & args, const char * separator)
+{
+    String output;
+    List<String>::iterator arg = args.get_first_item();
+    while (arg) {
+        output += *arg;
+        if (++arg) output += separator;
+    }
+
+    return output;
+}
+
+String String::sub_string(YETI_Ordinal first, YETI_Size length) const
+{
+    if (first >= get_length()) {
+        first = get_length();
+        length = 0;
+    } else if (first + length >= get_length()) {
+        length = get_length() - first;
+    }
+
+    return String(get_chars() + first, length);
+}
+
+/*----------------------------------------------------------------------
+|   returns:
+|       1 if str starts with sub,
+|       0 if str is large enough but does not start with sub
+|       -1 if str is too short to start with sub
++---------------------------------------------------------------------*/
+static inline int _string_starts_with(const char * str, const char * sub, bool ignore_case)
+{
+    if (ignore_case) {
+        while (_uppercase(*str) == _uppercase(*sub)) {
+            if (*str++ == '\0') {
+                return 1;
+            }
+            sub++;
+        }
+    } else {
+        while (*str == *sub) {
+            if (*str++ == '\0') {
+                return 1;
+            }
+            sub++;
+        }
+    }
+
+    return (*sub == '\0') ? 1 : (*str == '\0' ? -1 : 0);
+}
+
+bool String::starts_with(const char * s, bool ignore_case /* = false */) const
+{
+    if (s == NULL) return false;
+    return _string_starts_with(get_chars(), s, ignore_case) == 1;
+}
+
+bool String::ends_with(const char * s, bool ignore_case /* = false */) const
+{
+    if (s == NULL) return false;
+    YETI_Size str_length = StringLength(s);
+    if (str_length > get_length()) return false;
+    return _string_starts_with(get_chars() + get_length() - str_length, s, ignore_case) == 1;
+}
+
+int String::find(const char * s, YETI_Ordinal start /* = 0 */, bool ignore_case /* = false */) const
+{
+    if (s == NULL || start >= get_length()) return -1;
+
+    const char * src = m_chars_ + start;
+    while (*src) {
+        int cmp = _string_starts_with(src, s, ignore_case);
+        switch (cmp) {
+            case -1:
+                return -1;
+            case 1:
+                return (int)(src - m_chars_);
+        }
+
+        src++;
+    }
+
+    return -1;
+}
+
+int String::find(char c, YETI_Ordinal start /* = 0 */, bool ignore_case /* = false */) const
+{
+    if (start >= get_length()) return -1;
+    const char * src = m_chars_ + start;
+    if (ignore_case) {
+        while (*src) {
+            if (_uppercase(*src) == _uppercase(c)) {
+                return (int)(src - m_chars_);
+            }
+            src++;
+        }
+    } else {
+        while (*src) {
+            if (*src == c) {
+                return (int)(src - m_chars_);
+            }
+            src++;
+        }
+    }
+
+    return -1;
+}
+
+int String::find_any(const char * s, YETI_Ordinal start, bool ignore_case /* = false */) const
+{
+    if (start >= get_length()) return -1;
+    const char * src = m_chars_ + start;
+    if (ignore_case) {
+        while (*src) {
+            for (YETI_Size i = 0; i < StringLength(s); ++i) {
+                if (_uppercase(*src) == _uppercase(s[i])) {
+                    return (int)(src - m_chars_);
+                }
+            }
+            src++;
+        }
+    } else {
+        while (*src) {
+            for (YETI_Size i = 0; i < StringLength(s); ++i) {
+                if (*src == s[i]) {
+                    return (int)(src - m_chars_);
+                }
+            }
+            src++;
+        }
+    }
+    return -1;
+}
+
+int String::reverse_find(const char * s, YETI_Ordinal start /* = 0 */, bool ignore_case /* = false */) const
+{
+    if (s == NULL || *s == '\0') return -1;
+    YETI_Size my_length = get_length();
+    YETI_Size str_length = StringLength(s);
+    int i = my_length - start - str_length;
+    const char * src = get_chars();
+    if (i < 0) return -1;
+    for (; i > 0; --i) {
+        int cmp = _string_starts_with(src + i, s, ignore_case);
+        if (cmp == 1) {
+            return i;
+        }
+    }
+
+    return -1;
+}
+
+int String::reverse_find(char c, YETI_Ordinal start /* = 0 */, bool ignore_case /* = false */) const
+{
+    YETI_Size length = get_length();
+    int i = length - start - 1;
+    if (i < 0) return -1;
+
+    const char * src = get_chars();
+    if (ignore_case) {
+        for (; i >= 0; --i) {
+            if (_uppercase(src[i]) == _uppercase(c)) {
+                return i;
+            }
+        }
+    } else {
+        for (; i >= 0; --i) {
+            if (src[i] == c) return i;
+        }
+    }
+
+    return -1;
+}
+
+void String::make_lowercase()
+{
+    const char * src = get_chars();
+    char * dst = const_cast<char *>(src);
+    while (*dst != '\0') {
+        *dst = _lowercase(*dst);
+        dst++;
+    }
+}
+
+void String::make_uppercase()
+{
+    const char * src = get_chars();
+    char *dst = const_cast<char *>(src);
+    while (*dst != '\0') {
+        *dst = _uppercase(*dst);
+        dst++;
+    }
+}
+
+String String::to_lowercase() const
+{
+    String result(*this);
+    result.make_lowercase();
+    return result;
+}
+
+String String::to_uppercase() const
+{
+    String result(*this);
+    result.to_uppercase();
+    return result;
+}
+
 NAMEEND

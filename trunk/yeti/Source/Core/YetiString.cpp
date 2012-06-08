@@ -289,4 +289,72 @@ int String::compare(const char * s1, const char * s2, bool ignore_case /* = fals
     }
 }
 
+int String::compare_n(const char * s, YETI_Size count, bool ignore_case /* = false */) const
+{
+    return String::compare_n(get_chars(), s, count, ignore_case);
+}
+
+int String::compare_n(const char * s1, const char * s2, YETI_Size count, bool ignore_case /* = false */)
+{
+    const char * me = s1;
+
+    if (ignore_case) {
+        for (unsigned int i = 0; i < count; ++i) {
+            if (_uppercase(me[i]) != _uppercase(s2[i])) {
+                return (int)(_uppercase(me[i]) - _uppercase(s2[i]));
+            }
+        }
+        return 0;
+    } else {
+        for (unsigned int i = 0; i < count; ++i) {
+            if (me[i] != s2[i]) {
+                return (int)(me[i] - s2[i]);
+            }
+        }
+
+        return 0;
+    }
+}
+
+List<String> String::split(const char * separator) const
+{
+    List<String> result;
+    YETI_Size    separator_length = StringLength(separator);
+    if (separator_length == 0) {
+        result.add(*this);
+        return result;
+    }
+
+    int current = 0;
+    int next;
+    do {
+        next = find(separator, current);
+        unsigned int end = (next > 0 ? (unsigned int)next: get_length());
+        result.add(sub_string(current, end -current));
+        current = next + separator_length;
+    } while(next >= 0);
+
+    return result;
+}
+
+Array<String> String::split_any(const char * separator) const
+{
+    Array<String> result((get_length() >> 1) + 1);
+    if (StringLength(separator) == 0) {
+        result.add(*this);
+        return result;
+    }
+
+    int current = 0;
+    int next;
+    do {
+        next = find_any(separator, current);
+        unsigned int end = (next >= 0 ? (unsigned int)next : get_length());
+        result.add(sub_string(current, end-current));
+        current = next + 1;
+    } while (next >= 0);
+
+    return result;
+}
+
 NAMEEND

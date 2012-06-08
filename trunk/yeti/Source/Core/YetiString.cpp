@@ -179,12 +179,113 @@ void String::reserve(YETI_Size length)
         YETI_Size len = get_length();
         char * copy = Buffer::create(needed, len);
         if (m_chars_ != NULL) {
-            CopyString(copy, m_chars_);
+            _copy_string(copy, m_chars_);
             delete _get_buffer();
         } else {
             copy[0] = '\0';
         }
         m_chars_ = copy;
+    }
+}
+
+void String::assign(const char * chars, YETI_Size size)
+{
+    if (chars == NULL || size == 0) {
+        _reset();
+    } else {
+        for (unsigned int i = 0; i < size - 1; ++i) {
+            if (chars[i] == '\0') {
+                if (i == 0) {
+                    _reset();
+                    return;
+                } else {
+                    size = i;
+                    break;
+                }
+            }
+        }
+
+        _prepare_to_write(size);
+        _copy_buffer(m_chars_, chars, size);
+        m_chars_[size] = '\0';
+    }
+}
+
+String & String::operator =(const char * str)
+{
+    if (str == NULL) {
+        _reset();
+    } else {
+        YETI_Size length = _string_length(str);
+        if (length == 0) {
+            _reset();
+        } else {
+            _copy_string(_prepare_to_write(length), str);
+        }
+    }
+
+    return *this;
+}
+
+String & String::operator =(const String & str)
+{
+    if (this != &str) {
+        assign(str.get_chars(), str.get_length());
+    }
+
+    return *this;
+}
+
+YETI_UInt32 String::get_hash32() const
+{
+    return fnv1a_hashstr32(get_chars());
+}
+
+YETI_UInt64 String::get_hash64() const
+{
+    return fnv1a_hashstr64(get_chars());
+}
+
+void String::append(const char * chars, YETI_Size size)
+{
+    if (chars == NULL || size == 0) return;
+    YETI_Size old_size = get_length();
+    YETI_Size new_size = old_size + size;
+
+    reserve(new_size);
+
+    _copy_buffer(m_chars_ + old_size, chars, size);
+    m_chars_[new_size] = '\0';
+
+    _get_buffer()->set_length(new_size);
+}
+
+int String::compare(const char * s, bool ignore_case /* = false */) const
+{
+    return String::compare(get_chars(), s, ignore_case);
+}
+
+int String::compare(const char * s1, const char * s2, bool ignore_case /* = false */)
+{
+    const char * r1 = s1;
+    const char * r2 = s2;
+
+    if (ignore_case) {
+        while (_uppercase(*r1) == _uppercase(*r2)) {
+            if (*r1++ == '\0') {
+                return 0;
+            }
+            r2++;
+        }
+        return _uppercase(*r1) - _uppercase(*r2);
+    } else {
+        while (*r1 == *r2) {
+            if (*r1++ == '\0') {
+                return 0;
+            }
+            r2++;
+        }
+        return (*r1 - *r2);
     }
 }
 

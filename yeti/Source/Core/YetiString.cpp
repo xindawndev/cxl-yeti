@@ -612,6 +612,35 @@ const String & String::replace(const char * before, const char * after)
     return *this;
 }
 
+const String & String::insert(const char * s, YETI_Ordinal where /* = 0 */)
+{
+    if (s == NULL || where > get_length()) return *this;
 
+    YETI_Size str_length = _string_length(s);
+    if (str_length == 0) return *this;
+
+    YETI_Size old_length = get_length();
+    YETI_Size new_length = str_length + get_length();
+
+    char * src = m_chars_;
+    char * nst = Buffer::create(new_length, new_length);
+    char * dst = nst;
+
+    if (where > 0) {
+        _copy_buffer(dst, src, where);
+        src += where;
+        dst += where;
+    }
+
+    _copy_string(dst, src);
+    dst += str_length;
+    if (old_length > where) {
+        _copy_string(dst, src);
+    }
+
+    if (m_chars_) delete _get_buffer();
+    m_chars_ = nst;
+    return *this;
+}
 
 NAMEEND

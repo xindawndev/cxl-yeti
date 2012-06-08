@@ -260,6 +260,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="YetiStateMachineTest"
+				>
+				<File
+					RelativePath="..\..\..\..\Source\Tests\YetiTest\YetiStateMachineTest.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

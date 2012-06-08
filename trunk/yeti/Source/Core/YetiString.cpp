@@ -151,4 +151,41 @@ YETI_Result String::set_length(YETI_Size length, bool pad /* = false */)
     return YETI_SUCCESS;
 }
 
+inline char * String::_prepare_to_write(YETI_Size length)
+{
+    YETI_ASSERT(length != 0);
+    if (m_chars_ == NULL || _get_buffer()->get_allocated() < length) {
+        YETI_Size needed = length;
+        if (m_chars_ != NULL) {
+            YETI_Size grow = _get_buffer()->get_allocated() * 2;
+            if (grow > length) needed = grow;
+            delete _get_buffer();
+        }
+        m_chars_ = Buffer::create(needed);
+    }
+
+    _get_buffer()->set_length(length);
+    return m_chars_;
+}
+
+void String::reserve(YETI_Size length)
+{
+    if (m_chars_ == NULL || _get_buffer()->get_allocated() < length) {
+        YETI_Size needed = length;
+        if (m_chars_ != NULL) {
+            YETI_Size grow = _get_buffer()->get_allocated() * 2;
+            if (grow > length) needed = grow;
+        }
+        YETI_Size len = get_length();
+        char * copy = Buffer::create(needed, len);
+        if (m_chars_ != NULL) {
+            CopyString(copy, m_chars_);
+            delete _get_buffer();
+        } else {
+            copy[0] = '\0';
+        }
+        m_chars_ = copy;
+    }
+}
+
 NAMEEND

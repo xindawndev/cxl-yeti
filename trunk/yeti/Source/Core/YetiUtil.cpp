@@ -318,43 +318,382 @@ YETI_Result parse_float(const char * str, float & result, bool relaxed /* = true
 
 YETI_Result parse_integer64(const char * str, YETI_Int64 & result, bool relaxed /* = true */, YETI_Cardinal * chars_used /* = 0 */)
 {
+    result = 0;
+    if (chars_used) *chars_used = 0;
+
+    if (str == NULL) {
+        return YETI_ERROR_INVALID_PARAMETERS;
+    }
+
+    if (relaxed) {
+        while (*str == ' ' || *str == '\t') {
+            str++;
+            if (chars_used) (*chars_used)++;
+        }
+    }
+
+    if (*str == '\0') {
+        return YETI_ERROR_INVALID_PARAMETERS;
+    }
+
+    bool negative = false;
+    if (*str == '-') {
+        negative = true;
+        str++;
+        if (chars_used) (*chars_used)++;
+    } else if (*str == '+') {
+        str++;
+        if (chars_used) (*chars_used)++;
+    }
+
+    YETI_Int64 max = YETI_INT64_MAX / 10;
+
+    if (negative && ((YETI_INT64_MAX % 10) == 9)) ++max;
+    bool empty = true;
+    YETI_Int64 value = 0;
+    char c;
+    while ((c = *str++)) {
+        if (c >= '0' && c <= '9') {
+            if (value < 0 || value > max) return YETI_ERROR_OVERFLOW;
+            value = 10 * value + (c - '0');
+            if (value < 0 && (!negative || value != YETI_INT64_MIN)) return YETI_ERROR_OVERFLOW;
+            empty = false;
+            if (chars_used) (*chars_used)++;
+        } else {
+            if (relaxed) {
+                break;
+            } else {
+                return YETI_ERROR_INVALID_PARAMETERS;
+            }
+        }
+    }
+
+    if (empty) return YETI_ERROR_INVALID_PARAMETERS;
+    result = negative ? -value : value;
     return YETI_SUCCESS;
 }
 
 YETI_Result parse_integer64(const char * str, YETI_UInt64 & result, bool relaxed , YETI_Cardinal * chars_used )
 {
+    result = 0;
+    if (chars_used) *chars_used = 0;
+
+    if (str == NULL) {
+        return YETI_ERROR_INVALID_PARAMETERS;
+    }
+
+    if (relaxed) {
+        while (*str == ' ' || *str == '\t') {
+            str++;
+            if (chars_used) (*chars_used)++;
+        }
+    }
+    if (*str == '\0') {
+        return YETI_ERROR_INVALID_PARAMETERS;
+    }
+
+    bool       empty = true;
+    YETI_UInt64 value = 0;
+    char c;
+    while ((c = *str++)) {
+        if (c >= '0' && c <= '9') {
+            YETI_UInt64 new_value;
+            if (value > YETI_UINT64_MAX / 10)  return YETI_ERROR_OVERFLOW;
+            new_value = 10*value + (c - '0');
+            if (new_value < value) return YETI_ERROR_OVERFLOW;
+            value = new_value;
+            empty = false;
+            if (chars_used) (*chars_used)++;
+        } else {
+            if (relaxed) {
+                break;
+            } else {
+                return YETI_ERROR_INVALID_PARAMETERS;
+            }
+        } 
+    }
+
+    if (empty) return YETI_ERROR_INVALID_PARAMETERS;
+
+    result = value;
     return YETI_SUCCESS;
 }
 
 YETI_Result parse_integer32(const char * str, YETI_Int32 & result, bool relaxed /* = true */, YETI_Cardinal * chars_used /* = 0 */)
 {
-    return YETI_SUCCESS;
+    YETI_Int64 value_64;
+    YETI_Result ret = parse_integer64(str, value_64, relaxed, chars_used);
+    result = 0;
+    if (YETI_SUCCEEDED(ret)) {
+        if (value_64 < YETI_INT32_MIN || value_64 > YETI_INT32_MAX) {
+            return YETI_ERROR_OVERFLOW;
+        }
+        result = (YETI_Int32)value_64;
+    }
+    return ret;
 }
 
 YETI_Result parse_integer32(const char * str, YETI_UInt32 & result, bool relaxed , YETI_Cardinal * chars_used )
 {
-    return YETI_SUCCESS;
+    YETI_UInt64 value_64;
+    YETI_Result ret = parse_integer64(str, value_64, relaxed, chars_used);
+    result = 0;
+    if (YETI_SUCCEEDED(ret)) {
+        if (value_64 > (YETI_UInt64)YETI_UINT32_MAX) return YETI_ERROR_OVERFLOW;
+        result = (YETI_UInt32)value_64;
+    }
+    return ret;
 }
 
 YETI_Result parse_integer(const char * str, long & result, bool relaxed /* = true */, YETI_Cardinal * chars_used /* = 0 */)
 {
-    return YETI_SUCCESS;
+    YETI_Int64 value_64;
+    YETI_Result ret = parse_integer64(str, value_64, relaxed, chars_used);
+    result = 0;
+    if (YETI_SUCCEEDED(ret)) {
+        if (value_64 < YETI_LONG_MIN || value_64 > YETI_LONG_MAX) {
+            return YETI_ERROR_OVERFLOW;
+        }
+        result = (long)value_64;
+    }
+    return ret;
 }
 
 YETI_Result parse_integer(const char * str, unsigned long & result, bool relaxed /* = true */, YETI_Cardinal * chars_used /* = 0 */)
 {
-    return YETI_SUCCESS;
+    YETI_UInt64 value_64;
+    YETI_Result ret = parse_integer64(str, value_64, relaxed, chars_used);
+    result = 0;
+    if (YETI_SUCCEEDED(ret)) {
+        if (value_64 > YETI_ULONG_MAX) {
+            return YETI_ERROR_OVERFLOW;
+        }
+        result = (unsigned long)value_64;
+    }
+    return ret;
 }
 
 YETI_Result parse_integer(const char * str, int & result, bool relaxed /* = true */, YETI_Cardinal * chars_used /* = 0 */)
 {
-    return YETI_SUCCESS;
+    YETI_Int64 value_64;
+    YETI_Result ret = parse_integer64(str, value_64, relaxed, chars_used);
+    result = 0;
+    if (YETI_SUCCEEDED(ret)) {
+        if (value_64 < YETI_INT_MIN || value_64 > YETI_INT_MAX) {
+            return YETI_ERROR_OVERFLOW;
+        }
+        result = (int)value_64;
+    }
+    return ret;
 }
 
 YETI_Result parse_integer(const char * str, unsigned int & result, bool relaxed /* = true */, YETI_Cardinal * chars_used /* = 0 */)
 {
-    return YETI_SUCCESS;
+    YETI_UInt64 value_64;
+    YETI_Result ret = parse_integer64(str, value_64, relaxed, chars_used);
+    result = 0;
+    if (YETI_SUCCEEDED(ret)) {
+        if (value_64 > YETI_UINT_MAX) {
+            return YETI_ERROR_OVERFLOW;
+        }
+        result = (unsigned int)value_64;
+    }
+    return ret;
 }
 
+#if !defined(YETI_CONFIG_HAVE_STRCPY)
+void CopyString(char * dst, const char * src)
+{
+    while (*dst++ = *src++);
+}
+#endif
+
+void format_output(void (*function)(void * parameter, const char * message),
+                   void * function_parameter,
+                   const char * format,
+                   va_list args)
+{
+    char local_buffer[YETI_FORMAT_LOCAL_BUFFER_SIZE] = {0};
+    unsigned int buffer_size = YETI_FORMAT_LOCAL_BUFFER_SIZE;
+    char * buffer = local_buffer;
+
+    for (;;) {
+        int result;
+        result = FormatStringVN(buffer, buffer_size - 1, format, args);
+        buffer[buffer_size - 1] = 0;
+        if (result >= 0) break;
+
+        buffer_size = (buffer_size + YETI_FORMAT_BUFFER_INCREMENT) * 2;
+        if (buffer_size > YETI_FORMAT_BUFFER_MAX_SIZE) break;
+        if (buffer != local_buffer) delete [] buffer;
+        buffer = new char[buffer_size];
+        if (buffer == NULL) return;
+    }
+
+    (*function)(function_parameter, buffer);
+    if (buffer != local_buffer) delete [] buffer;
+}
+
+typedef enum {
+    YETI_MIME_PARAMETER_PARSER_STATE_NEED_NAME,
+    YETI_MIME_PARAMETER_PARSER_STATE_IN_NAME,
+    YETI_MIME_PARAMETER_PARSER_STATE_NEED_EQUALS,
+    YETI_MIME_PARAMETER_PARSER_STATE_NEED_VALUE,
+    YETI_MIME_PARAMETER_PARSER_STATE_IN_VALUE,
+    YETI_MIME_PARAMETER_PARSER_STATE_IN_QUOTED_VALUE,
+    YETI_MIME_PARAMETER_PARSER_STATE_NEED_SEPARATOR
+} YETI_MimeParameterParserState;
+
+/*----------------------------------------------------------------------
+|     From RFC 822 and RFC 2045
+|
+|                                                 ; (  Octal, Decimal.)
+|     CHAR        =  <any ASCII character>        ; (  0-177,  0.-127.)
+|     ALPHA       =  <any ASCII alphabetic character>
+|                                                 ; (101-132, 65.- 90.)
+|                                                 ; (141-172, 97.-122.)
+|     DIGIT       =  <any ASCII decimal digit>    ; ( 60- 71, 48.- 57.)
+|     CTL         =  <any ASCII control           ; (  0- 37,  0.- 31.)
+|                     character and DEL>          ; (    177,     127.)
+|     CR          =  <ASCII CR, carriage return>  ; (     15,      13.)
+|     LF          =  <ASCII LF, linefeed>         ; (     12,      10.)
+|     SPACE       =  <ASCII SP, space>            ; (     40,      32.)
+|     HTAB        =  <ASCII HT, horizontal-tab>   ; (     11,       9.)
+|     <">         =  <ASCII quote mark>           ; (     42,      34.)
+|     CRLF        =  CR LF
+|
+|     LWSP-char   =  SPACE / HTAB                 ; semantics = SPACE
+|
+|     linear-white-space =  1*([CRLF] LWSP-char)  ; semantics = SPACE
+|                                                 ; CRLF => folding
+|
+|     parameter := attribute "=" value
+|
+|     attribute := token
+|                  ; Matching of attributes
+|                  ; is ALWAYS case-insensitive.
+|
+|     value := token / quoted-string
+|
+|     token := 1*<any (US-ASCII) CHAR except SPACE, CTLs, or tspecials>
+|
+|     tspecials :=  "(" / ")" / "<" / ">" / "@" /
+|                   "," / ";" / ":" / "\" / <">
+|                   "/" / "[" / "]" / "?" / "="
+|
+|     quoted-string = <"> *(qtext/quoted-pair) <">; Regular qtext or
+|                                                 ;   quoted chars.
+|
+|     qtext       =  <any CHAR excepting <">,     ; => may be folded
+|                     "\" & CR, and including
+|                     linear-white-space>
+|
+|     quoted-pair =  "\" CHAR                     ; may quote any char
+|
++---------------------------------------------------------------------*/
+YETI_Result parse_mime_parameters(const char * encoded,
+                                  Map<String, String> & parameters)
+{
+    if (encoded == NULL) return YETI_ERROR_INVALID_PARAMETERS;
+
+    String param_name, param_value;
+    param_name.reserve(64);
+    param_value.reserve(64);
+
+    YETI_MimeParameterParserState state = YETI_MIME_PARAMETER_PARSER_STATE_NEED_NAME;
+    bool quoted_char = false;
+    for (;;) {
+        char c = *encoded++;
+        if (!quoted_char && (c == 0x0A || c == 0x0D)) continue;
+        switch (state)
+        {
+        case YETI_MIME_PARAMETER_PARSER_STATE_NEED_NAME:
+            if (c == '\0') break;
+            if (c == ' ' || c == '\t') continue;
+            if (c <  ' ') return YETI_ERROR_INVALID_SYNTAX;
+            param_name += c;
+            state = YETI_MIME_PARAMETER_PARSER_STATE_IN_NAME;
+            break;
+
+        case YETI_MIME_PARAMETER_PARSER_STATE_IN_NAME:
+            if (c <  ' ') return YETI_ERROR_INVALID_SYNTAX;
+            if (c == ' ' || c == '\t') {
+                state = YETI_MIME_PARAMETER_PARSER_STATE_NEED_EQUALS;
+            } else if (c == '=') {
+                state = YETI_MIME_PARAMETER_PARSER_STATE_NEED_VALUE;
+            } else {
+                param_name += c;
+            }
+            break;
+            
+        case YETI_MIME_PARAMETER_PARSER_STATE_NEED_EQUALS:
+            if (c <  ' ') return YETI_ERROR_INVALID_SYNTAX;
+            if (c == ' '|| c == '\t') continue;
+            if (c != '=') return YETI_ERROR_INVALID_SYNTAX;
+            state = YETI_MIME_PARAMETER_PARSER_STATE_NEED_VALUE;
+            break;
+
+        case YETI_MIME_PARAMETER_PARSER_STATE_NEED_VALUE:
+            if (c < ' ') return YETI_ERROR_INVALID_SYNTAX;
+            if (c == ' ' || c == '\t') continue;
+            if (c == '"') {
+                state = YETI_MIME_PARAMETER_PARSER_STATE_IN_QUOTED_VALUE;
+            } else {
+                param_value += c;
+                state = YETI_MIME_PARAMETER_PARSER_STATE_IN_VALUE;
+            }
+            break;
+
+        case YETI_MIME_PARAMETER_PARSER_STATE_IN_QUOTED_VALUE:
+            if (quoted_char) {
+                quoted_char = false;
+                if (c == '\0') return YETI_ERROR_INVALID_SYNTAX;
+                param_value += c;
+                break;
+            } else if (c == '\\') {
+                quoted_char = true;
+                break;
+            } else if (c == '"') {
+                param_name.trim_right();
+                param_value.trim_right();
+                parameters[param_name] = param_value;
+                param_name.set_length(0);
+                param_value.set_length(0);
+                state = YETI_MIME_PARAMETER_PARSER_STATE_NEED_SEPARATOR;
+            } else if (c < ' ') {
+                return YETI_ERROR_INVALID_SYNTAX;
+            } else {
+                param_value += c;
+            }
+            break;
+
+        case YETI_MIME_PARAMETER_PARSER_STATE_IN_VALUE:
+            if (c == '\0' || c == ';') {
+                param_name.trim_right();
+                param_value.trim_right();
+                parameters[param_name] = param_value;
+                param_name.set_length(0);
+                param_value.set_length(0);
+                state = YETI_MIME_PARAMETER_PARSER_STATE_NEED_NAME;
+            } else if (c < ' ') {
+                return YETI_ERROR_INVALID_SYNTAX;
+            } else {
+                param_value += c;
+            }
+            break;
+
+        case YETI_MIME_PARAMETER_PARSER_STATE_NEED_SEPARATOR:
+            if (c == '\0') break;
+            if (c < ' ') return YETI_ERROR_INVALID_SYNTAX;
+            if (c == ' ' || c == '\t') continue;
+            if (c != ';') return YETI_ERROR_INVALID_SYNTAX;
+            state = YETI_MIME_PARAMETER_PARSER_STATE_NEED_NAME;
+            break;
+        }
+        if (c == '\0') break;
+    }
+
+    return YETI_SUCCESS;
+}
 
 NAMEEND

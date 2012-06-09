@@ -21,6 +21,9 @@
 #include "YetiThreads.h"
 #include "YetiAutoreleasePool.h"
 #include "YetiString.h"
+#include "YetiUtil.h"
+#include "YetiDigest.h"
+#include "YetiBase64.h"
 #include "YetiObjectFactory.h"
 #include "YetiStateMachine.h"
 

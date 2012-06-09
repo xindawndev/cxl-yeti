@@ -242,6 +242,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiBase64.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiBase64.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiCommon.h"
 				>
 			</File>

@@ -561,7 +561,7 @@ String String::to_lowercase() const
 String String::to_uppercase() const
 {
     String result(*this);
-    result.to_uppercase();
+    result.make_uppercase();
     return result;
 }
 
@@ -641,6 +641,208 @@ const String & String::insert(const char * s, YETI_Ordinal where /* = 0 */)
     if (m_chars_) delete _get_buffer();
     m_chars_ = nst;
     return *this;
+}
+
+const String & String::erase(YETI_Ordinal start, YETI_Cardinal count /* = 1 */)
+{
+    YETI_Size length = get_length();
+    if (start + count > length) {
+        if (start > length) return *this;
+        count = length - start;
+    }
+    if (count == 0) return *this;
+    _copy_string(m_chars_ + start, m_chars_ + start + count);
+    _get_buffer()->set_length(length - count);
+
+    return *this;
+}
+
+YETI_Result String::to_integer(int & value, bool relaxed /* = true */) const
+{
+    return parse_integer(get_chars(), value, relaxed);
+}
+
+YETI_Result String::to_integer(unsigned int & value, bool relaxed /* = true */) const
+{
+    return parse_integer(get_chars(), value, relaxed);
+}
+
+YETI_Result String::to_integer(long & value, bool relaxed /* = true */) const
+{
+    return parse_integer(get_chars(), value, relaxed);
+}
+
+YETI_Result String::to_integer(unsigned long & value, bool relaxed /* = true */) const
+{
+    return parse_integer(get_chars(), value, relaxed);
+}
+
+YETI_Result String::to_integer32(YETI_Int32 & value, bool relaxed /* = true */) const
+{
+    return parse_integer32(get_chars(), value, relaxed);
+}
+
+YETI_Result String::to_integer32(YETI_UInt32 & value, bool relaxed /* = true */) const
+{
+    return parse_integer32(get_chars(), value, relaxed);
+}
+
+YETI_Result String::to_integer64(YETI_Int64 & value, bool relaxed /* = true */) const
+{
+    return parse_integer64(get_chars(), value, relaxed);
+}
+
+YETI_Result String::to_integer64(YETI_UInt64 & value, bool relaxed /* = true */) const
+{
+    return parse_integer64(get_chars(), value, relaxed);
+}
+
+YETI_Result String::to_float(float & value, bool relaxed /* = true */) const
+{
+    return parse_float(get_chars(), value, relaxed);
+}
+
+const String & String::trim_left()
+{
+    return trim_left(YETI_STRINGS_WHITESPACE_CHARS);
+}
+
+const String & String::trim_left(char c)
+{
+    char s[2] = {c, 0};
+    return trim_left((const char *)s);
+}
+
+const String & String::trim_left(const char * chars)
+{
+    if (m_chars_ == NULL) return *this;
+    const char * s = m_chars_;
+    while (char c = *s) {
+        const char * x = chars;
+        while (*x) {
+            if (*x == c) break;
+            x++;
+        }
+        if (*x == 0) break; // not found
+        s++;
+    }
+    if (s == m_chars_) {
+        // nothing was trimmed
+        return *this;
+    }
+
+    char * d = m_chars_;
+    _get_buffer()->set_length(get_length() - (s - d));
+    while ((*d++ = *s++)) {};
+    return *this;
+}
+
+const String & String::trim_right()
+{
+    return trim_right(YETI_STRINGS_WHITESPACE_CHARS);
+}
+
+const String & String::trim_right(char c)
+{
+    char s[2] = {c, 0};
+    return trim_right((const char *)s);
+}
+
+const String & String::trim_right(const char * chars)
+{
+    if (m_chars_ == NULL || m_chars_[0] == '\0') return *this;
+    char * tail = m_chars_ + get_length() - 1;
+    char * s = tail;
+    while (s != m_chars_ - 1) {
+        const char * x = chars;
+        while (*x) {
+            if (*x == *s) {
+                *s = '\0';
+                break;
+            }
+            x++;
+        }
+        if (*x == 0) break; // not found
+        s--;
+    }
+    if (s == tail) {
+        // nothing was trimmed
+        return *this;
+    }
+    _get_buffer()->set_length(1 + (int)(s - m_chars_));
+    return *this;
+}
+
+const String & String::trim()
+{
+    trim_left();
+    return trim_right();
+}
+
+const String & String::trim(char c)
+{
+    char s[2] = {c, 0};
+    trim_left((const char*)s);
+    return trim_right((const char*)s);
+}
+
+const String & String::trim(const char * chars)
+{
+    trim_left(chars);
+    return trim_right(chars);
+}
+
+String operator +(const String & s1, const char * s2)
+{
+    // shortcut
+    if (s2 == NULL) return String(s1);
+
+    // measure strings
+    YETI_Size s1_length = s1.get_length();
+    YETI_Size s2_length = String::_string_length(s2);
+
+    // allocate space for the new string
+    String result;
+    char* start = result._prepare_to_write(s1_length + s2_length);
+
+    // concatenate the two strings into the result
+    String::_copy_buffer(start, s1, s1_length);
+    String::_copy_string(start + s1_length, s2);
+
+    return result;
+}
+
+String operator+(const char * s1, const String & s2)
+{
+    // shortcut
+    if (s1 == NULL) return String(s2);
+
+    // measure strings
+    YETI_Size s1_length = String::_string_length(s1);
+    YETI_Size s2_length = s2.get_length();
+
+    // allocate space for the new string
+    String result;
+    char* start = result._prepare_to_write(s1_length + s2_length);
+
+    // concatenate the two strings into the result
+    String::_copy_buffer(start, s1, s1_length);
+    String::_copy_string(start+s1_length, s2.get_chars());
+
+    return result;
+}
+
+String operator+(const String & s1, char c)
+{
+    // allocate space for the new string
+    String result;
+    result.reserve(s1.get_length() + 1);
+
+    // append
+    result = s1;
+    result += c;
+
+    return result;
 }
 
 NAMEEND

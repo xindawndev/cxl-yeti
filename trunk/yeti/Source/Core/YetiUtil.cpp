@@ -224,7 +224,137 @@ String hex_string(const unsigned char * data, YETI_Size data_size, const char * 
 {
     String result;
     if (data == NULL || data_size == 0) return result;
+
+    YETI_Size separator_length = separator ? StringLength(separator) : 0;
+    result.set_length(data_size * 2 + (data_size - 1) * separator_length);
+
+    const unsigned char * src = data;
+    char * dst = result.use_chars();
+    while (data_size--) {
+        byte_to_hex(*src++, dst, uppercase);
+        dst += 2;
+        if (data_size) {
+            MemoryCopy(dst, separator, separator_length);
+            dst += separator_length;
+        }
+    }
+
     return result;
 }
+
+YETI_Result parse_float(const char * str, float & result, bool relaxed /* = true */)
+{
+    result = 0.0f;
+
+    if (str == NULL || *str == '\0') {
+        return YETI_ERROR_INVALID_PARAMETERS;
+    }
+
+    if (relaxed) {
+        while (*str == ' ' || *str == '\t') {
+            str++;
+        }
+    }
+    if (*str == '\0') {
+        return YETI_ERROR_INVALID_PARAMETERS;
+    }
+
+    bool negative = false;
+    if (*str == '-') {
+        negative = true;
+        str++;
+    } else if (*str == '+') {
+        str++;
+    }
+
+    bool after_radix = false;
+    bool empty = true;
+    float value = 0.0f;
+    float decimal = 10.0f;
+    char c;
+    while ((c = *str++)) {
+        if (c == '.') {
+            if (after_radix || (*str < '0' || *str > '9')) {
+                return YETI_ERROR_INVALID_PARAMETERS;
+            } else {
+                after_radix = true;
+            }
+        } else if (c >= '0' && c <= '9') {
+            empty = false;
+            if (after_radix) {
+                value += (float)(c - 'c') / decimal;
+                decimal *= 10.0f;
+            } else {
+                value = 10.0f * value + (float)(c - '0');
+            }
+        } else if (c == 'e' || c == 'E') {
+            if (*str == '+' || *str == '-' || (*str >= '0' && *str <= '9')) {
+                int exponent = 0;
+                if (YETI_SUCCEEDED(parse_integer(str, exponent, relaxed))) {
+                    value *= (float)pow(10.0f, (float)exponent);
+                    break;
+                } else {
+                    return YETI_ERROR_INVALID_PARAMETERS;
+                }
+            } else {
+                return YETI_ERROR_INVALID_PARAMETERS;
+            }
+        } else {
+            if (relaxed) {
+                break;
+            } else {
+                return YETI_ERROR_INVALID_PARAMETERS;
+            }
+        }
+    }
+
+    if (empty) {
+        return YETI_ERROR_INVALID_PARAMETERS;
+    }
+
+    result = negative ? -value : value;
+    return YETI_SUCCESS;
+}
+
+YETI_Result parse_integer64(const char * str, YETI_Int64 & result, bool relaxed /* = true */, YETI_Cardinal * chars_used /* = 0 */)
+{
+    return YETI_SUCCESS;
+}
+
+YETI_Result parse_integer64(const char * str, YETI_UInt64 & result, bool relaxed , YETI_Cardinal * chars_used )
+{
+    return YETI_SUCCESS;
+}
+
+YETI_Result parse_integer32(const char * str, YETI_Int32 & result, bool relaxed /* = true */, YETI_Cardinal * chars_used /* = 0 */)
+{
+    return YETI_SUCCESS;
+}
+
+YETI_Result parse_integer32(const char * str, YETI_UInt32 & result, bool relaxed , YETI_Cardinal * chars_used )
+{
+    return YETI_SUCCESS;
+}
+
+YETI_Result parse_integer(const char * str, long & result, bool relaxed /* = true */, YETI_Cardinal * chars_used /* = 0 */)
+{
+    return YETI_SUCCESS;
+}
+
+YETI_Result parse_integer(const char * str, unsigned long & result, bool relaxed /* = true */, YETI_Cardinal * chars_used /* = 0 */)
+{
+    return YETI_SUCCESS;
+}
+
+YETI_Result parse_integer(const char * str, int & result, bool relaxed /* = true */, YETI_Cardinal * chars_used /* = 0 */)
+{
+    return YETI_SUCCESS;
+}
+
+YETI_Result parse_integer(const char * str, unsigned int & result, bool relaxed /* = true */, YETI_Cardinal * chars_used /* = 0 */)
+{
+    return YETI_SUCCESS;
+}
+
 
 NAMEEND

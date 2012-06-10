@@ -172,7 +172,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiBase64.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiCommon.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiCrypto.cpp"
 				>
 			</File>
 			<File
@@ -242,10 +250,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Source\Core\YetiBase64.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\..\Source\Core\YetiBase64.h"
 				>
 			</File>
@@ -263,6 +267,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiConstants.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiCrypto.h"
 				>
 			</File>
 			<File

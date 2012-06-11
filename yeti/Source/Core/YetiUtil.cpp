@@ -71,7 +71,7 @@ YETI_UInt32 bytes_to_int32_le(const unsigned char * buffer)
     return 
         (((YETI_UInt32)buffer[3]) << 24) |
         (((YETI_UInt32)buffer[2]) << 16) |
-        (((YETI_UInt32)buffer[1]) << 8  )|
+        (((YETI_UInt32)buffer[1]) << 8 ) |
         (((YETI_UInt32)buffer[0])       );
 }
 

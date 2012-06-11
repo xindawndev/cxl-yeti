@@ -1,7 +1,5 @@
 #include "Common.h"
 
-#include "Yeti.h"
-
 USINGNAMESPACE2;
 
 static unsigned int g_count = 0;

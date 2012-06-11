@@ -1,7 +1,5 @@
 #include "Common.h"
 
-#include "Yeti.h"
-
 USINGNAMESPACE2;
 
 #define ARRAY_SIZE 16

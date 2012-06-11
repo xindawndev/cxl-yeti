@@ -8,6 +8,8 @@
 #include <vector>
 #include <iostream>
 
+#include "Yeti.h"
+
 #define CHECK(x) {                                  \
     if (!(x)) {                                     \
     printf("TEST FAILED line %d\n", __LINE__);      \

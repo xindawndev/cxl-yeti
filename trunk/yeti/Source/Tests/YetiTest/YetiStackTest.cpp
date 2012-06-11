@@ -1,7 +1,5 @@
 #include "Common.h"
 
-#include "Yeti.h"
-
 USINGNAMESPACE2;
 
 int test_stack()

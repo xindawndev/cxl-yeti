@@ -1,7 +1,5 @@
 #include "Common.h"
 
-#include "Yeti.h"
-
 USINGNAMESPACE2;
 
 int base64_test(std::vector<std::string> args)

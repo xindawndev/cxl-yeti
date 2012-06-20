@@ -228,6 +228,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiTime.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiUtil.cpp"
 				>
 			</File>
@@ -343,6 +347,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiThreads.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiTime.h"
 				>
 			</File>
 			<File

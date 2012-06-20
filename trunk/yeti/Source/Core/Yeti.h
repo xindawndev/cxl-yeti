@@ -23,6 +23,7 @@
 #include "YetiAutoreleasePool.h"
 #include "YetiString.h"
 #include "YetiUtil.h"
+#include "YetiTime.h"
 #include "YetiStreams.h"
 #include "YetiCrypto.h"
 #include "YetiDigest.h"

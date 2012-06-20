@@ -216,6 +216,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiStreams.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiString.cpp"
 				>
 			</File>
@@ -314,6 +318,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiReferences.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiResults.h"
 				>
 			</File>
@@ -323,6 +331,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiStateMachine.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiStreams.h"
 				>
 			</File>
 			<File

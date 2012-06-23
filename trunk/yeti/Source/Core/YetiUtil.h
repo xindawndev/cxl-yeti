@@ -31,7 +31,7 @@ extern void bytes_from_int16_be(unsigned char * buffer, YETI_UInt16 value);
 extern YETI_UInt64 bytes_to_int64_be(const unsigned char * buffer);
 extern YETI_UInt32 bytes_to_int32_be(const unsigned char * buffer);
 extern YETI_UInt32 bytes_to_int24_be(const unsigned char * buffer);
-extern YETI_UInt16 byets_to_int16_be(const unsigned char * buffer);
+extern YETI_UInt16 bytes_to_int16_be(const unsigned char * buffer);
 
 extern void bytes_from_int64_le(unsigned char * buffer, YETI_UInt64 value);
 extern void bytes_from_int32_le(unsigned char * buffer, YETI_UInt32 value);

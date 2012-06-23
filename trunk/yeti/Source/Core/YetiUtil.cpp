@@ -46,7 +46,7 @@ YETI_UInt32 bytes_to_int24_be(const unsigned char * buffer)
         (((YETI_UInt32)buffer[2])       );
 }
 
-YETI_UInt32 bytes_to_int16_be(const unsigned char * buffer)
+YETI_UInt16 bytes_to_int16_be(const unsigned char * buffer)
 {
     return 
         (((YETI_UInt32)buffer[0]) << 8  )|
@@ -83,7 +83,7 @@ YETI_UInt32 bytes_to_int24_le(const unsigned char * buffer)
         (((YETI_UInt32)buffer[0])       );
 }
 
-YETI_UInt32 bytes_to_int16_le(const unsigned char * buffer)
+YETI_UInt16 bytes_to_int16_le(const unsigned char * buffer)
 {
     return 
         (((YETI_UInt32)buffer[1]) << 8  )|
@@ -102,7 +102,7 @@ void bytes_from_int64_be(unsigned char * buffer, YETI_UInt64 value)
     buffer[7] = (unsigned char)(value      ) & 0xFF;
 }
 
-void bytes_from_int32_be(unsigned char * buffer, YETI_UInt64 value)
+void bytes_from_int32_be(unsigned char * buffer, YETI_UInt32 value)
 {
     buffer[0] = (unsigned char)(value >> 24) & 0xFF;
     buffer[1] = (unsigned char)(value >> 16) & 0xFF;
@@ -110,14 +110,14 @@ void bytes_from_int32_be(unsigned char * buffer, YETI_UInt64 value)
     buffer[3] = (unsigned char)(value      ) & 0xFF;
 }
 
-void bytes_from_int24_be(unsigned char * buffer, YETI_UInt64 value)
+void bytes_from_int24_be(unsigned char * buffer, YETI_UInt32 value)
 {
     buffer[0] = (unsigned char)(value >> 16) & 0xFF;
     buffer[1] = (unsigned char)(value >>  8) & 0xFF;
     buffer[2] = (unsigned char)(value      ) & 0xFF;
 }
 
-void bytes_from_int16_be(unsigned char * buffer, YETI_UInt64 value)
+void bytes_from_int16_be(unsigned char * buffer, YETI_UInt16 value)
 {
     buffer[0] = (unsigned char)(value >>  8) & 0xFF;
     buffer[1] = (unsigned char)(value      ) & 0xFF;
@@ -135,7 +135,7 @@ void bytes_from_int64_le(unsigned char * buffer, YETI_UInt64 value)
     buffer[0] = (unsigned char)(value      ) & 0xFF;
 }
 
-void bytes_from_int32_le(unsigned char * buffer, YETI_UInt64 value)
+void bytes_from_int32_le(unsigned char * buffer, YETI_UInt32 value)
 {
     buffer[3] = (unsigned char)(value >> 24) & 0xFF;
     buffer[2] = (unsigned char)(value >> 16) & 0xFF;
@@ -143,14 +143,14 @@ void bytes_from_int32_le(unsigned char * buffer, YETI_UInt64 value)
     buffer[0] = (unsigned char)(value      ) & 0xFF;
 }
 
-void bytes_from_int24_le(unsigned char * buffer, YETI_UInt64 value)
+void bytes_from_int24_le(unsigned char * buffer, YETI_UInt32 value)
 {
     buffer[2] = (unsigned char)(value >> 16) & 0xFF;
     buffer[1] = (unsigned char)(value >>  8) & 0xFF;
     buffer[0] = (unsigned char)(value      ) & 0xFF;
 }
 
-void bytes_from_int16_le(unsigned char * buffer, YETI_UInt64 value)
+void bytes_from_int16_le(unsigned char * buffer, YETI_UInt16 value)
 {
     buffer[1] = (unsigned char)(value >>  8) & 0xFF;
     buffer[0] = (unsigned char)(value      ) & 0xFF;

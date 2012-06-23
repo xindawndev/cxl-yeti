@@ -14,7 +14,7 @@ class String;
 
 const int YETI_ERROR_READ_FAILED    = YETI_ERROR_BASE_IO - 0;
 const int YETI_ERROR_WRITE_FAILED   = YETI_ERROR_BASE_IO - 1;
-const int YETI_ERROR_READ_EOS       = YETI_ERROR_BASE_IO - 2;
+const int YETI_ERROR_EOS            = YETI_ERROR_BASE_IO - 2;
 
 class InputStream
 {
@@ -24,11 +24,11 @@ public:
     virtual YETI_Result load(DataBuffer & buffer, YETI_Size max_read = 0);
     virtual YETI_Result read(void * buffer,
         YETI_Size bytes_to_read,
-        YETI_Size bytes_read = NULL) = 0;
+        YETI_Size * bytes_read = NULL) = 0;
     virtual YETI_Result read_fully(void * buffer,
         YETI_Size bytes_to_read) = 0;
     virtual YETI_Result seek(YETI_Position offset) = 0;
-    virtual YETI_Result skip(YETI_Size offset);
+    virtual YETI_Result skip(YETI_Size count);
     virtual YETI_Result tell(YETI_Position & offset) = 0;
     virtual YETI_Result get_size(YETI_LargeSize & size) = 0;
     virtual YETI_Result get_available(YETI_LargeSize & available) = 0;

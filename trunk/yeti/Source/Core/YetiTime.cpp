@@ -17,4 +17,11 @@ static const YETI_Int32 YETI_TIME_ELAPSED_DAYS_AT_MONTH[13] = {
 const YETI_Int32 YETI_SECONDS_PER_DAY = (24L * 60L * 60L);
 const YETI_Int32 YETI_SECONDS_PER_YEAR = (365L * YETI_SECONDS_PER_DAY);
 
+#define YETI_TIME_YEAR_IS_LEAP(_y) ((((_y) % 4 == 0) && ((_y) % 100 != 0)) || ((_y) % 400 == 0))
+#define YETI_TIME_CHECK_BOUNDS(_var, _low, _high) do {  \
+    if (((_var ) < (_low)) || ((_var) > (_high))) {     \
+        return YETI_ERROR_OUT_OF_RANGE;                 \
+    }                                                   \
+} while(0)
+
 NAMEEND

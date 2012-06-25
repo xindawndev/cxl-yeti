@@ -12,22 +12,55 @@
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="..\..\..\..\Source\Core\Yeti.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiBase64.cpp" />
     <ClCompile Include="..\..\..\..\Source\Core\YetiCommon.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiCrypto.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiDataBuffer.cpp" />
     <ClCompile Include="..\..\..\..\Source\Core\YetiDebug.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiDigest.cpp" />
     <ClCompile Include="..\..\..\..\Source\Core\YetiHash.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiList.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiQueue.cpp" />
     <ClCompile Include="..\..\..\..\Source\Core\YetiResults.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiStateMachine.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiStreams.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiString.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiThreads.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiTime.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiUtil.cpp" />
   </ItemGroup>
   <ItemGroup>
     <ClInclude Include="..\..\..\..\Source\Core\Yeti.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiArray.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiAutoreleasePool.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiBase64.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiCommon.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiConfig.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiConsole.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiConstants.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiCrypto.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiDataBuffer.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiDebug.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiDefs.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiDigest.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiDynamicCast.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiHash.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiInterfaces.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiList.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiMap.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiObjectFactory.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiQueue.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiReferences.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiResults.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiStack.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiStateMachine.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiStreams.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiString.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiThreads.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiTime.h" />
     <ClInclude Include="..\..\..\..\Source\Core\YetiTypes.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiUtil.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiVersion.h" />
   </ItemGroup>
   <PropertyGroup Label="Globals">
     <ProjectGuid>{12AFF2E5-6D95-4809-9728-9551677C078A}</ProjectGuid>

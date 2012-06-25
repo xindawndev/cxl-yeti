@@ -332,12 +332,129 @@ YETI_Result stream_to_stream_copy(InputStream & from,
     if (buffer == NULL) return YETI_ERROR_OUT_OF_MEMORY;
 
     for (;;) {
+        YETI_Size bytes_to_read = YETI_STREAM_COPY_BUFFER_SIZE;
+        YETI_Size bytes_read = 0;
+        if (size) {
+            if (size - bytes_transfered < YETI_STREAM_COPY_BUFFER_SIZE) {
+                bytes_to_read = (YETI_Size)(size - bytes_transfered);
+            }
+        }
+        result = from.read(buffer, bytes_to_read, &bytes_read);
+        if (YETI_FAILED(result)) {
+            if (result == YETI_ERROR_EOS) result = YETI_SUCCESS;
+            break;
+        }
+        if (bytes_read == 0) continue;
+        YETI_Size buffer_bytes_to_write = bytes_read;
+        YETI_Byte * buffer_bytes = (YETI_Byte *)buffer;
+        while (buffer_bytes_to_write) {
+            YETI_Size buffer_bytes_to_written = 0;
+            result = to.write(buffer_bytes, buffer_bytes_to_write, &buffer_bytes_to_written);
+            if (YETI_FAILED(result)) goto end;
+            YETI_ASSERT(buffer_bytes_to_written <= buffer_bytes_to_write);
+            buffer_bytes_to_write -= buffer_bytes_to_written;
+            if (bytes_written) *bytes_written += buffer_bytes_to_written;
+            buffer_bytes += buffer_bytes_to_written;
+        }
 
+        if (size) {
+            bytes_transfered += bytes_read;
+            if (bytes_transfered >= size) break;
+        }
     }
 
 end:
     delete[] buffer;
     return result;
+}
+
+StringOutputStream::StringOutputStream(YETI_Size size)
+: m_string_(new String)
+, m_string_is_owned_(true)
+{
+    m_string_->reserve(size);
+}
+
+StringOutputStream::StringOutputStream(String * storage)
+: m_string_(storage)
+, m_string_is_owned_(false)
+{
+}
+
+StringOutputStream::~StringOutputStream()
+{
+    if (m_string_is_owned_) delete m_string_;
+}
+
+YETI_Result StringOutputStream::write(const void * buffer, YETI_Size bytes_to_write, YETI_Size * bytes_written/* = NULL*/)
+{
+    m_string_->append((const char *)buffer, bytes_to_write);
+    if (bytes_written) *bytes_written = bytes_to_write;
+    return YETI_SUCCESS;
+}
+
+SubInputStream::SubInputStream(InputStreamReference & source,
+                               YETI_Position start,
+                               YETI_LargeSize size)
+                               : m_source_(source)
+                               , m_position_(0)
+                               , m_start_(start)
+                               , m_size_(size)
+{
+}
+
+YETI_Result SubInputStream::read(void * buffer, YETI_Size bytes_to_read, YETI_Size * bytes_read /* = NULL */)
+{
+    if (bytes_read) *bytes_read = 0;
+    if (bytes_to_read == 0) return YETI_SUCCESS;
+    if (m_position_ + bytes_to_read > m_size_) bytes_to_read = (YETI_Size)(m_size_ - m_position_);
+
+    if (bytes_to_read == 0) return YETI_ERROR_EOS;
+
+    YETI_Result result;
+    result = m_source_->seek(m_start_ + m_position_);
+    if (YETI_FAILED(result)) return result;
+
+    YETI_Size source_bytes_read = 0;
+    result = m_source_->read(buffer, bytes_to_read, &source_bytes_read);
+    if (YETI_SUCCEEDED(result)) {
+        m_position_ += source_bytes_read;
+        if (bytes_read) *bytes_read = source_bytes_read;
+    }
+
+    return result;
+}
+
+YETI_Result SubInputStream::seek(YETI_Position position)
+{
+    if (position == m_position_) return YETI_SUCCESS;
+    if (position > m_size_) return YETI_ERROR_OUT_OF_RANGE;
+    m_position_ = position;
+    return YETI_SUCCESS;
+}
+
+YETI_Result SubInputStream::tell(YETI_Position & position)
+{
+    position = m_position_;
+    return YETI_SUCCESS;
+}
+
+YETI_Result SubInputStream::get_size(YETI_LargeSize & size)
+{
+    size = m_size_;
+    return YETI_SUCCESS;
+}
+
+YETI_Result SubInputStream::get_available(YETI_LargeSize & available)
+{
+    available = m_size_ - m_position_;
+    return YETI_SUCCESS;
+}
+
+YETI_Result OutputStream::write(const void * buffer, YETI_Size bytes_to_write, YETI_Size * bytes_written /* = NULL */)
+{
+    if (bytes_written) *bytes_written = bytes_to_write;
+    return YETI_SUCCESS;
 }
 
 NAMEEND

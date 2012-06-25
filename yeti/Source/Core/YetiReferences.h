@@ -22,7 +22,7 @@ public:
     {
         if (m_mutex_) m_mutex_->lock();
         if (m_counter_) ++(*m_counter_);
-        if (m_mutex_) m_mutex_.unlock();
+        if (m_mutex_) m_mutex_->unlock();
     }
     Reference(T * object, YETI_Cardinal * counter, Mutex * mutex)
         : m_object_(object)
@@ -31,7 +31,7 @@ public:
     {
         if (m_mutex_) m_mutex_->lock();
         if (m_counter_) ++(*m_counter_);
-        if (m_mutex_) m_mutex_.unlock();
+        if (m_mutex_) m_mutex_->unlock();
     }
 
     ~Reference()

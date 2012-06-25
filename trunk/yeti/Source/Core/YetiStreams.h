@@ -178,7 +178,7 @@ public:
 
 protected:
     String * m_string_;
-    bool m_string_is_owned;
+    bool m_string_is_owned_;
 };
 
 typedef Reference<StringOutputStream> StringOutputStreamReference;
@@ -190,9 +190,10 @@ public:
         YETI_Position  start,
         YETI_LargeSize size);
 
-    virtual YETI_Result read(void * buffer, YETI_Size bytes_to_read, YETI_Size bytes_read = NULL) = 0;
+    virtual YETI_Result read(void * buffer, YETI_Size bytes_to_read, YETI_Size * bytes_read = NULL) = 0;
     virtual YETI_Result seek(YETI_Position offset) = 0;
-    virtual YETI_Result tell(YETI_Position & offset) = 0;
+    virtual YETI_Result tell(YETI_Position & position) = 0;
+    virtual YETI_Result get_size(YETI_LargeSize & size) = 0;
     virtual YETI_Result get_available(YETI_LargeSize & available) = 0;
 
 private:

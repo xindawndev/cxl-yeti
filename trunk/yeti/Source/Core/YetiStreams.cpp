@@ -271,4 +271,73 @@ YETI_Result MemoryStream::read(void * buffer,
     return bytes_to_read ? YETI_SUCCESS : YETI_ERROR_EOS;
 }
 
+YETI_Result MemoryStream::_input_seek(YETI_Position offset)
+{
+    if (offset > m_buffer_.get_data_size()) {
+        return YETI_ERROR_OUT_OF_RANGE;
+    } else {
+        m_read_offset_ = (YETI_Size)offset;
+        return YETI_SUCCESS;
+    }
+}
+
+YETI_Result MemoryStream::write(const void * buffer, YETI_Size bytes_to_write, YETI_Size * bytes_written /* = NULL */)
+{
+    YETI_CHECK(m_buffer_.reserve(m_write_offset_ + bytes_to_write));
+
+    MemoryCopy(m_buffer_.use_data() + m_write_offset_, buffer, bytes_to_write);
+    m_write_offset_ += bytes_to_write;
+    if (m_write_offset_ > m_buffer_.get_data_size()) {
+        m_buffer_.set_data_size(m_write_offset_);
+    }
+    if (bytes_written) *bytes_written = bytes_to_write;
+
+    return YETI_SUCCESS;
+}
+
+YETI_Result MemoryStream::_output_seek(YETI_Position offset)
+{
+    if (offset <= m_buffer_.get_data_size()) {
+        m_write_offset_ = (YETI_Size)offset;
+        return YETI_SUCCESS;
+    }
+
+    return YETI_ERROR_OUT_OF_RANGE;
+}
+
+YETI_Result MemoryStream::set_data_size(YETI_Size size)
+{
+    YETI_CHECK(m_buffer_.set_data_size(size));
+
+    if (m_read_offset_ > size) m_read_offset_ = size;
+    if (m_write_offset_ > size) m_write_offset_ = size;
+
+    return YETI_SUCCESS;
+}
+
+const unsigned int YETI_STREAM_COPY_BUFFER_SIZE = 65536;
+
+YETI_Result stream_to_stream_copy(InputStream & from,
+                                  OutputStream & to,
+                                  YETI_Position offset /*= 0*/,
+                                  YETI_LargeSize size /*= 0*/,
+                                  YETI_LargeSize * bytes_written/* = NULL*/)
+{
+    if (bytes_written) *bytes_written = 0;
+    if (offset) YETI_CHECK(from.seek(offset));
+
+    YETI_LargeSize bytes_transfered = 0;
+    YETI_Byte * buffer = new YETI_Byte[YETI_STREAM_COPY_BUFFER_SIZE];
+    YETI_Result result = YETI_SUCCESS;
+    if (buffer == NULL) return YETI_ERROR_OUT_OF_MEMORY;
+
+    for (;;) {
+
+    }
+
+end:
+    delete[] buffer;
+    return result;
+}
+
 NAMEEND

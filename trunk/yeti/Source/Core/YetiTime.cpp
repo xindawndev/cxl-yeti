@@ -4,7 +4,7 @@
 
 NAMEBEG
 
-const char * const YETI_TIME_DAYS_SHORTS[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
+const char * const YETI_TIME_DAYS_SHORT[] = {"Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"};
 const char * const YETI_TIME_DAYS_LONG[] = {"Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"};
 const char * const YETI_TIME_MONTHS[] = {"Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"};
 
@@ -205,13 +205,93 @@ String DateTime::to_string(_eFormat format /* = FORMAT_ANSI */, YETI_Flags flags
     case FORMAT_W3C:
         append_number(result, m_year_, 4);
         result += '-';
-
+        append_number(result, m_month_, 2);
+        result += '-';
+        append_number(result, m_day_, 2);
+        result += 'T';
+        append_number(result, m_hours_, 2);
+        result += ':';
+        append_number(result, m_minutes_, 2);
+        result += ':';
+        append_number(result, m_seconds_, 2);
+        if (flags & FLAG_EMIT_FRACTION) {
+            result += '.';
+            if (flags & FLAG_EXTENDED_PRECISION) {
+                append_number(result, m_nanoseconds_, 9);
+            } else {
+                append_number(result, m_nanoseconds_ / 1000000, 3);
+            }
+        }
+        if (m_timezone_) {
+            YETI_UInt32 tz;
+            if (m_timezone_ > 0) {
+                result += '+';
+                tz = m_timezone_;
+            } else {
+                result += '-';
+                tz = -m_timezone_;
+            }
+            append_number(result, tz / 60, 2);
+            result += ':';
+            append_number(result, tz % 60, 2);
+        } else {
+            result += 'Z';
+        }
         break;
-    case FORMAT_ANSI:
+    case FORMAT_ANSI: {
+        YETI_UInt32 days = elapsed_days_since1900(*this);
+        result.set_length(24);
+        FormatString(result.use_chars(), result.get_length() + 1,
+            "%.3s %.3s%3d %.2d:%.2d:%.2d %d",
+            YETI_TIME_DAYS_SHORT[(days + 1) % 7],
+            YETI_TIME_MONTHS[m_month_ - 1],
+            m_day_,
+            m_hours_,
+            m_minutes_,
+            m_seconds_,
+            m_year_);
+                      }
         break;
     case FORMAT_RFC_1036:
-        break;
-    case FORMAT_RFC_1123:
+    case FORMAT_RFC_1123: {
+           YETI_UInt32 days = elapsed_days_since1900(*this);
+           if (format == FORMAT_RFC_1036) {
+               result += YETI_TIME_DAYS_LONG[(days + 1) % 7];
+               result += ", ";
+               append_number(result, m_day_, 2);
+               result += '-';
+               result += YETI_TIME_MONTHS[m_minutes_ - 1];
+               result += '-';
+               append_number(result, m_year_ % 100, 2);
+           } else {
+               result += YETI_TIME_DAYS_SHORT[(days + 1) % 7];
+               result += ", ";
+               append_number(result, m_day_, 2);
+               result += ' ';
+               result += YETI_TIME_MONTHS[m_month_ - 1];
+               result += ' ';
+               append_number(result, m_year_, 4);
+           }
+           result += ' ';
+           append_number(result, m_hours_, 2);
+           result += ':';
+           append_number(result, m_minutes_, 2);
+           result += ':';
+           append_number(result, m_seconds_, 2);
+           if (m_timezone_) {
+               if (m_timezone_ > 0) {
+                   result += "+";
+                   append_number(result, m_timezone_ / 60, 2);
+                   append_number(result, m_timezone_ % 60, 2);
+               } else {
+                   result += '-';
+                   append_number(result, -m_timezone_ / 60, 2);
+                   append_number(result, -m_timezone_ % 60, 2);
+               }
+           } else {
+               result += " GMT";
+           }
+                          }
         break;
     }
     return result;
@@ -219,6 +299,221 @@ String DateTime::to_string(_eFormat format /* = FORMAT_ANSI */, YETI_Flags flags
 
 YETI_Result DateTime::from_string(const char * date, _eFormat format /* = FORMAT_ANSI */) 
 {
+    if (date == NULL || date[0] == '\0') return YETI_ERROR_INVALID_PARAMETERS;
+    String workspace(date);
+    char * input = workspace.use_chars();
+    YETI_Size input_size = workspace.get_length();
+    switch (format) {
+        case FORMAT_W3C: {
+            if (input_size < 17 && input_size != 10) return YETI_ERROR_INVALID_SYNTAX;
+            if (input[4] != '-' ||
+                input[7] != '-') {
+                    return YETI_ERROR_INVALID_SYNTAX;
+            }
+
+            input[4] = input[7] = '\0';
+            bool no_seconds = true;
+            if (input_size > 10) {
+                if (input[10] != 'T' ||
+                    input[13] != ':') {
+                        return YETI_ERROR_INVALID_SYNTAX;
+                }
+                input[10] = input[13] = '\0';
+                if (input[16] == ':') {
+                    input[16] = '\0';
+                    no_seconds = false;
+                    if (input_size < 20) return YETI_ERROR_INVALID_SYNTAX;
+                } else {
+                    m_seconds_ = 0;
+                }
+            }
+            if (YETI_FAILED(parse_integer(input, m_year_, false)) ||
+                YETI_FAILED(parse_integer(input + 5, m_month_, false)) ||
+                YETI_FAILED(parse_integer(input + 8, m_day_, false))) {
+                return YETI_ERROR_INVALID_SYNTAX;
+            }
+            if (input_size > 10) {
+                if (input[input_size - 1] == 'Z') {
+                    m_timezone_ = 0;
+                } else if (input[input_size - 6] == '+' || input[input_size - 6] == '-') {
+                    if (input[input_size - 3] != ':') return YETI_ERROR_INVALID_SYNTAX;
+                    input[input_size - 3] = '\0';
+                    unsigned int hh, mm;
+                    if (YETI_FAILED(parse_integer(input + input_size - 5, hh, false)) ||
+                        YETI_FAILED(parse_integer(input + input_size - 2, mm, false))) {
+                        return YETI_ERROR_INVALID_SYNTAX;
+                    }
+                    if (hh > 59 || mm > 59) return YETI_ERROR_INVALID_SYNTAX;
+                    m_timezone_ = hh * 60 + mm;
+                    if (input[input_size - 6] == '-') m_timezone_ = -m_timezone_;
+                    input[input_size - 6] = '\0';
+                }
+                if (YETI_FAILED(parse_integer(input + 11, m_hours_, false)) || 
+                    YETI_FAILED(parse_integer(input + 14, m_minutes_, false))) {
+                    return YETI_ERROR_INVALID_SYNTAX;
+                }
+                if (!no_seconds && input[19] == '.') {
+                    char fraction[10];
+                    fraction[9] = '\0';
+                    unsigned int fraction_size = StringLength(input + 20);
+                    if (fraction_size == 0) return YETI_ERROR_INVALID_SYNTAX;
+                    for (unsigned int i = 0; i < 9; ++i) {
+                        if (i < fraction_size) {
+                            fraction[i] = input[20 + i];
+                        } else {
+                            fraction[i] = '\0';
+                        }
+                    }
+                    if (YETI_FAILED(parse_integer(fraction, m_nanoseconds_, false))) {
+                        return YETI_ERROR_INVALID_SYNTAX;
+                    }
+                    input[19] = '\0';
+                } else {
+                    m_nanoseconds_ = 0;
+                }
+                if (!no_seconds) {
+                    if (YETI_FAILED(parse_integer(input + 17, m_seconds_, false))) {
+                        return YETI_ERROR_INVALID_SYNTAX;
+                    }
+                }
+            }
+                         }
+            break;
+        case FORMAT_RFC_1036:
+        case FORMAT_RFC_1123: {
+            if (input_size < 26) return YETI_ERROR_INVALID_SYNTAX;
+            const char * wday = input;
+            while (*input && *input != ',') {
+                ++input;
+                --input_size;
+            }
+            if (*input == '\0' || *wday == ',') return YETI_ERROR_INVALID_SYNTAX;
+            *input++ = '\0';
+            --input_size;
+            char * timezone = input + input_size - 1;
+            unsigned int timezone_size = 0;
+            while (input_size && *timezone != ' ') {
+                --timezone;
+                ++timezone_size;
+                --input_size;
+            }
+            if (input_size == 0) return YETI_ERROR_INVALID_SYNTAX;
+            *timezone++ = '\0';
+            if (input_size < 20) return YETI_ERROR_INVALID_SYNTAX;
+            unsigned int yl = input_size - 18;
+            if (yl != 2 && yl != 4) return YETI_ERROR_INVALID_SYNTAX;
+            char sep;
+            int wday_index;
+            if (format == FORMAT_RFC_1036) {
+                sep = '-';
+                wday_index = match_string(wday, YETI_TIME_DAYS_LONG, 7);
+            } else {
+                sep = ' ';
+                wday_index = match_string(wday, YETI_TIME_DAYS_SHORT, 7);
+            }
+            if (input[0] != ' ' ||
+                input[3] != sep ||
+                input[7] != sep ||
+                input[8 + yl] != ' ' ||
+                input[11 + yl] != ':' ||
+                input[14 + yl] != ':') {
+                return YETI_ERROR_INVALID_SYNTAX;
+            }
+            input[3] = input[7] = input[8 + yl] = input[11 + yl] = input[14 + yl] = '\0';
+            m_month_ = 1 + match_string(input + 4, YETI_TIME_MONTHS, 12);
+            if (YETI_FAILED(parse_integer(input + 1, m_day_, false)) ||
+                YETI_FAILED(parse_integer(input + 8, m_year_, false)) ||
+                YETI_FAILED(parse_integer(input + 9 + yl, m_hours_, false)) ||
+                YETI_FAILED(parse_integer(input + 12 + yl, m_minutes_, false)) ||
+                YETI_FAILED(parse_integer(input + 15 + yl, m_seconds_, false))) {
+                return YETI_ERROR_INVALID_SYNTAX;
+            }
+            if (yl == 2) m_year_ += 1900;
+            if (StringEqual(timezone, "GMT") ||
+                StringEqual(timezone, "UT") ||
+                StringEqual(timezone, "Z")) {
+                m_timezone_ = 0;
+            } else if (StringEqual(timezone, "EDT")) {
+                m_timezone_ = -4 * 60;
+            } else if (StringEqual(timezone, "EST") ||
+                StringEqual(timezone, "CDT")) {
+                    m_timezone_ = -5 * 60;
+            } else if (StringEqual(timezone, "CST") ||
+                StringEqual(timezone, "MDT")) {
+                    m_timezone_ = -6 * 60;
+            } else if (StringEqual(timezone, "MST") ||
+                StringEqual(timezone, "PDT")) {
+                    m_timezone_ = -7 * 60;
+            } else if (StringEqual(timezone, "PST")) {
+                m_timezone_ = -8 * 60;
+            } else if (timezone_size == 1) {
+                if (timezone[0] >= 'A' && timezone[0] <= 'I') {
+                    m_timezone_ = -60 * (1 + timezone[0] - 'A');
+                } else if (timezone[0] >= 'K' && timezone[0] <= 'M') {
+                    m_timezone_ = -60 * (timezone[0] - 'A');            
+                } else if (timezone[0] >= 'N' && timezone[0] <= 'Y') {
+                    m_timezone_ = 60 * (1 + timezone[0] - 'N');
+                } else {
+                    return YETI_ERROR_INVALID_SYNTAX;
+                }
+            } else if (timezone_size == 5) {
+                int sign;
+                if (timezone[0] == '-') {
+                    sign = -1;
+                } else if (timezone[0] == '+') {
+                    sign = 1;
+                } else {
+                    return YETI_ERROR_INVALID_SYNTAX;
+                }
+                YETI_UInt32 tz;
+                if (YETI_FAILED(parse_integer(timezone + 1, tz, false))) {
+                    return YETI_ERROR_INVALID_SYNTAX;
+                }
+                unsigned int hh = (tz / 100);
+                unsigned int mm = (tz % 100);
+                if (hh > 59 || mm > 59) return YETI_ERROR_INVALID_SYNTAX;
+                m_timezone_ = sign * (hh * 60 + mm);
+            } else {
+                return YETI_ERROR_INVALID_SYNTAX;
+            }
+            YETI_UInt32 days = elapsed_days_since1900(*this);
+            if ((int)((days + 1) % 7) != wday_index) {
+                return YETI_ERROR_INVALID_PARAMETERS;
+            }
+            m_nanoseconds_ = 0;
+                              }
+            break;
+        case FORMAT_ANSI: {
+            if (input_size != 24) return YETI_ERROR_INVALID_SYNTAX;
+            if (input[3] != ' ' ||
+                input[7] != ' ' ||
+                input[10] != ' ' ||
+                input[13] != ':' ||
+                input[16] != ':' ||
+                input[19] != ' ') {
+                return YETI_ERROR_INVALID_SYNTAX;
+            }
+            input[3] = input[7] = input[10] = input[13] = input[16] = input[19] = '\0';
+            if (input[8] == ' ') input[8] = '0';
+            m_month_ = 1 + match_string(input + 4, YETI_TIME_MONTHS, 12);
+            if (YETI_FAILED(parse_integer(input + 8, m_day_, false)) ||
+                YETI_FAILED(parse_integer(input + 11, m_hours_, false)) ||
+                YETI_FAILED(parse_integer(input + 14, m_minutes_, false)) ||
+                YETI_FAILED(parse_integer(input + 17, m_seconds_, false)) ||
+                YETI_FAILED(parse_integer(input + 20, m_year_, false))) {
+                return YETI_ERROR_INVALID_SYNTAX;
+            }
+            YETI_UInt32 days = elapsed_days_since1900(*this);
+            if ((int)((days + 1) % 7) != match_string(input, YETI_TIME_DAYS_SHORT, 7)) {
+                return YETI_ERROR_INVALID_PARAMETERS;
+            }
+            m_timezone_ = 0;
+            m_nanoseconds_ = 0;
+                          }
+            break;
+        default:
+            return YETI_ERROR_INVALID_PARAMETERS;
+    }
     return check_date(*this);
 }
 NAMEEND

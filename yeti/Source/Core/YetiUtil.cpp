@@ -696,4 +696,14 @@ YETI_Result parse_mime_parameters(const char * encoded,
     return YETI_SUCCESS;
 }
 
+char lowercase(char x)
+{
+    return (x >= 'A' && x <= 'Z') ? x^32 : x;
+}
+
+char uppercase(char x)
+{
+    return (x >= 'a' && x <= 'z') ? x&0xdf : x;
+}
+
 NAMEEND

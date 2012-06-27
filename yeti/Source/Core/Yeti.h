@@ -28,6 +28,7 @@
 #include "YetiCrypto.h"
 #include "YetiDigest.h"
 #include "YetiBase64.h"
+#include "YetiHttpParser.h"
 #include "YetiObjectFactory.h"
 #include "YetiStateMachine.h"
 

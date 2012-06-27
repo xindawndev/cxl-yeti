@@ -19,6 +19,8 @@ const int YETI_STRING_SEARCH_FAILED = -1;
 class String
 {
 public:
+    static YETI_Int32 npos;
+public:
     static String from_integer(YETI_Int64 value);
     static String from_u_integer(YETI_UInt64 value);
     static String format(const char * format, ...);

@@ -14,14 +14,7 @@ NAMEBEG
 const unsigned int YETI_STRING_FORMAT_BUFFER_DEFAULT_SIZE = 256;
 const unsigned int YETI_STRING_FORMAT_BUFFER_MAX_SIZE     = 0x80000; // 512k
 
-inline char _uppercase(char x) {
-    return (x >= 'a' && x <= 'z') ? x&0xdf : x;
-}
-
-inline char _lowercase(char x) {
-    return (x >= 'A' && x <= 'Z') ? x^32 : x;
-}
-
+YETI_Int32 String::npos = -1;
 char String::empty_string_ = '\0';
 
 String String::from_integer(YETI_Int64 value)
@@ -271,13 +264,13 @@ int String::compare(const char * s1, const char * s2, bool ignore_case /* = fals
     const char * r2 = s2;
 
     if (ignore_case) {
-        while (_uppercase(*r1) == _uppercase(*r2)) {
+        while (uppercase(*r1) == uppercase(*r2)) {
             if (*r1++ == '\0') {
                 return 0;
             }
             r2++;
         }
-        return _uppercase(*r1) - _uppercase(*r2);
+        return uppercase(*r1) - uppercase(*r2);
     } else {
         while (*r1 == *r2) {
             if (*r1++ == '\0') {
@@ -300,8 +293,8 @@ int String::compare_n(const char * s1, const char * s2, YETI_Size count, bool ig
 
     if (ignore_case) {
         for (unsigned int i = 0; i < count; ++i) {
-            if (_uppercase(me[i]) != _uppercase(s2[i])) {
-                return (int)(_uppercase(me[i]) - _uppercase(s2[i]));
+            if (uppercase(me[i]) != uppercase(s2[i])) {
+                return (int)(uppercase(me[i]) - uppercase(s2[i]));
             }
         }
         return 0;
@@ -390,7 +383,7 @@ String String::sub_string(YETI_Ordinal first, YETI_Size length) const
 static inline int _string_starts_with(const char * str, const char * sub, bool ignore_case)
 {
     if (ignore_case) {
-        while (_uppercase(*str) == _uppercase(*sub)) {
+        while (uppercase(*str) == uppercase(*sub)) {
             if (*str++ == '\0') {
                 return 1;
             }
@@ -448,7 +441,7 @@ int String::find(char c, YETI_Ordinal start /* = 0 */, bool ignore_case /* = fal
     const char * src = m_chars_ + start;
     if (ignore_case) {
         while (*src) {
-            if (_uppercase(*src) == _uppercase(c)) {
+            if (uppercase(*src) == uppercase(c)) {
                 return (int)(src - m_chars_);
             }
             src++;
@@ -472,7 +465,7 @@ int String::find_any(const char * s, YETI_Ordinal start, bool ignore_case /* = f
     if (ignore_case) {
         while (*src) {
             for (YETI_Size i = 0; i < StringLength(s); ++i) {
-                if (_uppercase(*src) == _uppercase(s[i])) {
+                if (uppercase(*src) == uppercase(s[i])) {
                     return (int)(src - m_chars_);
                 }
             }
@@ -518,7 +511,7 @@ int String::reverse_find(char c, YETI_Ordinal start /* = 0 */, bool ignore_case 
     const char * src = get_chars();
     if (ignore_case) {
         for (; i >= 0; --i) {
-            if (_uppercase(src[i]) == _uppercase(c)) {
+            if (uppercase(src[i]) == uppercase(c)) {
                 return i;
             }
         }
@@ -536,7 +529,7 @@ void String::make_lowercase()
     const char * src = get_chars();
     char * dst = const_cast<char *>(src);
     while (*dst != '\0') {
-        *dst = _lowercase(*dst);
+        *dst = lowercase(*dst);
         dst++;
     }
 }
@@ -546,7 +539,7 @@ void String::make_uppercase()
     const char * src = get_chars();
     char *dst = const_cast<char *>(src);
     while (*dst != '\0') {
-        *dst = _uppercase(*dst);
+        *dst = uppercase(*dst);
         dst++;
     }
 }

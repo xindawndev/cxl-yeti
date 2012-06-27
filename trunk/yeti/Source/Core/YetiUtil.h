@@ -76,6 +76,9 @@ public:
     static YETI_Result set(const char * name, const char * value);
 };
 
+char lowercase(char x);
+char uppercase(char x);
+
 #define YETI_GetEnvironment(_x, _y) Environment::get((_x), (_y));
 
 #if defined(YETI_CONFIG_HAVE_SNPRINTF)

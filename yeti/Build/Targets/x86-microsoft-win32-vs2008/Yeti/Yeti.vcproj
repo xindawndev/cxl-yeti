@@ -326,6 +326,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiNetwork.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiNetwork.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiObjectFactory.h"
 				>
 			</File>

@@ -20,8 +20,8 @@ typedef float                           YETI_Float;
 |   named types
 +---------------------------------------------------------------------*/
 typedef int            YETI_Result;
-typedef unsigned int   YETI_Cardinal;
-typedef unsigned int   YETI_Ordinal;
+typedef unsigned int   YETI_Cardinal;   // 基数：一、二、三……
+typedef unsigned int   YETI_Ordinal;    // 序数：第一、第二、第三……
 typedef YETI_UInt32    YETI_Size;
 typedef YETI_UInt64    YETI_LargeSize;
 typedef YETI_Int32     YETI_Offset;

@@ -284,6 +284,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="YetiHttpParserTest"
+				>
+				<File
+					RelativePath="..\..\..\..\Source\Tests\YetiTest\YetiHttpParserTest.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

@@ -3,17 +3,17 @@
 
 NAMEBEG
 
-HttpParser::HttpParser() :
-m_header_start_(0),
-m_body_start_(0),
-m_parsed_to_( 0 ),
-m_state_( 0 ),
-m_key_index_(0),
-m_value_index_(0),
-m_content_length_(0),
-m_content_start_(0),
-m_uri_index_(0),
-m_status_( Incomplete )
+HttpParser::HttpParser()
+: m_header_start_(0)
+, m_body_start_(0)
+, m_parsed_to_( 0 )
+, m_state_( 0 )
+, m_key_index_(0)
+, m_value_index_(0)
+, m_content_length_(0)
+, m_content_start_(0)
+, m_uri_index_(0)
+, m_status_( Incomplete )
 {
 }
 
@@ -76,11 +76,11 @@ void HttpParser::_parse_header()
         { p_error,               ANY, p_error,               0                                  }
     };
 
-    for( unsigned i = m_parsed_to_; i < m_data_.get_length(); ++i) {
+    for( YETI_Size i = m_parsed_to_; i < m_data_.get_length(); ++i) {
         char c = m_data_[i];
         State nextState = p_error;
 
-        for ( unsigned d = 0; d < sizeof(fsm) / sizeof(FSM); ++d ) {
+        for ( YETI_Size d = 0; d < sizeof(fsm) / sizeof(FSM); ++d ) {
             if ( fsm[d].curState == m_state_ && 
                 ( c == fsm[d].c || fsm[d].c == ANY ) ) {
 
@@ -149,7 +149,7 @@ bool HttpParser::_parse_request_line()
     return true;
 }
 
-HttpParser::status_t HttpParser::add_bytes( const char* bytes, unsigned len )
+HttpParser::status_t HttpParser::add_bytes( const char* bytes, YETI_Size len )
 {
     if ( m_status_ != Incomplete ) {
         return m_status_;
@@ -224,7 +224,7 @@ const char* HttpParser::get_value( const char* key )
     return NULL;
 }
 
-unsigned HttpParser::get_content_length()
+YETI_Size HttpParser::get_content_length()
 {
     return m_content_length_;
 }

@@ -240,7 +240,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32Console.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32Debug.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32System.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32Time.cpp"
 				>
 			</File>
 		</Filter>
@@ -363,6 +375,14 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiString.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiSystem.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiSystem.h"
 				>
 			</File>
 			<File

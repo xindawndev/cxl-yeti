@@ -79,7 +79,7 @@ public:
 char lowercase(char x);
 char uppercase(char x);
 
-#define YETI_GetEnvironment(_x, _y) Environment::get((_x), (_y));
+#define GetEnvironment(_x, _y) Environment::get((_x), (_y));
 
 #if defined(YETI_CONFIG_HAVE_SNPRINTF)
 #   define FormatString YETI_snprintf

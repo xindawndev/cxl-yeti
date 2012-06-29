@@ -208,11 +208,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiNetwork.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiQueue.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiResults.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiSocket.cpp"
 				>
 			</File>
 			<File
@@ -225,6 +233,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiString.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiSystem.cpp"
 				>
 			</File>
 			<File
@@ -338,10 +350,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Source\Core\YetiNetwork.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\..\Source\Core\YetiNetwork.h"
 				>
 			</File>
@@ -362,6 +370,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiSocket.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiStack.h"
 				>
 			</File>
@@ -375,10 +387,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiString.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\Source\Core\YetiSystem.cpp"
 				>
 			</File>
 			<File

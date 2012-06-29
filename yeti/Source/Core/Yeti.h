@@ -29,6 +29,7 @@
 #include "YetiDigest.h"
 #include "YetiBase64.h"
 #include "YetiNetwork.h"
+#include "YetiSocket.h"
 #include "YetiHttpParser.h"
 #include "YetiObjectFactory.h"
 #include "YetiStateMachine.h"

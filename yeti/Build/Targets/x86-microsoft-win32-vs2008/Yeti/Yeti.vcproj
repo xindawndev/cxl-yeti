@@ -176,6 +176,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\System\Bsd\YetiBsdResolver.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\System\Bsd\YetiBsdSocket.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiCommon.cpp"
 				>
 			</File>
@@ -193,6 +201,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiDigest.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiDynamicLibraries.cpp"
 				>
 			</File>
 			<File
@@ -248,6 +260,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiUri.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiUtil.cpp"
 				>
 			</File>
@@ -257,6 +273,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32Debug.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32Network.cpp"
 				>
 			</File>
 			<File
@@ -327,6 +347,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiDynamicCast.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiDynamicLibraries.h"
 				>
 			</File>
 			<File
@@ -406,11 +430,19 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiUri.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiUtil.h"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiVersion.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32Network.h"
 				>
 			</File>
 		</Filter>

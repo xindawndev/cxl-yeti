@@ -77,7 +77,7 @@ private:
         p_value_crlf                = 9,
         p_value_crlfcr              = 10,
         p_content                   = 11, // here we are done parsing the header.
-        p_error                     = 12 // here an error has occurred and the parse failed.
+        p_error                     = 12  // here an error has occurred and the parse failed.
     };
 
     status_t m_status_;

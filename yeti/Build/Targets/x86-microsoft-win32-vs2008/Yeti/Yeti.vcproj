@@ -378,6 +378,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiNoncopyable.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiObjectFactory.h"
 				>
 			</File>

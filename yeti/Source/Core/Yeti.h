@@ -21,6 +21,7 @@
 #include "YetiThreads.h"
 #include "YetiReferences.h"
 #include "YetiAutoreleasePool.h"
+#include "YetiNoncopyable.h"
 #include "YetiString.h"
 #include "YetiUtil.h"
 #include "YetiTime.h"

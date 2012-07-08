@@ -184,6 +184,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiBufferedStream.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiCommon.cpp"
 				>
 			</File>
@@ -307,6 +311,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiBase64.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiBufferedStream.h"
 				>
 			</File>
 			<File

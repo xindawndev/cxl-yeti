@@ -406,6 +406,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiSingleton.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiSocket.h"
 				>
 			</File>

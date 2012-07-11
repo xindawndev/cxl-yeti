@@ -35,18 +35,18 @@ BufferedInputStream::~BufferedInputStream()
     delete []m_buffer_.data_;
 }
 
-YETI_Result BufferedInputStream::read_line(String & line, YETI_Size max_chars/* = 4096*/, bool break_on_cr/* = false*/);
-YETI_Result BufferedInputStream::read_line(char * buffer, YETI_Size  buffer_size, YETI_Size * chars_read/* = NUL*/L, bool break_on_cr/* = false*/);
+//YETI_Result BufferedInputStream::read_line(String & line, YETI_Size max_chars/* = 4096*/, bool break_on_cr/* = false*/);
+//YETI_Result BufferedInputStream::read_line(char * buffer, YETI_Size  buffer_size, YETI_Size * chars_read/* = NUL*/L, bool break_on_cr/* = false*/);
 YETI_Result BufferedInputStream::set_buffer_size(YETI_Size size, bool force/* = false*/)
 {
-    if (m_buffer_.DATA_BLOB != NULL) {
+    if (m_buffer_.data_ != NULL) {
         if (m_buffer_.size_ < size || force) {
             YETI_Byte * buffer = new YETI_Byte[size];
             if (buffer == NULL) return YETI_ERROR_OUT_OF_MEMORY;
 
             YETI_Size need_to_copy = m_buffer_.valid_ - m_buffer_.offset_;
             if (need_to_copy) {
-                CopyMemory((void *)buffer, m_buffer_.data_ + m_buffer_.offset_, need_to_copy);
+                MemoryCopy((void *)buffer, m_buffer_.data_ + m_buffer_.offset_, need_to_copy);
             }
 
             delete []m_buffer_.data_;
@@ -56,7 +56,7 @@ YETI_Result BufferedInputStream::set_buffer_size(YETI_Size size, bool force/* = 
         }
     }
     m_buffer_.size_ = size;
-    return YETI_SUCCESS
+    return YETI_SUCCESS;
 }
 
 YETI_Result BufferedInputStream::fill_buffer()
@@ -90,12 +90,12 @@ YETI_Result BufferedInputStream::release_buffer()
     return YETI_SUCCESS;
 }
 
-YETI_Result BufferedInputStream::peek(void * buffer, YETI_Size  bytes_to_read, YETI_Size * bytes_read);
-
-YETI_Result BufferedInputStream::read(void * buffer, YETI_Size  bytes_to_read, YETI_Size * bytes_read /*= NULL*/);
-YETI_Result BufferedInputStream::seek(YETI_Position offset);
-YETI_Result BufferedInputStream::tell(YETI_Position & offset);
-YETI_Result BufferedInputStream::get_size(YETI_LargeSize & size);
-YETI_Result BufferedInputStream::get_available(YETI_LargeSize & available);
+//YETI_Result BufferedInputStream::peek(void * buffer, YETI_Size  bytes_to_read, YETI_Size * bytes_read);
+//
+//YETI_Result BufferedInputStream::read(void * buffer, YETI_Size  bytes_to_read, YETI_Size * bytes_read /*= NULL*/);
+//YETI_Result BufferedInputStream::seek(YETI_Position offset);
+//YETI_Result BufferedInputStream::tell(YETI_Position & offset);
+//YETI_Result BufferedInputStream::get_size(YETI_LargeSize & size);
+//YETI_Result BufferedInputStream::get_available(YETI_LargeSize & available);
 
 NAMEEND

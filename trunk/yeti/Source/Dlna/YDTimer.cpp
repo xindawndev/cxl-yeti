@@ -7,7 +7,7 @@ namespace yeti
         Timer::Timer(const Engine & engine)
             : m_engine_(engine)
         {
-            m_engine_.reg_object(this);
+            Engine::get_singleton().reg_object(this);
         }
 
         void Timer::pre_process(IObject * object, void * readset, void * writeset, void * errorset, int * blocktime)

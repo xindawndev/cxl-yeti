@@ -196,6 +196,14 @@
 				RelativePath="..\..\..\..\Source\Dlna\YDEngine.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Dlna\YDTimer.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Dlna\YDTimer.h"
+				>
+			</File>
 		</Filter>
 	</Files>
 	<Globals>

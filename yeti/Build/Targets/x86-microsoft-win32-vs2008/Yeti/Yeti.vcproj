@@ -212,6 +212,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiFile.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiHash.cpp"
 				>
 			</File>
@@ -367,6 +371,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiDynamicLibraries.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiFile.h"
 				>
 			</File>
 			<File

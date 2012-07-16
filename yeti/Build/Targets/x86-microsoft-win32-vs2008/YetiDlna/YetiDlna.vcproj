@@ -182,6 +182,10 @@
 				RelativePath="..\..\..\..\Source\Dlna\YDMain.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Dlna\YDTimer.cpp"
+				>
+			</File>
 		</Filter>
 		<Filter
 			Name="Header Files"

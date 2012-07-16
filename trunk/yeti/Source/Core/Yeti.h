@@ -26,6 +26,7 @@
 #include "YetiString.h"
 #include "YetiUtil.h"
 #include "YetiTime.h"
+#include "YetiSystem.h"
 #include "YetiStreams.h"
 #include "YetiXml.h"
 #include "YetiCrypto.h"

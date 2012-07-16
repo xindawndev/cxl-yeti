@@ -10,6 +10,8 @@
 #include "YetiTypes.h"
 #include "YetiDebug.h"
 
+NAMEBEG
+
 void yeti_debug_output(const char * message)
 {
 #if !defined(_WIN32_WCE)
@@ -17,3 +19,5 @@ void yeti_debug_output(const char * message)
 #endif
     printf("%s", message);
 }
+
+NAMEEND

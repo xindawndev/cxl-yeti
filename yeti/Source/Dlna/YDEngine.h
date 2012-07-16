@@ -26,6 +26,38 @@ namespace yeti
             virtual void destroy(IObject * object) {}
         };
 
+        class ThreadPool : public cxl::yeti::Singleton<ThreadPool>
+        {
+        public:
+            ThreadPool();
+            ~ThreadPool() {}
+
+        public:
+            static ThreadPool & get_singleton(void);
+            static ThreadPool * get_singleton_ptr(void);
+
+        public:
+            typedef void (* thread_pool_handler)(void * var);
+
+        public:
+            void add_thread();
+            void queue_user_work_item(void * var, thread_pool_handler callback);
+            YETI_UInt32 get_thread_count() const { return m_thread_count_; }
+
+        private:
+            typedef struct ThreadPooWorkItem {
+                thread_pool_handler callback;
+                void * var;
+            } TPWorkItem;
+
+            YETI_UInt32 m_thread_count_;
+            bool m_terminate_;
+            cxl::yeti::List<TPWorkItem *> m_work_items_;
+            cxl::yeti::Mutex m_sync_handle_;;
+            cxl::yeti::Mutex m_abort_handle_;
+            cxl::yeti::Mutex m_list_lock_;
+        };
+
         class Engine : public cxl::yeti::Noncopyable, cxl::yeti::Singleton<Engine>
         {
         public:
@@ -40,7 +72,7 @@ namespace yeti
             void reg_object(IObject * obj);
             void unreg_object(IObject * obj);
 
-            void start();
+            void start(YETI_UInt32 threadnumber = 3);
             void stop();
 
         private:

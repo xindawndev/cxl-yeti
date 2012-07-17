@@ -18,7 +18,7 @@ namespace yeti
             virtual void destroy(IObject * object) = 0;
         };
 
-        class IObject : public IListener
+        class IObject : public IListener, public cxl::yeti::IObjAlloc
         {
         public:
             virtual void pre_process(IObject * object, void * readset, void * writeset, void * errorset, int * blocktime) {}

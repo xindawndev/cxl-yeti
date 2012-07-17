@@ -43,7 +43,7 @@
 				Name="VCCLCompilerTool"
 				Optimization="0"
 				WholeProgramOptimization="false"
-				AdditionalIncludeDirectories="..\..\..\..\Source\Core;..\..\..\..\Source\System\Win32;&quot;..\..\..\..\ThirdParty\zlib-1.2.3&quot;"
+				AdditionalIncludeDirectories="..\..\..\..\Source\Core;..\..\..\..\Source\System\Win32;&quot;..\..\..\..\ThirdParty\zlib-1.2.3&quot;;..\..\..\..\ThirdParty\nedmalloc"
 				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NPT_CONFIG_ENABLE_LOGGING"
 				MinimalRebuild="true"
 				ExceptionHandling="0"
@@ -303,6 +303,10 @@
 				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32Time.cpp"
 				>
 			</File>
+			<Filter
+				Name="memory"
+				>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="Header Files"
@@ -481,6 +485,38 @@
 				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32Thread.h"
 				>
 			</File>
+			<Filter
+				Name="memory"
+				>
+				<File
+					RelativePath="..\..\..\..\Source\Core\YetiAllocCfg.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\Core\YetiAllocObj.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\Core\YetiAllocObj.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\Core\YetiNedAlloc.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\Core\YetiNedAlloc.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\Core\YetiNedPooling.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\Core\YetiNedPooling.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

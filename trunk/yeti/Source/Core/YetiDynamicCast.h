@@ -1,5 +1,5 @@
-#ifndef _CXL_YETI_COMMON_H_
-#define _CXL_YETI_COMMON_H_
+#ifndef _CXL_YETI_DYNAMICCAST_H_
+#define _CXL_YETI_DYNAMICCAST_H_
 
 #include "YetiTypes.h"
 #include "YetiCommon.h"
@@ -50,4 +50,4 @@
 
 #endif
 
-#endif // _CXL_YETI_COMMON_H_
+#endif // _CXL_YETI_DYNAMICCAST_H_

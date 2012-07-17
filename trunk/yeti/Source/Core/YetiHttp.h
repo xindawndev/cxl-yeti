@@ -102,13 +102,152 @@ public:
 class HttpHeader
 {
 public:
+    HttpHeader(const char * name, const char * value);
+    ~HttpHeader();
+
+    YETI_Result emit(OutputStream & stream) const;
+    const String & get_name() const { return m_name_; }
+    const String & get_value() const { return m_value_; }
+    YETI_Result set_name(const char * name);
+    YETI_Result set_value(const char * value);
+
 private:
+    String m_name_;
+    String m_value_;
 };
 
 class HttpHeaders
 {
 public:
+    HttpHeaders();
+    ~HttpHeaders();
+
+    YETI_Result parse(BufferedInputStream & stream);
+    YETI_Result emit(OutputStream & stream) const;
+    const List<HttpHeader *> & get_headers() const { return m_headers_; }
+    HttpHeader * get_header(const char * name) const;
+    const String * get_header_value(const char * name) const;
+    YETI_Result set_header(const char * name, const char * value, bool replace = true);
+    YETI_Result add_header(const char * name, const char * value);
+    YETI_Result remove_header(const char * name);
+
 private:
+    List<HttpHeader *> m_headers_;
+};
+
+class HttpEntity
+{
+public:
+private:
+};
+
+class HttpMessage
+{
+public:
+protected:
+};
+
+class HttpRequest : public HttpMessage
+{
+public:
+protected:
+};
+
+class HttpResponse : public HttpMessage
+{
+public:
+protected:
+};
+
+class HttpProxyAddress
+{
+public:
+private:
+};
+
+class HttpProxySelector
+{
+public:
+private:
+};
+
+class HttpRequestContext;
+
+class HttpClient
+{
+public:
+private:
+};
+
+class HttpConnectionManager : public Thread
+{
+public:
+private:
+};
+
+class HttpRequestContext
+{
+public:
+private:
+};
+
+class HttpRequestHandler
+{
+public:
+    YETI_IMPLEMENT_DYNAMIC_CAST(HttpRequestHandler)
+
+    virtual ~HttpRequestHandler() {}
+
+    virtual YETI_Result setup_response(HttpRequest & request,
+        const HttpRequestContext & context,
+        HttpResponse & response) = 0;
+    virtual YETI_Result send_response_body(const HttpRequestContext & context,
+        HttpResponse & response,
+        OutputStream & output);
+};
+
+class HttpStaticRequestHandler : public HttpRequestHandler
+{
+public:
+private:
+};
+
+typedef struct HttpFileRequestHandler_DefaultFileTypeMapEntry {
+    const char * entension;
+    const char * mime_type;
+} HttpFileRequestHandler_FileTypeMapEntry;
+
+class HttpFileRequestHandler : public HttpRequestHandler
+{
+public:
+protected:
+private:
+};
+
+class HttpServer
+{
+public:
+protected:
+};
+
+class HttpResponder
+{
+public:
+protected:
+};
+
+class HttpChunkedInputStream : public InputStream
+{
+public:
+protected:
+};
+
+class HttpChunkedOutputStream : public OutputStream
+{
+public:
+
+protected:
+    OutputStream & m_stream_;
 };
 
 NAMEEND

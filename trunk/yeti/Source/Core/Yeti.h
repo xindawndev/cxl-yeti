@@ -38,5 +38,6 @@
 #include "YetiObjectFactory.h"
 #include "YetiSingleton.h"
 #include "YetiStateMachine.h"
+#include "YetiAllocCfg.h"
 
 #endif // _CXL_YETI_H_

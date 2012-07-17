@@ -1,8 +1,7 @@
 #ifndef _CXL_YETI_ALLOCOBJ_H_
 #define _CXL_YETI_ALLOCOBJ_H_
 
-#include "YetiDataBuffer.h"
-#include "YetiString.h"
+#include "YetiTypes.h"
 
 #ifdef new
 # undef new

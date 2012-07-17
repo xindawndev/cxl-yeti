@@ -325,11 +325,14 @@
 #   define YETI_stat_struct struct stat
 #endif
 
-/*----------------------------------------------------------------------
-|   includes
-+---------------------------------------------------------------------*/
 #if defined(DMALLOC)
 #   include <dmalloc.h>
 #endif
+
+// align size(byte)
+#define YETI_SIMD_ALIGNMENT 16
+
+#define YETI_MEMORY_USING_NED_ALLOC
+//#define YETI_MEMORY_USING_NED_POOLING
 
 #endif // _CXL_YETI_CONFIG_H_

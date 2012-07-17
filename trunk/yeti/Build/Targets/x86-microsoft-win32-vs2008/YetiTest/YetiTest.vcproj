@@ -300,6 +300,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="YetiUdpTest"
+				>
+				<File
+					RelativePath="..\..\..\..\Source\Tests\YetiTest\YetiUdpTest.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

@@ -1,6 +1,8 @@
 #ifndef _CXL_YETI_NETPOOLING_H_
 #define _CXL_YETI_NETPOOLING_H_
 
+#if defined(YETI_MEMORY_USING_NED_POOLING)
+
 #include "YetiTypes.h"
 #include "YetiConstants.h"
 
@@ -58,5 +60,7 @@ private:
 };
 
 NAMEEND
+
+#endif // YETI_MEMORY_USING_NED_POOLING
 
 #endif // _CXL_YETI_NETPOOLING_H_

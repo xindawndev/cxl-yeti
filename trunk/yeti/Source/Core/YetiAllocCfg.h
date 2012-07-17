@@ -3,8 +3,6 @@
 
 #include "YetiAllocObj.h"
 
-#define YETI_MEMORY_USING_NED_ALLOC
-
 #if defined(YETI_MEMORY_USING_NED_POOLING)
 #   include "YetiNedPooling.h"
 #elif defined(YETI_MEMORY_USING_NED_ALLOC)

@@ -398,6 +398,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiHttp.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiHttpParser.h"
 				>
 			</File>
@@ -407,6 +411,14 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiList.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiLogging.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiLogging.h"
 				>
 			</File>
 			<File

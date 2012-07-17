@@ -69,3 +69,18 @@
 #   include <errno.h>
 #   include <signal.h>
 #endif 
+
+#include "YetiConfig.h"
+#include "YetiTypes.h"
+#include "YetiStreams.h"
+#include "YetiThreads.h"
+#include "YetiSocket.h"
+#include "YetiUtil.h"
+#include "YetiConstants.h"
+#include "YetiLogging.h"
+
+//YETI_SET_LOCAL_LOGGER("yeti.sockets.bsd")
+
+NAMEBEG
+
+NAMEEND

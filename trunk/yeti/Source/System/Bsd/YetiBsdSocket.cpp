@@ -984,8 +984,8 @@ YETI_Result BsdSocket::refresh_info()
     }
 
     if (getpeername(m_socket_fd_reference_->m_socket_fd_, (struct sockaddr *)&inet_address, &name_length) == 0) {
-        m_info_.remote_adddress.set_ipaddress(ntohl(inet_address.sin_addr.s_addr));
-        m_info_.remote_adddress.set_port(ntohs(inet_address.sin_port));
+        m_info_.remote_address.set_ipaddress(ntohl(inet_address.sin_addr.s_addr));
+        m_info_.remote_address.set_port(ntohs(inet_address.sin_port));
     }
 
     return YETI_SUCCESS;

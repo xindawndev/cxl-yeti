@@ -9,7 +9,7 @@
     do {                                        \
         YETI_Result _result = (_x);             \
         if (_result != YETI_SUCCESS) {          \
-            yeti_debug("%s(%d): @@@ YETI_CHECK failed, result=%d (%s)\n", __FILE__, __LINE__, _result, YETI_ResultText(_result)); \
+            yeti_debug("%s(%d): @@@ YETI_CHECK failed, result=%d (%s)\n", __FILE__, __LINE__, _result, error_message(_result)); \
             return _result;                     \
         }                                       \
     } while(0)
@@ -26,7 +26,7 @@
     do {                                        \
         YETI_Result _result = (_x);             \
         if (_result != YETI_SUCCESS) {          \
-            yeti_debug("%s(%d): @@@ YETI_CHECK failed, result=%d (%s)\n", __FILE__, __LINE__, _result, YETI_ResultText(_result)); \
+            yeti_debug("%s(%d): @@@ YETI_CHECK failed, result=%d (%s)\n", __FILE__, __LINE__, _result, error_message(_result)); \
             goto label;                         \
         }                                       \
     } while(0)

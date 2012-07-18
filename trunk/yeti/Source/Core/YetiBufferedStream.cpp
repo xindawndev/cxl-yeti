@@ -158,7 +158,7 @@ YETI_Result BufferedInputStream::fill_buffer()
 
 YETI_Result BufferedInputStream::release_buffer()
 {
-    YETI_ASSERT(m_buffer_.size == 0);
+    YETI_ASSERT(m_buffer_.size_ == 0);
     YETI_ASSERT(m_buffer_.offset_ == m_buffer_.valid_);
 
     delete []m_buffer_.data_;

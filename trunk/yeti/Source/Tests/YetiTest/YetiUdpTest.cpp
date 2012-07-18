@@ -7,7 +7,7 @@ int my_receive()
     printf("==== Receive\n");
     UdpSocket receiver;
     DataBuffer buffer(4096);
-    buffer.set_buffer_size(4096);
+    buffer.set_data_size(4096);
     YETI_Result result = receiver.bind(SocketAddress(IpAddress::Any, 9123));
     if (YETI_FAILED(result)) {
         fprintf(stderr, "bind() failed (%d)\n", result);
@@ -34,9 +34,11 @@ int my_send()
 {
     printf("==== Send\n");
 
+    char * msg = "hello";
     UdpSocket sender;
     DataBuffer buffer(1024);
-    buffer.set_buffer_size(1024);
+    buffer.set_data_size(1024);
+    buffer.set_data((YETI_Byte *)msg, strlen(msg));
     IpAddress address;
     address.resolve_name("localhost");
     SocketAddress socket_address(address, 9123);
@@ -57,11 +59,11 @@ int udp_test(std::vector<std::string> args)
         std::cout << "Param[" << i << "] : " << args[i] << std::endl;
     }
 
-    if (args.size() >= 2) {
+    if (args.size() >= 3) {
         if (StringEqual(args[2].c_str(), "send")) {
-            my_receive();
-        } else {
             my_send();
+        } else {
+            my_receive();
         }
     }
     return 0;

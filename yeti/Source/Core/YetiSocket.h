@@ -74,7 +74,7 @@ private:
 
 typedef struct {
     SocketAddress local_address;
-    SocketAddress remote_adddress;
+    SocketAddress remote_address;
 } SocketInfo;
 
 class SocketInterface
@@ -138,11 +138,11 @@ public:
         return m_socket_delegate_->bind(address, reuse_address);
     }
 
-    YETI_Result connect(const SocketAddress & address, YETI_Timeout timeout) {
+    YETI_Result connect(const SocketAddress & address, YETI_Timeout timeout = YETI_TIMEOUT_INFINITE) {
         return m_socket_delegate_->connect(address, timeout);
     }
 
-    YETI_Result wait_for_connection(YETI_Timeout timeout) {
+    YETI_Result wait_for_connection(YETI_Timeout timeout = YETI_TIMEOUT_INFINITE) {
         return m_socket_delegate_->wait_for_connection(timeout);
     }
 

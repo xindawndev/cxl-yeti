@@ -44,7 +44,7 @@
 				Optimization="0"
 				WholeProgramOptimization="false"
 				AdditionalIncludeDirectories="..\..\..\..\Source\Core;..\..\..\..\Source\System\Win32;&quot;..\..\..\..\ThirdParty\zlib-1.2.3&quot;;..\..\..\..\ThirdParty\nedmalloc"
-				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NPT_CONFIG_ENABLE_LOGGING"
+				PreprocessorDefinitions="WIN32;_DEBUG;_LIB;NPT_CONFIG_ENABLE_LOGGING;YETI_DEBUG"
 				MinimalRebuild="true"
 				ExceptionHandling="0"
 				BasicRuntimeChecks="3"

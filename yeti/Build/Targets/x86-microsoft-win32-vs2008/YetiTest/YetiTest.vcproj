@@ -308,6 +308,22 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="YetiEchoTest"
+				>
+				<File
+					RelativePath="..\..\..\..\Source\Tests\YetiTest\YetiEchoTest.cpp"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="YetiPingTest"
+				>
+				<File
+					RelativePath="..\..\..\..\Source\Tests\YetiTest\YetiPingTest.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

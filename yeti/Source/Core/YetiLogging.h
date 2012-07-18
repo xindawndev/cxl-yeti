@@ -188,7 +188,7 @@ YETI_Result get_system_log_config(String & config);
 #define YETI_CHECK_LL(_logger, _level, _result) do {                                    \
     YETI_Result _x = (_result);                                                         \
     if (_x != YETI_SUCCESS) {                                                           \
-    YETI_LOG_X((_logger),(_level),((_level),__FILE__,__LINE__,(YETI_LocalFunctionName),"YETI_CHECK failed, result=%d (%s) [%s]", _x, YETI_ResultText(_x), #_result)); \
+    YETI_LOG_X((_logger),(_level),((_level),__FILE__,__LINE__,(YETI_LocalFunctionName),"YETI_CHECK failed, result=%d (%s) [%s]", _x, error_message(_x), #_result)); \
     return _x;                                                                     \
     }                                                                                  \
 } while(0)
@@ -196,7 +196,7 @@ YETI_Result get_system_log_config(String & config);
 #define YETI_CHECK_LABEL_LL(_logger, _level, _result, _label) do {                      \
     YETI_Result _x = (_result);                                                         \
     if (_x != YETI_SUCCESS) {                                                           \
-    YETI_LOG_X((_logger),(_level),((_level),__FILE__,__LINE__,(YETI_LocalFunctionName),"YETI_CHECK failed, result=%d (%s) [%s]", _x, YETI_ResultText(_x), #_result)); \
+    YETI_LOG_X((_logger),(_level),((_level),__FILE__,__LINE__,(YETI_LocalFunctionName),"YETI_CHECK failed, result=%d (%s) [%s]", _x, error_message(_x), #_result)); \
     goto _label;                                                                   \
     }                                                                                  \
 } while(0)

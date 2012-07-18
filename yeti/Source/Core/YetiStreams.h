@@ -26,7 +26,7 @@ public:
         YETI_Size bytes_to_read,
         YETI_Size * bytes_read = NULL) = 0;
     virtual YETI_Result read_fully(void * buffer,
-        YETI_Size bytes_to_read) = 0;
+        YETI_Size bytes_to_read);
     virtual YETI_Result seek(YETI_Position offset) = 0;
     virtual YETI_Result skip(YETI_Size count);
     virtual YETI_Result tell(YETI_Position & offset) = 0;

@@ -50,6 +50,7 @@ static int fopen_s(FILE**      file,
 
 static YETI_Result map_errno(int err)
 {
+    USINGNAMESPACE2;
     switch (err) {
       case EACCES:       return YETI_ERROR_PERMISSION_DENIED;
       case EPERM:        return YETI_ERROR_PERMISSION_DENIED;
@@ -122,6 +123,68 @@ YETI_Result StdcFileStream::flush()
 {
     fflush(m_file_reference_->m_file_);
     return YETI_SUCCESS;
+}
+
+class StdcFileInputStream : public InputStream, private StdcFileStream
+{
+public:
+    StdcFileInputStream(StdcFileReference & file)
+        : StdcFileStream(file) {}
+
+    virtual YETI_Result read(void * buffer,
+        YETI_Size bytes_to_read,
+        YETI_Size * bytes_read);
+    virtual YETI_Result seek(YETI_Position offset) {
+        return StdcFileStream::seek(offset);
+    }
+    virtual YETI_Result tell(YETI_Position & offset) {
+        return StdcFileStream::tell(offset);
+    }
+    virtual YETI_Result get_size(YETI_LargeSize & size);
+    virtual YETI_Result get_available(YETI_LargeSize & available);
+};
+
+YETI_Result StdcFileInputStream::read(void * buffer, YETI_Size bytes_to_read, YETI_Size * bytes_read)
+{
+    size_t nb_read;
+    if (buffer == NULL) {
+        return YETI_ERROR_INVALID_PARAMETERS;
+    }
+
+    nb_read = fread(buffer, 1, bytes_to_read, m_file_reference_->m_file_);
+    if (nb_read > 0) {
+        if (bytes_read) *bytes_read = (YETI_Size)nb_read;
+        return YETI_SUCCESS;
+    } else if (feof(m_file_reference_->m_file_)) {
+        if (bytes_read) *bytes_read = 0;
+        return YETI_ERROR_EOS;
+    } else {
+        if (bytes_read) *bytes_read = 0;
+        return map_errno(errno);
+    }
+}
+
+YETI_Result StdcFileInputStream::get_size(YETI_LargeSize & size)
+{
+    FileInfo file_info;
+    YETI_Result result = File::get_info(m_file_reference_->m_name_, &file_info);
+    if (YETI_FAILED(result)) return result;
+    size = file_info.m_size_;
+    return YETI_SUCCESS;
+}
+
+YETI_Result StdcFileInputStream::get_available(YETI_LargeSize & available)
+{
+    YETI_Int64 offset = YETI_ftell(m_file_reference_->m_file_);
+    YETI_LargeSize size = 0;
+
+    if (YETI_SUCCEEDED(get_size(size) && offset >= 0 && (YETI_LargeSize)offset <= size)) {
+        available = size - offset;
+        return YETI_SUCCESS;
+    } else {
+        available = 0;
+        return YETI_FAILURE;
+    }
 }
 
 NAMEEND

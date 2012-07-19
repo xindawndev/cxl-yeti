@@ -256,6 +256,10 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\System\StdC\YetiStdcFile.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiStreams.cpp"
 				>
 			</File>
@@ -289,6 +293,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32Debug.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32DynamicLibraries.cpp"
 				>
 			</File>
 			<File

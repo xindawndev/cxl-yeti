@@ -26,7 +26,7 @@ public:
     }
 
     virtual YETI_Result unload() {
-        m_delegate_->unload();
+        return m_delegate_->unload();
     }
 
 private:

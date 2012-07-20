@@ -1,8 +1,6 @@
 #ifndef _CXL_YETI_NETPOOLING_H_
 #define _CXL_YETI_NETPOOLING_H_
 
-#if defined(YETI_MEMORY_USING_NED_ALLOC)
-
 #include "YetiTypes.h"
 #include "YetiConstants.h"
 
@@ -29,7 +27,7 @@ public:
     }
 
     static inline YETI_UInt32 get_max_allocation_size() {
-        return 0xFFFFFFFF;
+        return YETI_UINT32_MAX;
     }
 
 private:
@@ -51,14 +49,12 @@ public:
     }
 
     static inline YETI_UInt32 get_max_allocation_size() {
-        return 0xFFFFFFFF;
+        return YETI_UINT32_MAX;
     }
 private:
     NedAlignedAllocPolicy() {}
 };
 
 NAMEEND
-
-#endif
 
 #endif // _CXL_YETI_NETPOOLING_H_

@@ -37,6 +37,15 @@ namespace yeti
 {
     namespace dlna
     {
+
+        class PoolThread : public Thread
+        {
+        public:
+            void run() {
+                ThreadPool::get_singleton().add_thread();
+            }
+        };
+
         ThreadPool & ThreadPool::get_singleton(void) {
             YETI_ASSERT(m_singleton_);
             return (*m_singleton_);
@@ -149,6 +158,9 @@ namespace yeti
         {
             stop();
             for (YETI_UInt32 i = 0; i < threadnumber; ++i) {
+                Thread * thread = new PoolThread;
+                m_threads_.add(thread);
+                thread->start();
             }
 
             m_started_ = true;
@@ -172,6 +184,12 @@ namespace yeti
                 (*it)->destroy(*it);
             }
             m_objects_.clear();
+            List<Thread *>::iterator tit;
+            for (tit = m_threads_.get_first_item(); tit; ++tit) {
+                (*tit)->wait();
+                delete (*tit);
+            }
+            m_threads_.clear();
         }
     }
 }

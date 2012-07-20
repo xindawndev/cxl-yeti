@@ -77,6 +77,7 @@ namespace yeti
 
         private:
             cxl::yeti::List<IObject *> m_objects_;
+            cxl::yeti::List<cxl::yeti::Thread *> m_threads_;
             bool m_started_;
         };
     }

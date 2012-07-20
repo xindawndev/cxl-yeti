@@ -1,7 +1,5 @@
 #include "YetiNedAlloc.h"
 
-#if defined(YETI_MEMORY_USING_NED_ALLOC)
-
 #include <nedmalloc.c>
 
 NAMEBEG
@@ -48,5 +46,3 @@ void NedAllocImpl::dealloc_bytes_aligned(YETI_UInt32 align, void * ptr)
 }
 
 NAMEEND
-
-#endif

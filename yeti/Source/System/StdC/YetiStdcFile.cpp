@@ -187,4 +187,155 @@ YETI_Result StdcFileInputStream::get_available(YETI_LargeSize & available)
     }
 }
 
+class StdcFileOutputStream : public OutputStream, private StdcFileStream
+{
+public:StdcFileOutputStream(StdcFileReference & file)
+           : StdcFileStream(file) {}
+
+       YETI_Result write(const void * buffer,
+           YETI_Size bytes_to_write,
+           YETI_Size * bytes_written);
+       YETI_Result seek(YETI_Position offset) {
+           return StdcFileStream::seek(offset);
+       }
+       YETI_Result tell(YETI_Position & offset) {
+           return StdcFileStream::tell(offset);
+       }
+       YETI_Result flush() {
+           return StdcFileStream::flush();
+       }
+};
+
+YETI_Result StdcFileOutputStream::write(const void * buffer, YETI_Size bytes_to_write, YETI_Size * bytes_written)
+{
+    size_t nb_written;
+    nb_written = fwrite(buffer, 1, bytes_to_write, m_file_reference_->m_file_);
+    if (nb_written > 0) {
+        if (bytes_written) * bytes_written = (YETI_Size)nb_written;
+        return YETI_SUCCESS;
+    } else {
+        if (bytes_written) *bytes_written = 0;
+        return YETI_ERROR_WRITE_FAILED;
+    }
+}
+
+class StdcFile : public FileInterface
+{
+public:
+    StdcFile(File & delegator)
+        : m_delegator_(delegator)
+        , m_mode_(0) {}
+    ~StdcFile() {
+        close();
+    }
+
+    YETI_Result open(open_mode mode);
+    YETI_Result close();
+    YETI_Result get_input_stream(InputStreamReference & stream);
+    YETI_Result get_output_stream(OutputStreamReference & stream);
+
+private:
+    File & m_delegator_;
+    open_mode m_mode_;
+    StdcFileReference m_file_reference_;
+};
+
+YETI_Result StdcFile::open(open_mode mode)
+{
+    FILE * file = NULL;
+    if (!m_file_reference_.is_null()) {
+        return YETI_ERROR_FILE_ALREADY_OPEN;
+    }
+    m_mode_ = mode;
+    const char * name = (const char *)m_delegator_.get_path();
+    if (StringEqual(name, YETI_FILE_STANDARD_INPUT)) {
+        file = stdin;
+    } else if (StringEqual(name, YETI_FILE_STANDARD_OUTPUT)) {
+        file = stdout;
+    } else if (StringEqual(name, YETI_FILE_STANDARD_ERROR)) {
+        file = stderr;
+    } else {
+        const char * fmode = "";
+        if (mode & YETI_FILE_OPEN_MODE_WRITE) {
+            if (mode & YETI_FILE_OPEN_MODE_WRITE) {
+                fmode = "a+b";
+            } else {
+                if (mode & YETI_FILE_OPEN_MODE_CREATE || (mode & YETI_FILE_OPEN_MODE_TRUNCATE)) {
+                    fmode = "w+b";
+                } else {
+                    fmode = "r+b";
+                }
+            }
+        } else {
+            fmode = "rb";
+        }
+
+#if defined(YETI_CONFIG_HAVE_FSOPEN)
+        file = _fsopen(name, fmode, _SH_DENYNO);
+        int open_result = file == NULL ? ENOENT : 0;
+#else
+        int open_result = fopen_s(&file, name, fmode);
+#endif
+        if (open_result != 0) return map_errno(open_result);
+    }
+
+    if ((mode & YETI_FILE_OPEN_MODE_UNBUFFERED) && file != NULL) {
+#if !defined(_WIN32_WCE)
+        setvbuf(file, NULL, _IONBF, 0);
+#endif
+    }
+    m_file_reference_ = new StdcFileWrapper(file, name);
+    return YETI_SUCCESS;
+}
+
+YETI_Result StdcFile::close()
+{
+    m_file_reference_ = NULL;
+    m_mode_ = 0;
+    return YETI_SUCCESS;
+}
+
+YETI_Result StdcFile::get_input_stream(InputStreamReference & stream)
+{
+    stream = NULL;
+    if (m_file_reference_.is_null()) return YETI_ERROR_FILE_NOT_OPEN;
+    if (!(m_mode_ & YETI_FILE_OPEN_MODE_READ)) {
+        return YETI_ERROR_FILE_NOT_READABLE;
+    }
+    stream = new StdcFileInputStream(m_file_reference_);
+    return YETI_SUCCESS;
+}
+
+YETI_Result StdcFile::get_output_stream(OutputStreamReference & stream)
+{
+    stream = NULL;
+    if (m_file_reference_.is_null()) return YETI_ERROR_FILE_NOT_OPEN;
+    if (!(m_mode_ & YETI_FILE_OPEN_MODE_WRITE)) {
+        return YETI_ERROR_FILE_NOT_WRITABLE;
+    }
+    stream = new StdcFileOutputStream(m_file_reference_);
+    return YETI_SUCCESS;
+}
+
+File::File(const char * path)
+{
+    m_delegate_ = new StdcFile(*this);
+    if (StringEqual(path, YETI_FILE_STANDARD_INPUT) ||
+        StringEqual(path, YETI_FILE_STANDARD_OUTPUT) ||
+        StringEqual(path, YETI_FILE_STANDARD_ERROR)) {
+        m_is_special_ = true;
+    }
+}
+
+File & File::operator =(const File & file)
+{
+    if (this != &file) {
+        delete m_delegate_;
+        m_path_ = file.m_path_;
+        m_is_special_ = file.m_is_special_;
+        m_delegate_ = new StdcFile(*this);
+    }
+    return *this;
+}
+
 NAMEEND

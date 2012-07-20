@@ -171,6 +171,10 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
+				RelativePath="..\..\..\..\Source\Dlna\YDAsyncSocket.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Dlna\YDCommon.cpp"
 				>
 			</File>
@@ -180,10 +184,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Dlna\YDMain.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\Source\Dlna\YDTimer.cpp"
 				>
 			</File>
 			<File

@@ -1,6 +1,8 @@
 #ifndef _CXL_YETI_ALLOCCFG_H_
 #define _CXL_YETI_ALLOCCFG_H_
 
+#include "YetiConfig.h"
+
 #include "YetiAllocObj.h"
 
 #if defined(YETI_MEMORY_USING_NED_POOLING)

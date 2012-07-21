@@ -1,4 +1,8 @@
+#include "YDCommon.h"
+
 #include "YDTimer.h"
+
+USINGNAMESPACE2;
 
 namespace yeti
 {
@@ -27,17 +31,17 @@ namespace yeti
 
         void Timer::pre_process(IObject * object, void * readset, void * writeset, void * errorset, int * blocktime)
         {
-
+            yeti_debug("timer pre_process\n");
         }
 
         void Timer::post_process(IObject * object, int slct, void * readset, void * writeset, void * errorset)
         {
-
+            yeti_debug("timer post_process\n");
         }
 
         void Timer::destroy(IObject * object)
         {
-
+            yeti_debug("timer destroy\n");
         }
     }
 }

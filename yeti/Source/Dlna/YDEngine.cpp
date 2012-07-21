@@ -1,37 +1,19 @@
 #include "YDEngine.h"
 
-#if (defined(_WIN32) || defined(_WIN32_WCE) || defined(_XBOX)) && !defined(__SYMBIAN32__)
-#   if !defined(__WINSOCK__)
-#       define __WINSOCK__
-#   endif
-#endif
-
 #if defined(__WINSOCK__) &&!defined(_XBOX)
-#   define STRICT
-#   define YETI_WIN32_USE_WINSOCK2
-#   ifdef YETI_WIN32_USE_WINSOCK2
-#       include <winsock2.h>
-#       include <ws2tcpip.h>
-#   else
-#       include <winsock.h>
-#   endif
-#   include <windows.h>
-#   include "YetiConfig.h"
 #   include "YetiWin32Network.h"
 NAMEBEG
 static WinsockSystem & WinsockInitializer = WinsockSystem::Initializer;
 NAMEEND
-#else
-#   include <sys/types.h>
-#   include <netinet/in.h>
-#   include <netdb.h>
-#   include <errno.h>
 #endif
+
+#include <time.h>
 
 USINGNAMESPACE2;
 
 template <> yeti::dlna::Engine * Singleton<yeti::dlna::Engine>::m_singleton_ = NULL;
 template <> yeti::dlna::ThreadPool * Singleton<yeti::dlna::ThreadPool>::m_singleton_ = NULL;
+YETI_UInt32 yeti::dlna::Engine::ENGINE_MAX_WAIT = 86400;
 
 namespace yeti
 {
@@ -140,46 +122,140 @@ namespace yeti
         }
 
         Engine::Engine()
-            : m_started_(false)
+            : m_running_flag_(false)
+            , m_terminate_flag_(false)
         {
-
+            srand((unsigned int)time(NULL));
+#if defined(WIN32) || defined(_WIN32_WCE)
+            m_terminate_ = socket(AF_INET, SOCK_DGRAM, 0);
+#endif
         }
 
         void Engine::reg_object(IObject * obj)
         {
-
+            AutoLock autolock(m_obj_mutex_);
+            m_objects_.add(obj);
         }
 
         void Engine::unreg_object(IObject * obj)
         {
-
+            AutoLock autolock(m_obj_mutex_);
+            //m_objects_.detach(obj);
         }
 
         void Engine::start(YETI_UInt32 threadnumber)
         {
-            stop();
             for (YETI_UInt32 i = 0; i < threadnumber; ++i) {
                 Thread * thread = new PoolThread;
                 m_threads_.add(thread);
                 thread->start();
             }
 
-            m_started_ = true;
-            while (m_started_) {
+            fd_set readset;
+            fd_set writeset;
+            fd_set errorset;
+
+            FD_ZERO(&readset);
+            FD_ZERO(&writeset);
+            FD_ZERO(&errorset);
+
+            struct timeval tv;
+            int slct;
+            int v;
+
+#if !defined(_WIN32)
+            int terminate_pipe[2];
+            int flags;
+#endif
+
+            srand((unsigned int)time(NULL));
+
+#if !defined(_WIN32)
+            pipe(terminate_pipe);
+            flags = fcntl(terminate_pipe[0], F_GETFL, 0);
+            fcntl(terminate_pipe[0], F_SETFL, 0, _NONBLOCK | flags);
+
+#endif
+            m_running_flag_ = true;
+            m_terminate_flag_ = false;
+            while (m_terminate_flag_ == false) {
+                slct = 0;
+                FD_ZERO(&readset);
+                FD_ZERO(&errorset);
+                FD_ZERO(&writeset);
+                tv.tv_sec = ENGINE_MAX_WAIT;
+                tv.tv_usec = 0;
+
                 List<IObject *>::iterator it;
                 for (it = m_objects_.get_first_item(); it; ++it) {
-                    //(*it)->pre_process(*it, );
+                    v = (tv.tv_sec*1000) + (tv.tv_usec/1000);
+                    (*it)->pre_process(*it, &readset, &writeset, &errorset, &v);
+                    tv.tv_sec = v/1000;
+                    tv.tv_usec = 1000*(v%1000);
                 }
-                //select();
+
+                m_obj_mutex_.lock();
+#if defined(WIN32) || defined(_WIN32_WCE)
+                if(m_terminate_ == ~0) {
+                    slct = -1;
+                } else {
+                    FD_SET(m_terminate_, &errorset);
+                }
+#else
+                FD_SET(terminate_pipe[0], &readset);
+#endif
+                m_obj_mutex_.unlock();
+
+                if (slct != 0) {
+                    tv.tv_sec = 0;
+                    tv.tv_usec = 0;
+                }
+
+                slct = select(FD_SETSIZE, &readset, &writeset, &errorset, &tv);
+
+                if (slct == -1) {
+                    FD_ZERO(&readset);
+                    FD_ZERO(&writeset);
+                    FD_ZERO(&errorset);
+                }
+#if defined(WIN32) || defined(_WIN32_WCE)
+                if (m_terminate_ == ~0) {
+                    m_terminate_ = socket(AF_INET, SOCK_DGRAM, 0);
+                }
+#else
+                if (FD_ISSET(terminate_pipe[0], &readset)) {
+                    while(fgetc(m_terminate_readpipe_) != EOF);
+                }
+#endif
                 for (it = m_objects_.get_first_item(); it; ++it) {
-                    //(*it)->post_process(*it, );
+                    (*it)->post_process(*it, slct, &readset, &writeset, &errorset);
                 }
             }
+
+            List<IObject *>::iterator iter;
+            for (iter = m_objects_.get_first_item(); iter; ++iter) {
+                (*iter)->destroy(*iter);
+            }
+
+            m_objects_.clear();
+
+#if defined(WIN32)
+            if (m_terminate_ != ~0) {
+                closesocket(m_terminate_);
+                m_terminate_ = ~0;
+            }
+#else
+            fclose(m_terminate_readpipe_);
+            fclose(m_terminate_writepipe_);
+            m_terminate_readpipe_ = 0;
+            m_terminate_writepipe_ = 0;
+#endif
         }
 
         void Engine::stop()
         {
-            m_started_ = false;
+            m_running_flag_ = false;
+            m_terminate_flag_ = true;
             List<IObject *>::iterator it;
             for (it = m_objects_.get_first_item(); it; ++it) {
                 (*it)->destroy(*it);

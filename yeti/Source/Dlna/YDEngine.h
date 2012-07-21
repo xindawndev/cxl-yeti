@@ -63,6 +63,7 @@ namespace yeti
         public:
             static Engine & get_singleton(void);
             static Engine * get_singleton_ptr(void);
+            static YETI_UInt32 ENGINE_MAX_WAIT;
 
         public:
             Engine();
@@ -76,9 +77,17 @@ namespace yeti
             void stop();
 
         private:
+            cxl::yeti::Mutex m_obj_mutex_;
             cxl::yeti::List<IObject *> m_objects_;
             cxl::yeti::List<cxl::yeti::Thread *> m_threads_;
-            bool m_started_;
+            bool m_terminate_flag_;
+            bool m_running_flag_;
+#if defined(WIN32) || defined(_WIN32_WCE)
+            SOCKET m_terminate_;
+#else
+            FILE * m_terminate_readpipe_;
+            FILE * m_terminate_writepipe_;
+#endif
         };
     }
 }

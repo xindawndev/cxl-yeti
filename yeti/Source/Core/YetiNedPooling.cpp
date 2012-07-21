@@ -1,5 +1,7 @@
 #include "YetiNedPooling.h"
 
+#if define(YETI_MEMORY_USING_NED_POOLING)
+
 #include <nedmalloc.c>
 
 NAMEBEG
@@ -137,3 +139,5 @@ void NedPoolingImpl::dealloc_bytes_aligned(YETI_UInt32 align, void * ptr)
 }
 
 NAMEEND
+
+#endif

@@ -42,6 +42,7 @@ namespace yeti
         {
         public:
             void run() {
+                yeti_debug("thread begin\n");
                 ThreadPool::get_singleton().add_thread();
             }
         };

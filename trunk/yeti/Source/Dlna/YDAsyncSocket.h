@@ -8,6 +8,7 @@ namespace yeti
 {
     namespace dlna
     {
+        class Timer;
 
         class AsyncSocket : public IObject
         {
@@ -108,6 +109,61 @@ namespace yeti
             } SendData;
         private:
             const Engine & m_engine_;
+
+            unsigned int m_pending_bytes_to_send_;
+            unsigned int m_total_bytes_sent_;
+
+#if defined(_WIN32_WCE) || defined(WIN32)
+            SOCKET m_internal_socket_;
+#elif defined(_POSIX)
+            int m_internal_socket_;
+#endif
+
+            int m_remote_IP_address_;
+            int m_remote_port_;
+            int m_local_IP_address;
+            int m_local_IP_address2_;
+
+            struct sockaddr_in m_addr_;
+
+            OnData m_on_data_;
+            OnConnect m_on_connect_;
+            OnDisconnect m_on_disconnect_;
+            OnSendOK m_on_send_OK_;
+            OnInterrupt m_on_interrupt_;
+
+            OnBufferSizeExceeded m_on_buffer_size_exceeded_;
+            OnBufferReAllocated m_on_buffer_reallocated_;
+
+            Timer * m_life_time_;
+            Timer * m_timeout_timer_;
+
+            void * m_user_;
+            int m_pause_;
+
+            int m_fin_connect_;
+            int m_begin_pointer_;
+            int m_end_pointer_;
+
+            char * m_buffer_;
+            int m_malloc_size_;
+            int m_initial_size_;
+
+            SendData * m_pending_send_head_;
+            SendData * pending_send_tail_;
+            cxl::yeti::Mutex m_send_lock_;
+
+            Timer * m_replace_socket_timer_;
+            int m_max_buffer_size_;
+            int m_max_buffer_size_exceeded_;
+            void * m_max_buffer_size_user_object_;
+
+#if defined(WIN32) && defined(WIN32_QWAVE)
+            HANDLE m_QOS_handle_;
+            QOS_FLOWID m_QOS_flow_id_;
+#endif
+            int m_QOS_initialized_;
+            TypeQOSPriority m_current_QOS_priorty_;
         };
 
     }

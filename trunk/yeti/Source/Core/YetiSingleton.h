@@ -17,7 +17,7 @@ public:
     Singleton(void)
     {
         YETI_ASSERT( !m_singleton_ );
-#if defined( _MSC_VER ) && _MSC_VER < 1200	 
+#if defined( _MSC_VER ) && _MSC_VER < 1200
         int offset = (int)(T*)1 - (int)(Singleton <T>*)(T*)1;
         m_singleton_ = (T*)((int)this + offset);
 #else

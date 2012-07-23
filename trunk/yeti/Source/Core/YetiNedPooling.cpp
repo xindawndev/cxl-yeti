@@ -1,6 +1,6 @@
 #include "YetiNedPooling.h"
 
-#if define(YETI_MEMORY_USING_NED_POOLING)
+#if defined(YETI_MEMORY_USING_NED_POOLING)
 
 #include <nedmalloc.c>
 

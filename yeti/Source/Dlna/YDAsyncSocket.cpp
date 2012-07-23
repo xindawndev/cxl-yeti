@@ -1,45 +1,61 @@
 #include "YDAsyncSocket.h"
 
+#include "YDTimer.h"
+
 namespace yeti
 {
     namespace dlna
     {
-        AsyncSocket::AsyncSocket(const Engine & engine)
+        AsyncSocket::AsyncSocket(const Engine & engine,
+            int initial_buffer_size,
+            AsyncSocket::OnData on_data,
+            AsyncSocket::OnConnect on_connect,
+            AsyncSocket::OnDisconnect on_disconnect,
+           AsyncSocket::OnSendOK on_send_OK)
             : m_engine_(engine)
+            , m_internal_socket_(-1)
+            , m_on_data_(on_data)
+            , m_on_connect_(on_connect)
+            , m_on_disconnect_(on_disconnect)
+            , m_on_send_OK_(on_send_OK)
+            , m_buffer_(new char(initial_buffer_size))
+            , m_initial_size_(initial_buffer_size)
+            , m_malloc_size_(initial_buffer_size)
+            , m_life_time_(new Timer(engine))
+            , m_timeout_timer_(new Timer(engine))
+            , m_replace_socket_timer_(new Timer(engine))
         {
             Engine::get_singleton().reg_object(this);
         }
 
         void AsyncSocket::set_reallocate_notification_callback(OnBufferReAllocated callback)
         {
-
+            m_on_buffer_reallocated_ = callback;
         }
 
         void * AsyncSocket::get_user()
         {
-            return NULL;
+            return m_user_;
         }
-
-        //ILibAsyncSocket_SocketModule ILibCreateAsyncSocketModule(void *Chain, int initialBufferSize, ILibAsyncSocket_OnData , ILibAsyncSocket_OnConnect OnConnect ,ILibAsyncSocket_OnDisconnect OnDisconnect,ILibAsyncSocket_OnSendOK OnSendOK);
 
         void * AsyncSocket::get_socket()
         {
-            return NULL;
+            return (void *)m_internal_socket_;
         }
 
         unsigned int AsyncSocket::get_pending_bytes_to_send()
         {
-            return 0;
+            return m_pending_bytes_to_send_;
         }
 
         unsigned int AsyncSocket::get_total_bytes_sent()
         {
-            return 0;
+            return m_total_bytes_sent_;
         }
 
         void AsyncSocket::reset_total_bytes_sent()
         {
-
+            m_total_bytes_sent_ = 0;
         }
 
         void AsyncSocket::connect_to(int localInterface, int remoteInterface, int remote_port_number, OnInterrupt interrupt_ptr, void * user)
@@ -54,87 +70,264 @@ namespace yeti
 
         void AsyncSocket::disconnect()
         {
+#if defined(_WIN32_WCE) || defined(WIN32)
+            SOCKET s;
+#elif defined(_POSIX)
+            int s;
+#endif
+            //if (!ILibIsChainBeingDestroyed(module->Chain)) {
+            //    ILibLifeTime_Remove(module->TimeoutTimer,module);
+            //    m_timeout_timer_->remove();
+            //}
 
+            m_send_lock_.lock();
+
+            if (m_internal_socket_ != ~0) {
+                m_pause_ = 1;
+                s = m_internal_socket_;
+                if (m_current_QOS_priorty_ != QOS_NONE) {
+                    unitialize_QOS();
+                }
+                m_internal_socket_ = ~0;
+                if (s != -1) {
+#if defined(_WIN32_WCE) || defined(WIN32)
+#if defined(WINSOCK2)
+                    shutdown(s, SD_BOTH);
+#endif
+                    closesocket(s);
+#elif defined(_POSIX)
+                    shutdown(s,SHUT_RDWR);
+                    close(s);
+#endif
+                }
+
+                //ILibAsyncSocket_ClearPendingSend(socketModule);
+                m_send_lock_.unlock();
+                if (m_on_disconnect_ != NULL) {
+                    m_on_disconnect_(this, m_user_);
+                }
+            } else {
+                m_send_lock_.unlock();
+            }
         }
 
         void AsyncSocket::get_buffer(char ** buffer, int * begin_pointer, int * endpointer)
         {
-
+            *buffer = m_buffer_;
+            *begin_pointer = m_begin_pointer_;
+            *endpointer = m_end_pointer_;
         }
 
-        void AsyncSocket::use_this_socket(void * the_socket, OnInterrupt interrupt_ptr, void * user)
+        void AsyncSocket::use_this_socket(const AsyncSocket & other, void * use_this_socket, OnInterrupt interrupt_ptr, void * user)
         {
+#if defined(_WIN32_WCE) || defined(WIN32)
+            SOCKET the_socket = *((SOCKET*)use_this_socket);
+#elif defined(_POSIX)
+            int the_socket = *((int*)use_this_socket);
+#endif
+            int flags;
 
+            m_pending_bytes_to_send_ = 0;
+            m_total_bytes_sent_ = 0;
+            m_internal_socket_ = the_socket;
+            m_on_interrupt_ = interrupt_ptr;
+            m_user_ = user;
+            m_fin_connect_ = 1;
+            m_pause_ = 0;
+
+            m_buffer_ = (char*)realloc(other.m_buffer_, other.m_initial_size_);
+            m_malloc_size_ = other.m_initial_size_;
+            m_fin_connect_ = 1;
+            m_begin_pointer_ = 0;
+            m_end_pointer_ = 0;
+
+#if defined(_WIN32_WCE) || defined(WIN32)
+            flags = 1;
+            ioctlsocket(other.m_internal_socket_, FIONBIO, (u_long *)&flags);
+#elif defined(_POSIX)
+            flags = fcntl(other.m_internal_socket_, F_GETFL, 0);
+            fcntl(other.m_internal_socket_, F_SETFL, O_NONBLOCK | flags);
+#endif
         }
 
         void AsyncSocket::set_remote_address(int remote_address)
         {
-
+            m_remote_IP_address_ = remote_address;
         }
 
         void AsyncSocket::set_local_interface2(int local_interface2)
         {
-
+            m_local_IP_address2_ = local_interface2;
         }
 
         int AsyncSocket::is_free()
         {
-            return 0;
+            return m_internal_socket_ == ~0 ? 1 : 0;
         }
 
         int AsyncSocket::get_local_interface()
         {
-            return 0;
+            if (m_local_IP_address2_ != 0) {
+                return m_local_IP_address2_;
+            }
+
+            struct sockaddr_in receiving_address;
+            int receiving_addr_length = sizeof(struct sockaddr_in);
+
+            getsockname(m_internal_socket_, (struct sockaddr *)&receiving_address, &receiving_addr_length);
+            return (receiving_address.sin_addr.s_addr);
         }
 
         unsigned short AsyncSocket::get_local_port()
         {
-            return 0;
+            struct sockaddr_in receiving_address;
+            int receiving_addr_length = sizeof(struct sockaddr_in);
+            ::getsockname(m_internal_socket_, (struct sockaddr *)&receiving_address, &receiving_addr_length);
+            return ::ntohs(receiving_address.sin_port);
         }
 
         int AsyncSocket::get_remote_interface()
         {
-            return 0;
+            return m_remote_IP_address_;
         }
 
         unsigned short AsyncSocket::get_remote_port()
         {
-            return 0;
+            return m_remote_port_;
         }
 
         void AsyncSocket::resume()
         {
-
+            m_pause_ = -1;
+            Engine::get_singleton().force_unblock();
         }
 
         int AsyncSocket::was_closed_because_buffer_size_exceeded()
         {
-            return 0;
+            return m_max_buffer_size_exceeded_;
         }
 
         void AsyncSocket::set_maximum_buffer_size(int max_size, OnBufferSizeExceeded on_buffer_size_exceeded_callback, void * user)
         {
-
+            m_max_buffer_size_ = max_size;
+            m_on_buffer_size_exceeded_ = on_buffer_size_exceeded_callback;
+            m_max_buffer_size_user_object_ = user;
         }
 
         int AsyncSocket::initialize_QOS()
         {
-            return 0;
+#if defined(WIN32) && defined(WIN32_QWAVE)
+            QOS_VERSION version;
+            version.MajorVersion = 1;
+            version.MinorVersion = 0;
+#endif
+            if (m_QOS_initialized_ == 0) {
+#if defined(WIN32) && defined(WIN32_QWAVE)
+                m_QOS_initialized_ = !QOSCreateHandle(&version, &(m_QOS_handle_));
+#endif
+            }
+            return m_QOS_initialized_;
         }
 
         void AsyncSocket::set_QOS_priority(TypeQOSPriority priority)
         {
+#if defined(WIN32) && defined(WIN32_QWAVE)
+            QOS_TRAFFIC_TYPE qtt;
+            BOOL r;
+            DWORD last_err;
+#endif
+            switch (priority)
+            {
+            case QOS_BACKGROUND:
+#if defined(WIN32) && defined(WIN32_QWAVE)
+                qtt = QOSTrafficTypeBackground;
+#endif
+                break;
+            case QOS_EXCELLENT_EFFORT:
+#if defined(WIN32) && defined(WIN32_QWAVE)
+                qtt = QOSTrafficTypeExcellentEffort;
+#endif
+                break;
+            case QOS_AUDIO_VIDEO:
+#if defined(WIN32) && defined(WIN32_QWAVE)
+                qtt = QOSTrafficTypeAudioVideo;
+#endif
+                break;
+            case QOS_VOICE:
+#if defined(WIN32) && defined(WIN32_QWAVE)
+                qtt = QOSTrafficTypeVoice;
+#endif            
+                break;
+            case QOS_CONTROL:
+#if defined(WIN32) && defined(WIN32_QWAVE)
+                qtt = QOSTrafficTypeControl;
+#endif    
+                break;
+            default:
+#if defined(WIN32) && defined(WIN32_QWAVE)
+                qtt = QOSTrafficTypeBestEffort;
+#endif    
+                break;
+            }
 
+            if (m_current_QOS_priorty_ != priority) {
+#if defined(WIN32) && defined(WIN32_QWAVE)
+                if (m_QOS_flow_id_ == 0) {
+                    r = QOSAddSocketToFlow(m_QOS_handle_, m_internal_socket_, NULL, qtt, QOS_NON_ADAPTIVE_FLOW, &(m_QOS_flow_id_));
+                } else {
+                    r = QOSSetFlow(m_QOS_handle_, m_QOS_flow_id_, QOSSetTrafficType, sizeof(QOS_TRAFFIC_TYPE), &qtt, 0, NULL);
+                    if (r == 0 && GetLastError() == ERROR_NOT_FOUND) {
+                        m_QOS_flow_id_ = 0;
+                        r = QOSAddSocketToFlow(m_QOS_handle_, m_internal_socket_, NULL, qtt, QOS_NON_ADAPTIVE_FLOW, &(m_QOS_flow_id_));
+                    }
+                }
+                if (r == 0) {
+                    last_err = GetLastError();
+                    if (last_err == ERROR_NOT_SUPPORTED) {
+                        printf("QOS not supported!\r\n");
+                    }
+                } else {
+                    printf("Successfully set QOS priority\r\n");
+                }
+#endif
+                m_current_QOS_priorty_ = priority;
+            }
         }
 
         void AsyncSocket::unitialize_QOS()
         {
-
+#if defined(WIN32) && defined(WIN32_QWAVE)
+            BOOL r;
+            m_current_QOS_priorty_ = QOS_NONE;
+            r = QOSRemoveSocketFromFlow(m_QOS_handle_, 0, m_QOS_flow_id_, 0);
+            r = QOSCloseHandle(m_QOS_handle_);
+            m_QOS_handle_ = 0;
+            m_QOS_flow_id_ = 0;
+#endif
+            m_QOS_initialized_ = 0;
         }
 
         void AsyncSocket::pre_process(IObject * object, void * readset, void * writeset, void * errorset, int * blocktime)
         {
-
+            m_send_lock_.lock();
+            if (m_internal_socket_ != -1) {
+                if (m_pause_ < 0) {
+                    *blocktime = 0;
+                }
+                if (m_fin_connect_ == 0) {
+                    FD_SET(m_internal_socket_, (fd_set *)writeset);
+                    FD_SET(m_internal_socket_, (fd_set *)errorset);
+                } else {
+                    if (m_pause_ == 0) {
+                        FD_SET(m_internal_socket_, (fd_set *)readset);
+                        FD_SET(m_internal_socket_, (fd_set *)errorset);
+                    }
+                }
+            }
+            if (m_pending_bytes_to_send_ != NULL) {
+                FD_SET(m_internal_socket_, (fd_set *)writeset);
+            }
+            m_send_lock_.unlock();
         }
 
         void AsyncSocket::post_process(IObject * object, int slct, void * readset, void * writeset, void * errorset)

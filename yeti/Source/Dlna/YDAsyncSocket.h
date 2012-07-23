@@ -13,15 +13,6 @@ namespace yeti
         class AsyncSocket : public IObject
         {
         public:
-            AsyncSocket(const Engine & engine);
-            virtual ~AsyncSocket() {}
-
-        public:
-            const Engine & engine() const {
-                return m_engine_;
-            }
-
-        public:
             YETI_Timeout m_connect_timeout_;
             YETI_Size m_memory_chunk_size_;
             typedef enum {
@@ -56,12 +47,26 @@ namespace yeti
             typedef void(* OnBufferReAllocated)(AsyncSocket * socket_mode, void * user, ptrdiff_t new_offset);
 
         public:
+            AsyncSocket(const Engine & engine,
+                int initial_buffer_size,
+                AsyncSocket::OnData on_data,
+                AsyncSocket::OnConnect on_connect,
+                AsyncSocket::OnDisconnect on_disconnect,
+                AsyncSocket::OnSendOK on_send_OK);
+
+            virtual ~AsyncSocket() {}
+
+        public:
+            const Engine & engine() const {
+                return m_engine_;
+            }
+
+
+        public:
             void set_reallocate_notification_callback(OnBufferReAllocated callback);
             void * get_user();
 
-            //ILibAsyncSocket_SocketModule ILibCreateAsyncSocketModule(void *Chain, int initialBufferSize, ILibAsyncSocket_OnData , ILibAsyncSocket_OnConnect OnConnect ,ILibAsyncSocket_OnDisconnect OnDisconnect,ILibAsyncSocket_OnSendOK OnSendOK);
-
-            void* get_socket();
+            void * get_socket();
 
             unsigned int get_pending_bytes_to_send();
             unsigned int get_total_bytes_sent();
@@ -74,7 +79,7 @@ namespace yeti
             }
             void disconnect();
             void get_buffer(char ** buffer, int * begin_pointer, int * endpointer);
-            void use_this_socket(void * the_socket, OnInterrupt interrupt_ptr, void * user);
+            void use_this_socket(const AsyncSocket & other, void * use_this_socket, OnInterrupt interrupt_ptr, void * user);
             void set_remote_address(int remote_address);
             void set_local_interface2(int local_interface2);
 

@@ -268,10 +268,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Source\Core\YetiSystem.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\..\Source\Core\YetiThreads.cpp"
 				>
 			</File>
@@ -313,6 +309,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32Time.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiXml.cpp"
 				>
 			</File>
 			<Filter
@@ -515,6 +515,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32Thread.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiXml.h"
 				>
 			</File>
 			<Filter

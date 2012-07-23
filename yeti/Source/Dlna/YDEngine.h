@@ -76,6 +76,8 @@ namespace yeti
             void start(YETI_UInt32 threadnumber = 3);
             void stop();
 
+            void force_unblock();
+
         private:
             cxl::yeti::Mutex m_obj_mutex_;
             cxl::yeti::List<IObject *> m_objects_;

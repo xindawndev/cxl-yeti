@@ -268,5 +268,29 @@ namespace yeti
             }
             m_threads_.clear();
         }
+
+        void Engine::force_unblock()
+        {
+#if defined(WIN32) || defined(_WIN32_WCE)
+            SOCKET temp;
+#endif
+            m_obj_mutex_.lock();
+
+#if defined(WIN32) || defined(_WIN32_WCE)
+            
+            // Closing the socket will trigger the select on Windows
+            //
+            temp = m_terminate_;
+            m_terminate_ = ~0;
+            closesocket(temp);
+#else
+            // Writing data on the pipe will trigger the select on Posix
+            if (m_terminate_writepipe_ != NULL) {
+                fprintf(m_terminate_writepipe_, " ");
+                fflush(m_terminate_writepipe_);
+            }
+#endif
+            m_obj_mutex_.unlock();
+        }
     }
 }

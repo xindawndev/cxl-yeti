@@ -39,5 +39,8 @@
 #include "YetiSingleton.h"
 #include "YetiStateMachine.h"
 #include "YetiAllocCfg.h"
+#include "YetiJob.h"
+#include "YetiJobManager.h"
+#include "YetiZip.h"
 
 #endif // _CXL_YETI_H_

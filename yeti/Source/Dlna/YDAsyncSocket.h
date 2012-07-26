@@ -103,14 +103,18 @@ namespace yeti
             virtual void destroy(IObject * object);
 
         private:
-            typedef struct {
+            void _clear_pending_send();
+            void _process_async_socket();
+
+        private:
+            typedef struct _tSendData{
                 char * buffer;
                 int buffer_size;
                 int bytes_sent;
                 int remote_address;
                 unsigned short remote_port;
                 int user_free;
-                struct SendData * next;
+                struct _tSendData * next;
             } SendData;
         private:
             const Engine & m_engine_;
@@ -155,7 +159,7 @@ namespace yeti
             int m_initial_size_;
 
             SendData * m_pending_send_head_;
-            SendData * pending_send_tail_;
+            SendData * m_pending_send_tail_;
             cxl::yeti::Mutex m_send_lock_;
 
             Timer * m_replace_socket_timer_;

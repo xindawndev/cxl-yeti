@@ -332,10 +332,270 @@ namespace yeti
 
         void AsyncSocket::post_process(IObject * object, int slct, void * readset, void * writeset, void * errorset)
         {
+            int trigger_send_ok = 0;
+            AsyncSocket::SendData * temp;
+            int bytes_sent = 0;
+            int flags;
+            struct sockaddr_in receiving_address_;
+            int receiving_addr_len = sizeof(struct sockaddr_in);
+            int try_to_send = 1;
 
+            int trigger_read_set = 0;
+            int trigger_resume = 0;
+            int trigger_write_set = 0;
+            int trigger_error_set = 0;
+
+            struct sockaddr_in dest;
+            int destlen = sizeof(struct sockaddr_in);
+
+            m_send_lock_.lock();
+            if (m_fin_connect_ != 0 && m_internal_socket_ != ~0
+                && FD_ISSET(m_internal_socket_, (fd_set *)writeset) != 0) {
+                // send data
+                while (try_to_send != 0) {
+                    if (m_pending_send_head_->remote_address == 0
+                        && m_pending_send_head_->remote_port == 0) {
+#if defined(MSG_NOSIGNAL)
+                        bytes_sent = ::send(m_internal_socket_,
+                            m_pending_send_head_->buffer + m_pending_send_head_->bytes_sent,
+                            m_pending_send_head_->buffer_size -  m_pending_send_head_->bytes_sent,
+                            MSG_NOSIGNAL);
+#elif defined(WIN32)
+                        bytes_sent = ::send(m_internal_socket_,
+                            m_pending_send_head_->buffer + m_pending_send_head_->bytes_sent,
+                            m_pending_send_head_->buffer_size -  m_pending_send_head_->bytes_sent,
+                            0);
+#else
+                        signal(SIGPIPE, SIG_IGN);
+                        bytes_sent = ::send(m_internal_socket_,
+                            m_pending_send_head_->buffer + m_pending_send_head_->bytes_sent,
+                            m_pending_send_head_->buffer_size -  m_pending_send_head_->bytes_sent,
+                            0);
+#endif
+                    } else {
+                        dest.sin_addr.s_addr = m_pending_send_head_->remote_address;
+                        dest.sin_port = htons(m_pending_send_head_->remote_port);
+                        dest.sin_family = AF_INET;
+#if defined(MSG_NOSIGNAL)
+                        bytes_sent = ::sendto(m_internal_socket_,
+                            m_pending_send_head_->buffer + m_pending_send_head_->bytes_sent,
+                            m_pending_send_head_->buffer_size - m_pending_send_head_->bytes_sent,
+                            MSG_NOSIGNAL, (struct sockaddr*)&dest,destlen);
+#elif defined(WIN32)
+                        bytes_sent = ::sendto(m_internal_socket_,
+                            m_pending_send_head_->buffer + m_pending_send_head_->bytes_sent,
+                            m_pending_send_head_->buffer_size - m_pending_send_head_->bytes_sent,
+                            0, (struct sockaddr*)&dest,destlen);
+#else
+                        signal(SIGPIPE, SIG_IGN);
+                        bytes_sent = ::sendto(m_internal_socket_,
+                            m_pending_send_head_->buffer + m_pending_send_head_->bytes_sent,
+                            m_pending_send_head_->buffer_size - m_pending_send_head_->bytes_sent,
+                            0, (struct sockaddr*)&dest,destlen);
+#endif
+
+                    }
+                    if (bytes_sent > 0) {
+                        m_pending_bytes_to_send_ -= bytes_sent;
+                        m_total_bytes_sent_ += bytes_sent;
+                        m_pending_send_head_->bytes_sent += bytes_sent;
+                        if (m_pending_send_head_->bytes_sent == m_pending_send_head_->buffer_size) {
+                            if (m_pending_send_head_ == m_pending_send_tail_) {
+                                m_pending_send_tail_ = NULL;
+                            }
+                            if (m_pending_send_head_->user_free ==0) {
+                                delete (m_pending_send_head_->buffer);
+                            }
+                            temp = m_pending_send_head_->next;
+                            delete m_pending_send_head_;
+                            m_pending_send_head_ = temp;
+                            if (m_pending_send_head_ == NULL) {
+                                try_to_send = 0;
+                            }
+                        } else {
+                            try_to_send = 1;
+                        }
+                    }
+                    if (bytes_sent == -1) {
+                        try_to_send = 0;
+#if defined(_WIN32_WCE) || defined(WIN32)
+                        bytes_sent = WSAGetLastError();
+                        if (bytes_sent != WSAEWOULDBLOCK)
+#elif defined(_POSIX)
+                        if (errno != EWOULDBLOCK)
+#endif
+                        {
+                            _clear_pending_send();
+                            //ILibLifeTime_Add(module->LifeTime,socketModule,0,&ILibAsyncSocket_Disconnect,NULL);
+                        }
+                    }
+                }
+
+                if (m_pending_send_head_ == NULL && bytes_sent != -1) {
+                    trigger_send_ok = 1;
+                }
+                m_send_lock_.unlock();
+                if (trigger_send_ok != 0) {
+                    m_on_send_OK_(this, m_user_);
+                }
+            } else {
+                m_send_lock_.unlock();
+            }
+
+            m_send_lock_.lock();
+
+            if (m_internal_socket_ != ~0) {
+                if (m_fin_connect_ == 0) {
+                    if (FD_ISSET(m_internal_socket_, (fd_set *)writeset) != 0) {
+                        //m_timeout_timer_.remove();
+                        getsockname(m_internal_socket_, (struct sockaddr*)&receiving_address_, &receiving_addr_len);
+                        m_local_IP_address = receiving_address_.sin_addr.s_addr;
+                        m_fin_connect_ = 1;
+                        m_pause_ = 0;
+
+#if defined(_WIN32_WCE) || defined(WIN32)
+                        flags = 1;
+                        ioctlsocket(m_internal_socket_, FIONBIO, (u_long *)&flags);
+#elif defined(_POSIX)
+                        flags = fcntl(m_internal_socket_, F_GETFL, 0);
+                        fcntl(m_internal_socket_, F_SETFL, O_NONBLOCK|flags);
+#endif
+                        trigger_write_set = 1;
+                    }
+                    if (FD_ISSET(m_internal_socket_, (fd_set *)errorset) != 0) {
+                        // Connection was a failure, so remove the timeout timer
+                        //ILibLifeTime_Remove(module->TimeoutTimer,module);
+
+#if defined(_WIN32_WCE) || defined(WIN32)
+#if defined(WINSOCK2)    
+                        shutdown(m_internal_socket_, SD_BOTH);
+#endif
+                        closesocket(m_internal_socket_);
+#elif defined(_POSIX)
+                        shutdown(m_internal_socket_, SHUT_RDWR);
+                        close(m_internal_socket_);
+#endif
+                        m_internal_socket_ = ~0;
+                        trigger_error_set = 1;
+                    }
+
+                    m_send_lock_.unlock();
+
+                    if (trigger_error_set != 0 && m_on_connect_ != NULL) {
+                        m_on_connect_(this, 0, m_user_);
+                    } else if (trigger_write_set != 0 && m_on_connect_ != NULL) {
+                        m_on_connect_(this, -1, m_user_);
+                    }
+                } else {
+                    if (FD_ISSET(m_internal_socket_, (fd_set *)errorset) != 0) {
+                        if (m_current_QOS_priorty_ != QOS_NONE) {
+                            unitialize_QOS();
+                        }
+#if defined(_WIN32_WCE) || defined(WIN32)
+#if defined(WINSOCK2)
+                        shutdown(m_internal_socket_, SD_BOTH);
+#endif
+                        closesocket(m_internal_socket_);
+#elif defined(_POSIX)
+                        shutdown(m_internal_socket_, SHUT_RDWR);
+                        close(m_internal_socket_);
+#endif
+                        m_internal_socket_ = ~0;
+                        m_pause_ = 1;
+
+                        _clear_pending_send();
+
+                        trigger_error_set = 1;
+                    }
+
+                    /* Already Connected, just needs reading */
+                    if (FD_ISSET(m_internal_socket_, (fd_set *)readset) != 0) {
+                        trigger_read_set = 1;
+                    } else if (m_pause_ < 0) {
+                        // Someone resumed a paused connection, but the FD_SET was not triggered
+                        // because there is no new data on the socket.
+                        trigger_resume = 1;
+                        ++m_pause_;
+                    }
+
+                    m_send_lock_.unlock();
+
+                    if (trigger_error_set != 0 && m_on_disconnect_ != NULL) {
+                        m_on_disconnect_(this, m_user_);
+                    }
+                    if (trigger_read_set != 0 || trigger_resume != 0) {
+                        //ILibProcessAsyncSocket(this, trigger_read_set);
+                    }
+                }
+            } else {
+                m_send_lock_.unlock();
+            }
         }
 
         void AsyncSocket::destroy(IObject * object)
+        {
+            SendData * temp, * current;
+
+            if (!is_free()) {
+                if (m_on_interrupt_ != NULL) {
+                    m_on_interrupt_(this, m_user_);
+                }
+            }
+
+            // Close socket if necessary
+            if (m_internal_socket_ != ~0) {
+                if (m_current_QOS_priorty_ != QOS_NONE) {
+                    unitialize_QOS();
+                }
+#if defined(_WIN32_WCE) || defined(WIN32)
+#if defined(WINSOCK2)
+                shutdown(m_internal_socket_, SD_BOTH);
+#endif
+                closesocket(m_internal_socket_);
+#elif defined(_POSIX)
+                shutdown(m_internal_socket_, SHUT_RDWR);
+                close(m_internal_socket_);
+#endif
+            }
+
+            // Free the buffer if necessary
+            if (m_buffer_ != NULL) {
+                delete m_buffer_;
+                m_buffer_ = NULL;
+                m_malloc_size_ = 0;
+            }
+
+            // Clear all the data that is pending to be sent
+            temp = current = m_pending_send_head_;
+            while (current != NULL) {
+                temp = current->next;
+                if (current->user_free == 0) {
+                    delete current->buffer;
+                }
+                delete current;
+                current = temp;
+            }
+        }
+
+        void AsyncSocket::_clear_pending_send()
+        {
+            SendData * data, * temp;
+
+            data = m_pending_send_head_;
+            m_pending_send_tail_ = NULL;
+            while (data != NULL) {
+                temp = data->next;
+                if (data->user_free == 0) {
+                    delete (data->buffer);
+                }
+                delete (data);
+                data = temp;
+            }
+            m_pending_send_head_ = NULL;
+            m_pending_bytes_to_send_ = 0;
+        }
+
+        void AsyncSocket::_process_async_socket()
         {
 
         }

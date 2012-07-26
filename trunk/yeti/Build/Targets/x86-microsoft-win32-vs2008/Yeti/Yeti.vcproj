@@ -422,6 +422,18 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiJob.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiJobManager.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiJobManager.h"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiList.h"
 				>
 			</File>
@@ -521,6 +533,14 @@
 				RelativePath="..\..\..\..\Source\Core\YetiXml.h"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiZip.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiZip.h"
+				>
+			</File>
 			<Filter
 				Name="memory"
 				>
@@ -538,6 +558,102 @@
 				</File>
 				<File
 					RelativePath="..\..\..\..\Source\Core\YetiNedPooling.h"
+					>
+				</File>
+			</Filter>
+		</Filter>
+		<Filter
+			Name="ThirdPart"
+			>
+			<Filter
+				Name="zlib"
+				>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\adler32.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\compress.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\crc32.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\crc32.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\deflate.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\deflate.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\infback.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\inffast.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\inffast.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\inffixed.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\inflate.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\inflate.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\inftrees.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\inftrees.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\README"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\trees.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\trees.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\zconf.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\zconf.in.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\zlib.h"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\zutil.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\ThirdParty\zlib-1.2.3\zutil.h"
 					>
 				</File>
 			</Filter>

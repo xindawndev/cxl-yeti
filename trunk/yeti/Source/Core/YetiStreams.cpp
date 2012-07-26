@@ -246,6 +246,13 @@ MemoryStream::MemoryStream(YETI_Size initial_capacity)
 {
 }
 
+MemoryStream::MemoryStream(const void * data, YETI_Size size)
+: m_buffer_(data, size)
+, m_read_offset_(0)
+, m_write_offset_(0)
+{
+}
+
 YETI_Result MemoryStream::read(void * buffer,
                                YETI_Size bytes_to_read,
                                YETI_Size * bytes_read/* = NULL*/)

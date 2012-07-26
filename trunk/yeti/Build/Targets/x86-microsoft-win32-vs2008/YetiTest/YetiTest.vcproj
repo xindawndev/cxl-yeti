@@ -324,6 +324,18 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="YetZipTest"
+				>
+				<File
+					RelativePath="..\..\..\..\Source\Tests\YetiTest\YetiZipTest.cpp"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\..\Source\Tests\YetiTest\YetiZipTestData.cpp"
+					>
+				</File>
+			</Filter>
 		</Filter>
 	</Files>
 	<Globals>

@@ -315,6 +315,10 @@
 				RelativePath="..\..\..\..\Source\Core\YetiXml.cpp"
 				>
 			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiZip.cpp"
+				>
+			</File>
 			<Filter
 				Name="memory"
 				>
@@ -531,10 +535,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiXml.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\Source\Core\YetiZip.cpp"
 				>
 			</File>
 			<File

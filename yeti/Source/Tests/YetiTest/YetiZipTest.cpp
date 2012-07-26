@@ -45,17 +45,6 @@ int zip_test(std::vector<std::string> args)
         std::cout << "Param[" << i << "] : " << args[i] << std::endl;
     }
 
-#if defined(WIN32) && defined(_DEBUG)
-    int flags = _crtDbgFlag       | 
-        _CRTDBG_ALLOC_MEM_DF      |
-        _CRTDBG_DELAY_FREE_MEM_DF |
-        _CRTDBG_CHECK_ALWAYS_DF;
-
-    _CrtSetDbgFlag(flags);
-    //AllocConsole();
-    //freopen("CONOUT$", "w", stdout);
-#endif 
-
     for (unsigned int t = 0; t < sizeof(TestVectors) / sizeof(TestVectors[0]); t++) {
         TestVector * v = &TestVectors[t];
         DataBuffer in1(v->compressed, v->compressed_len);
@@ -105,7 +94,7 @@ int zip_test(std::vector<std::string> args)
         CHECK(in3 == out3_check);
 
         // streams
-        for (unsigned int x = 0; x < 1000; x++) {
+        for (unsigned int x = 0; x < 10; x++) {
             MemoryStream* ms_gz = new MemoryStream(v->compressed, v->compressed_len);
             InputStreamReference ms_gz_ref(ms_gz);
             ZipInflatingInputStream ziis(ms_gz_ref);
@@ -136,7 +125,7 @@ int zip_test(std::vector<std::string> args)
             CHECK(position == v->uncompressed_len);
         }
 
-        for (unsigned int x = 0; x < 1000; x++) {
+        for (unsigned int x = 0; x < 10; x++) {
             MemoryStream* ms = new MemoryStream(v->uncompressed, v->uncompressed_len);
             InputStreamReference ms_ref(ms);
             ZipDeflatingInputStream zdis(ms_ref, YETI_ZIP_COMPRESSION_LEVEL_MAX, Zip::GZIP);

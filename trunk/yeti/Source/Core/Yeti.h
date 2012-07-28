@@ -17,6 +17,7 @@
 #include "YetiMap.h"
 #include "YetiQueue.h"
 #include "YetiDataBuffer.h"
+#include "YetiRingBuffer.h"
 #include "YetiConsole.h"
 #include "YetiThreads.h"
 #include "YetiReferences.h"

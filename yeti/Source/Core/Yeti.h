@@ -35,6 +35,7 @@
 #include "YetiBase64.h"
 #include "YetiNetwork.h"
 #include "YetiSocket.h"
+#include "YetiHttp.h"
 #include "YetiHttpParser.h"
 #include "YetiObjectFactory.h"
 #include "YetiSingleton.h"
@@ -42,6 +43,7 @@
 #include "YetiAllocCfg.h"
 #include "YetiJob.h"
 #include "YetiJobManager.h"
+#include "YetiLogging.h"
 #include "YetiZip.h"
 
 #endif // _CXL_YETI_H_

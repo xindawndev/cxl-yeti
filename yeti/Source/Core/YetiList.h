@@ -414,7 +414,7 @@ YETI_Result List<T>::remove(const T & list, bool all /* = false */)
 
     while (item) {
         Item * next = item->m_next_;
-        if (item->m_data_ == data) {
+        if (item->m_data_ == list) {
             // we found a match
             ++matches;
             // detach item

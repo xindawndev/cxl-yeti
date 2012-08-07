@@ -138,37 +138,147 @@ private:
 class HttpEntity
 {
 public:
+    HttpEntity();
+    HttpEntity(const HttpHeaders & headers);
+    virtual ~HttpEntity();
+
+    YETI_Result set_input_stream(const InputStreamReference & stream,
+        bool update_content_length = false);
+    YETI_Result set_input_stream(const void * data, YETI_Size size);
+    YETI_Result set_input_stream(const String & string);
+    YETI_Result set_input_stream(const char * string);
+    YETI_Result set_input_stream(InputStreamReference & stream);
+
+    YETI_Result         set_content_length(YETI_LargeSize length);
+    YETI_Result         set_content_type(const char * type);
+    YETI_Result         set_content_encoding(const char * encoding);
+    YETI_Result         set_transfer_encoding(const char * encoding);
+    YETI_LargeSize      get_content_length() { return m_content_length_; }
+    const String &      get_content_type() { return m_content_type_; }
+    const String &      get_content_encoding() { return m_content_encoding_; }
+    const String &      get_transfer_encoding() { return m_transfer_encoding_; }
+    bool                content_length_is_known() { return m_content_length_is_known_; }
+
 private:
+    InputStreamReference m_input_stream_;
+    YETI_LargeSize       m_content_length_;
+    String               m_content_type_;
+    String               m_content_encoding_;
+    String               m_transfer_encoding_;
+    bool                 m_content_length_is_known_;
 };
 
 class HttpMessage
 {
 public:
+    virtual ~HttpMessage();
+
+    const String & get_protocol() const {
+        return m_protocol_;
+    }
+
+    YETI_Result set_protocol(const char * protocol) {
+        m_protocol_ = protocol;
+        return YETI_SUCCESS;
+    }
+    HttpHeaders & get_headers() {
+        return m_headers_;
+    }
+    const HttpHeaders & get_headers() const {
+        return m_headers_;
+    }
+    YETI_Result set_entity(HttpEntity * entity);
+    HttpEntity * get_entity() {
+        return m_entity_;
+    }
+    virtual YETI_Result parse_headers(BufferedInputStream & stream);
+
 protected:
+    HttpMessage(const char * protocol);
+
+    String          m_protocol_;
+    HttpHeaders     m_headers_;
+    HttpEntity *    m_entity_;
 };
 
 class HttpRequest : public HttpMessage
 {
 public:
+    static YETI_Result parse(BufferedInputStream & stream,
+        const SocketAddress * endpoint,
+        HttpRequest *& request);
+
+    HttpRequest(const HttpUrl & url,
+        const char * method,
+        const char * protocol = YETI_HTTP_PROTOCOL_1_0);
+    HttpRequest(const char * url,
+        const char * method,
+        const char * protocol = YETI_HTTP_PROTOCOL_1_0);
+    virtual ~HttpRequest();
+
+    const HttpUrl & get_url() const { return m_url_; }
+    HttpUrl &       get_url() { return m_url_; }
+    YETI_Result     set_url(const char * url);
+    const String &  get_method() const { return m_method_; }
+    virtual YETI_Result emit(OutputStream & stream, bool use_proxy = false) const;
+
 protected:
+    HttpUrl m_url_;
+    String m_method_;
 };
 
 class HttpResponse : public HttpMessage
 {
 public:
+    static YETI_Result parse(BufferedInputStream & stream,
+        HttpResponse *& response);
+
+    HttpResponse(HttpStatusCode status_code,
+        const char * reason_phrase,
+        const char * protocol = YETI_HTTP_PROTOCOL_1_0);
+    virtual ~HttpResponse();
+
+    YETI_Result set_status(HttpStatusCode status_code,
+        const char * reason_phrase,
+        const char * protocol = NULL);
+    YETI_Result set_protocol(const char * protocol);
+    HttpStatusCode get_status_code() const { return m_status_code_; }
+    const String & get_reason_phrase() const { return m_reason_phrase_; }
+    virtual YETI_Result emit(OutputStream & stream) const;
 protected:
+    HttpStatusCode m_status_code_;
+    String         m_reason_phrase_;
 };
 
 class HttpProxyAddress
 {
 public:
+    HttpProxyAddress()
+        : m_port_(YETI_HTTP_INVALID_PORT) {}
+    HttpProxyAddress(const char * hostname, YETI_UInt16 port)
+        : m_hostname_(hostname)
+        , m_port_(port) {}
+
+    const String & get_hostname() const { return m_hostname_; }
+    void           set_hostname(const char * hostname) { m_hostname_ = hostname; }
+    YETI_UInt16    get_port() const { return m_port_; }
+    void           set_port(YETI_UInt16 port) { m_port_ = port; }
+
 private:
+    String      m_hostname_;
+    YETI_UInt16 m_port_;
 };
 
 class HttpProxySelector
 {
 public:
+    static HttpProxySelector * get_default();
+    static HttpProxySelector * get_system_selector();
+
+    virtual ~HttpProxySelector() {}
+    virtual YETI_Result get_proxy_for_url(const HttpUrl & url, HttpProxyAddress & proxy) = 0;
 private:
+    static HttpProxySelector * m_system_default_;
 };
 
 class HttpRequestContext;
@@ -233,18 +343,55 @@ protected:
 class HttpResponder
 {
 public:
+    struct Config {
+        YETI_Timeout m_io_timeout_;
+    };
+    HttpResponder(InputStreamReference & input,
+        OutputStreamReference & output);
+    virtual ~HttpResponder();
+
+    YETI_Result set_config(const Config & config);
+    YETI_Result set_timeout(YETI_Timeout io_timeout);
+    YETI_Result parse_request(HttpRequest *& request,
+        const SocketAddress * local_address = NULL);
+    YETI_Result send_response_headers(HttpResponse & reponse);
+
 protected:
+    Config                       m_config_;
+    BufferedInputStreamReference m_input_;
+    OutputStreamReference        m_output_;
 };
 
 class HttpChunkedInputStream : public InputStream
 {
 public:
+    HttpChunkedInputStream(BufferedInputStreamReference & stream);
+    virtual ~HttpChunkedInputStream();
+
+    YETI_Result read(void * buffer, YETI_Size bytes_to_read, YETI_Size * bytes_read  = NULL );
+    YETI_Result seek(YETI_Position offset);
+    YETI_Result tell(YETI_Position & offset);
+    YETI_Result get_size(YETI_LargeSize & size);
+    YETI_Result get_available(YETI_LargeSize & available);
+
 protected:
+    BufferedInputStreamReference m_source_;
+    YETI_UInt32                  m_current_chunck_size_;
+    bool                         m_eos_;
 };
 
 class HttpChunkedOutputStream : public OutputStream
 {
 public:
+    HttpChunkedOutputStream(OutputStream & stream);
+    virtual ~HttpChunkedOutputStream();
+
+    YETI_Result write(const void * buffer,
+        YETI_Size bytes_to_write,
+        YETI_Size * bytes_written = NULL);
+    YETI_Result seek(YETI_Position /*offset*/)  { return YETI_ERROR_NOT_SUPPORTED; }
+    YETI_Result tell(YETI_Position & offset)    { return m_stream_.tell(offset); }
+    YETI_Result flush()                         { return m_stream_.flush(); }
 
 protected:
     OutputStream & m_stream_;

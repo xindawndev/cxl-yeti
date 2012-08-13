@@ -286,19 +286,204 @@ class HttpRequestContext;
 class HttpClient
 {
 public:
-private:
+    struct Config {
+        Config() : m_connection_timeout_(YETI_HTTP_CLIENT_DEFAULT_CONNECTION_TIMEOUT),
+        m_io_timeout_(YETI_HTTP_CLIENT_DEFAULT_IO_TIMEOUT),
+        m_name_resolver_timeout_(YETI_HTTP_CLIENT_DEFAULT_NAME_RESOLVER_TIMEOUT),
+        m_max_redirects_(YETI_HTTP_CLIENT_DEFAULT_MAX_REDIRECTS),
+        m_user_agent_(YETI_CONFIG_HTTP_DEFAULT_USER_AGENT) {}
+
+        YETI_Timeout m_connection_timeout_;
+        YETI_Timeout m_io_timeout_;
+        YETI_Timeout m_name_resolver_timeout_;
+        YETI_Cardinal m_max_redirects_;
+        String m_user_agent_;
+    };
+
+    class Connection {
+    public:
+        virtual ~Connection() {}
+        virtual InputStreamReference & get_input_stream() = 0;
+        virtual OutputStreamReference & get_output_stream() = 0;
+        virtual YETI_Result get_info(SocketInfo & info) = 0;
+        virtual bool supports_persistence() { return false; }
+        virtual bool is_recycled() { return false; }
+        virtual YETI_Result recycle() { delete this; return YETI_SUCCESS; }
+        virtual YETI_Result abort() { return YETI_SUCCESS; }
+    };
+
+    class ConnectionCanceller {
+    public:
+        typedef List<Connection *> ConnectionList;
+
+        class Cleaner {
+            static Cleaner automatic_cleaner_;
+            ~Cleaner() {
+                if (instance_) {
+                    delete instance_;
+                    instance_ = NULL;
+                }
+            }
+        };
+
+        static ConnectionCanceller * get_instance();
+        static YETI_Result untrack(Connection * connection);
+
+        ~ConnectionCanceller() {}
+
+        YETI_Result track(HttpClient * client, Connection * connection);
+        YETI_Result untrack_connection(Connection * connection);
+        YETI_Result abort_connections(HttpClient * client);
+
+    private:
+        static ConnectionCanceller * instance_;
+
+        ConnectionCanceller() {}
+
+        Mutex m_lock_;
+        Map<HttpClient *, ConnectionList> m_connections_;
+        Map<Connection *, HttpClient *> m_clients_;
+    };
+
+    class Connector {
+    public:
+        virtual ~Connector() {}
+
+        virtual YETI_Result connect(const HttpUrl & url,
+            HttpClient & client,
+            const HttpProxyAddress * proxy,
+            bool reuse,
+            Connection *& connection) = 0;
+        virtual YETI_Result abort() { return YETI_SUCCESS; }
+
+    protected:
+        Connector() {}
+    };
+
+    static YETI_Result write_quest(OutputStream & output_stream,
+        HttpRequest & request,
+        bool should_persist,
+        bool use_proxy = false);
+    static YETI_Result read_response(InputStreamReference & input_stream,
+        bool should_persist,
+        bool expect_entity,
+        HttpResponse *& response,
+        Reference<Connection> * cref = NULL);
+
+    HttpClient(Connector * connector = NULL, bool transfer_ownership = true);
+    virtual ~HttpClient();
+
+    YETI_Result send_request(HttpRequest & request,
+        HttpResponse *& response,
+        HttpRequestContext * context = NULL);
+    YETI_Result abort();
+    const Config & get_config() const { return m_config_; }
+    YETI_Result set_config(const Config & config);
+    YETI_Result set_proxy(const char * http_proxy_hostname,
+        YETI_UInt16 http_proxy_port,
+        const char * https_proxy_hostname = NULL,
+        YETI_UInt16 https_proxy_port = 0);
+    YETI_Result set_proxy_selector(HttpProxySelector * selector);
+    YETI_Result set_connector(Connector * connector);
+    YETI_Result set_timeouts(YETI_Timeout connection_timeout,
+        YETI_Timeout io_timeout,
+        YETI_Timeout name_resolver_timeout);
+    YETI_Result set_user_agent(const char * user_agent);
+    YETI_Result set_options(YETI_Flags options, bool on);
+
+protected:
+    YETI_Result _send_request_once(HttpRequest & request,
+        HttpResponse *& response,
+        HttpRequestContext * context = NULL);
+
+    Config                  m_config_;
+    HttpProxySelector *     m_proxy_selector_;
+    bool                    m_proxy_selector_is_owned_;
+    Connector *             m_connector_;
+    bool                    m_connector_is_owned_;
+    
+    Mutex                   m_abort_lock_;
+    bool                    m_aborted_;
 };
 
 class HttpConnectionManager : public Thread
 {
 public:
+    class Cleaner {
+        static Cleaner automatic_cleaner_;
+        ~Cleaner() {
+            if (instance_) {
+                delete instance_;
+                instance_ = NULL;
+            }
+        }
+    };
+
+    static HttpConnectionManager * get_instance();
+
+    class Connection : public HttpClient::Connection
+    {
+    public:
+        Connection(HttpConnectionManager & manager,
+            SocketReference & socket,
+            InputStreamReference input_stream,
+            OutputStreamReference output_steam);
+        virtual ~Connection() { HttpClient::ConnectionCanceller::untrack(this); }
+
+        virtual InputStreamReference & get_input_stream() { return m_input_stream_; }
+        virtual OutputStreamReference & get_output_stream() { return m_output_stream_; }
+        virtual YETI_Result get_info(SocketInfo & info) { return m_socket_->get_info(info); }
+        virtual bool supports_persistence() { return true; }
+        virtual bool is_recycled() { return m_is_recycled_; }
+        virtual YETI_Result recycle();
+        virtual YETI_Result abort() { return m_socket_->cancel(); }
+
+        HttpConnectionManager & m_manager_;
+        bool                    m_is_recycled_;
+        TimeStamp               m_time_stamp_;
+        SocketReference         m_socket_;
+        InputStreamReference    m_input_stream_;
+        OutputStreamReference   m_output_stream_;
+    };
+
+    ~HttpConnectionManager();
+
+    Connection * find_connection(SocketAddress & address);
+    YETI_Result recycle(Connection * connection);
+
 private:
+    static HttpConnectionManager * instance_;
+    HttpConnectionManager();
+
+    void run();
+    YETI_Result cleanup();
+
+    Mutex               m_lock_;
+    YETI_Cardinal       m_max_connections_;
+    YETI_Cardinal       m_max_connection_age_;
+    List<Connection *>  m_connections_;
+    SharedVariable      m_aborted_;
 };
 
 class HttpRequestContext
 {
 public:
+    HttpRequestContext() {}
+    HttpRequestContext(const SocketAddress * local_address,
+        const SocketAddress * remote_address);
+
+    const SocketAddress & get_local_address() const { return m_local_address_; }
+    const SocketAddress & get_remote_address() const { return m_remote_address_; }
+    void set_local_address(const SocketAddress & address) {
+        m_local_address_ = address;
+    }
+    void set_remote_address(const SocketAddress & address) {
+        m_remote_address_ = address;
+    }
+
 private:
+    SocketAddress m_local_address_;
+    SocketAddress m_remote_address_;
 };
 
 class HttpRequestHandler
@@ -319,7 +504,21 @@ public:
 class HttpStaticRequestHandler : public HttpRequestHandler
 {
 public:
+    HttpStaticRequestHandler(const char * document,
+        const char * mime_type = "text/html",
+        bool copy = true);
+    HttpStaticRequestHandler(const void * data,
+        YETI_Size size,
+        const char * mime_type = "text/html",
+        bool copy = true);
+
+    virtual YETI_Result setup_response(HttpRequest & request,
+        const HttpRequestContext & context,
+        HttpResponse & response);
+
 private:
+    String m_mime_type_;
+    DataBuffer m_buffer_;
 };
 
 typedef struct HttpFileRequestHandler_DefaultFileTypeMapEntry {
@@ -330,14 +529,108 @@ typedef struct HttpFileRequestHandler_DefaultFileTypeMapEntry {
 class HttpFileRequestHandler : public HttpRequestHandler
 {
 public:
+    HttpFileRequestHandler(const char * url_root,
+        const char * file_root,
+        bool auto_dir = false,
+        const char * auto_index = NULL);
+    virtual YETI_Result setup_response(
+        HttpRequest & request,
+        const HttpRequestContext & context,
+        HttpResponse & response);
+
+    static const char * get_default_content_type(const char * extension);
+
+    Map<String, String> & get_file_type_map() { return m_file_type_map_; }
+
+    void set_default_mime_type(const char * mime_type) {
+        m_default_mime_type_ = mime_type;
+    }
+    void set_use_default_file_type_map(bool use_default) {
+        m_use_default_file_type_map_ = use_default;
+    }
+
+    static YETI_Result setup_response_body(HttpResponse & response,
+        InputStreamReference & stream,
+        const String * range_spec = NULL);
+
 protected:
+    const char * get_content_type(const String & filename);
+
 private:
+    String m_url_root_;
+    String m_file_root_;
+    Map<String, String> m_file_type_map_;
+    String m_default_mime_type_;
+    bool m_use_default_file_type_map_;
+    bool m_auto_dir_;
+    String m_auto_index_;
 };
 
 class HttpServer
 {
 public:
+    struct Config {
+        YETI_Timeout m_conneciton_timeout_;
+        YETI_Timeout m_io_timeout_;
+        IpAddress m_listen_address_;
+        YETI_UInt16 m_listen_port_;
+        bool m_reuse_address_;
+    };
+
+    HttpServer(YETI_UInt16 listen_port = YETI_HTTP_DEFAULT_PORT,
+        bool reuse_address = true);
+    HttpServer(IpAddress listen_address,
+        YETI_UInt16 listen_port = YETI_HTTP_DEFAULT_PORT,
+        bool reuse_address = true);
+
+    virtual ~HttpServer();
+
+    YETI_Result set_config(const Config & config);
+    const Config & get_config() const { return m_config_; }
+    YETI_Result set_listen_port(YETI_UInt16 port, bool reuse_address = true);
+    YETI_Result set_timeouts(YETI_Timeout  connection_timeout, YETI_Timeout io_timeout);
+    YETI_Result set_server_header(const char * server_header);
+    YETI_Result abort();
+    YETI_Result wait_for_new_client(InputStreamReference & input,
+        OutputStreamReference & output,
+        HttpRequestContext * context,
+        YETI_Flags socket_flags = 0);
+    YETI_Result loop(bool cancellable_sockets = true);
+    YETI_UInt16 get_port() { return m_bound_port_; }
+    void terminate();
+
+    virtual YETI_Result add_request_handler(HttpRequestHandler * handler,
+        const char * path,
+        bool include_children = false,
+        bool transfer_ownership = false);
+    virtual HttpRequestHandler * find_request_handler(HttpRequest & request);
+    virtual List<HttpRequestHandler *> find_request_handlers(HttpRequest & request);
+
+    virtual YETI_Result respond_to_client(InputStreamReference & input,
+        OutputStreamReference & output,
+        const HttpRequestContext & context);
+
 protected:
+    struct HandlerConfig {
+        HandlerConfig(HttpRequestHandler * handler,
+            const char * path,
+            bool include_children,
+            bool transfer_ownership = false);
+        ~HandlerConfig();
+
+        HttpRequestHandler * m_handler_;
+        String m_path_;
+        bool m_include_children_;
+        bool m_handler_is_owned_;
+    };
+
+    YETI_Result bind();
+    TcpServerSocket m_socket_;
+    YETI_UInt16 m_bound_port_;
+    Config m_config_;
+    List<HandlerConfig *> m_request_handlers_;
+    String m_server_header_;
+    bool m_run_;
 };
 
 class HttpResponder

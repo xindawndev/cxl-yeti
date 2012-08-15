@@ -220,7 +220,15 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\Core\YetiHttp.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\Core\YetiHttpParser.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiJobManager.cpp"
 				>
 			</File>
 			<File
@@ -241,6 +249,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiResults.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiRingBuffer.cpp"
 				>
 			</File>
 			<File
@@ -430,10 +442,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Source\Core\YetiJobManager.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\..\Source\Core\YetiJobManager.h"
 				>
 			</File>
@@ -471,6 +479,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiResults.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiRingBuffer.h"
 				>
 			</File>
 			<File

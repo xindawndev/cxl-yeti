@@ -220,6 +220,7 @@ public:
     const HttpUrl & get_url() const { return m_url_; }
     HttpUrl &       get_url() { return m_url_; }
     YETI_Result     set_url(const char * url);
+    YETI_Result     set_url(const HttpUrl & url);
     const String &  get_method() const { return m_method_; }
     virtual YETI_Result emit(OutputStream & stream, bool use_proxy = false) const;
 

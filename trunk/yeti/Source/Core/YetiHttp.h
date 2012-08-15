@@ -82,7 +82,7 @@ typedef UrlQuery HttpUrlQuery;
 class HttpUrl : public Url
 {
 public:
-    HttpUrl();
+    HttpUrl() {}
     HttpUrl(const char * host,
         YETI_UInt16 port,
         const char * path,
@@ -139,7 +139,7 @@ class HttpEntity
 {
 public:
     HttpEntity();
-    HttpEntity(const HttpHeaders & headers);
+    HttpEntity(const HttpHeaders & header);
     virtual ~HttpEntity();
 
     YETI_Result set_input_stream(const InputStreamReference & stream,
@@ -147,7 +147,9 @@ public:
     YETI_Result set_input_stream(const void * data, YETI_Size size);
     YETI_Result set_input_stream(const String & string);
     YETI_Result set_input_stream(const char * string);
-    YETI_Result set_input_stream(InputStreamReference & stream);
+    YETI_Result get_input_stream(InputStreamReference & stream);
+    YETI_Result load(DataBuffer & buffer);
+    YETI_Result set_headers(const HttpHeaders & headers);
 
     YETI_Result         set_content_length(YETI_LargeSize length);
     YETI_Result         set_content_type(const char * type);
@@ -200,7 +202,6 @@ protected:
     HttpHeaders     m_headers_;
     HttpEntity *    m_entity_;
 };
-
 class HttpRequest : public HttpMessage
 {
 public:

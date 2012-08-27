@@ -193,6 +193,75 @@ YETI_Result HttpHeaders::add_header(const char * name, const char * value)
     return m_headers_.add(new HttpHeader(name, value));
 }
 
+class HttpEntityBodyInputStream : public InputStream
+{
+public:
+    HttpEntityBodyInputStream(BufferedInputStreamReference& source,
+        YETI_LargeSize                    size,
+        bool                              size_is_known,
+        bool                              chunked,
+        HttpClient::Connection*           connection,
+        bool                              should_persist)
+        : m_size_(size)
+        , m_size_is_known_(size_is_known)
+        , m_is_chunked_(chunked)
+        , m_connection_(connection)
+        , m_should_persist_(should_persist)
+        , m_position_(0) {
+            if (size_is_known && size == 0) {
+                on_fully_read();
+            } else {
+                if (chunked) {
+                    m_source_ = InputStreamReference(new HttpChunkedInputStream(source));
+                } else {
+                    m_source_ = source;
+                }
+            }
+    }
+
+    virtual ~HttpEntityBodyInputStream() {
+        delete m_connection_;
+        m_connection_ = NULL;
+    }
+
+    bool size_is_known() { return m_size_is_known_; }
+
+    virtual YETI_Result read(void * buffer,
+        YETI_Size bytes_to_read,
+        YETI_Size * bytes_read = NULL);
+    virtual YETI_Result seek(YETI_Position offset) {
+        return YETI_ERROR_NOT_SUPPORTED;
+    }
+    virtual YETI_Result tell(YETI_Position & offset) {
+        offset = m_position_;
+        return YETI_SUCCESS;
+    }
+    virtual YETI_Result get_size(YETI_LargeSize & size) {
+        size = m_size_;
+        return YETI_SUCCESS;
+    }
+    virtual YETI_Result get_available(YETI_LargeSize & available);
+private:
+    virtual void on_fully_read();
+
+    YETI_LargeSize           m_size_;
+    bool                     m_size_is_known_;
+    bool                     m_is_chunked_;
+    HttpClient::Connection * m_connection_;
+    bool                     m_should_persist_;
+    YETI_Position            m_position_;
+    InputStreamReference     m_source_;
+};
+
+void HttpEntityBodyInputStream::on_fully_read()
+{
+    m_source_ = NULL;
+    if (m_connection_ && m_should_persist_) {
+        m_connection_->recycle();
+        m_connection_ = NULL;
+    }
+}
+
 YETI_Result HttpHeaders::remove_header(const char * name)
 {
     bool found = false;

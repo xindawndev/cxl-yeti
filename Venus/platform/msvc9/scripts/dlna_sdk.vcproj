@@ -41,7 +41,7 @@
 			<Tool
 				Name="VCCLCompilerTool"
 				Optimization="0"
-				AdditionalIncludeDirectories="../../../include/dlna;../../../include/dlna/CdsObjects;../../../include/dlna/DmsIntegration;../../../include/dlna/DownloadController;../../../include/dlna/FileAbstractionFiles;../../../include/dlna/Functional;../../../include/dlna/HttpFiles;../../../include/dlna/MediaRenderer;../../../include/dlna/MediaRendererCP;../../../include/dlna/MediaServerBrowser;../../../include/dlna/PlaylistTrackManager;../../../include/dlna/PlaySingleUri;../../../include/dlna/ProtocolInfoParser;../../../include/dlna/PushController;../../../include/dlna/StringUtils;../../../include/dlna/UploadController;../../../include/dlna/DmsIntegration/FileSystemEnumerator;../../../include/dlna/MediaServerAbstraction"
+				AdditionalIncludeDirectories="../../../include/dlna;../../../include/dlna/CdsObjects;../../../include/dlna/DmsIntegration;../../../include/dlna/DownloadController;../../../include/dlna/FileAbstractionFiles;../../../include/dlna/Functional;../../../include/dlna/HttpFiles;../../../include/dlna/MediaRenderer;../../../include/dlna/MediaRendererCP;../../../include/dlna/MediaServerBrowser;../../../include/dlna/PlaylistTrackManager;../../../include/dlna/PlaySingleUri;../../../include/dlna/ProtocolInfoParser;../../../include/dlna/PushController;../../../include/dlna/StringUtils;../../../include/dlna/UploadController;../../../include/dlna/DmsIntegration/FileSystemEnumerator;../../../include/dlna/MediaServerAbstraction;../../../include/dlna/AirplayRender"
 				PreprocessorDefinitions="WIN32;_DEBUG;_CONSOLE;WINSOCK2;MMSCP_LEAN_AND_MEAN;MICROSTACK_NO_STDAFX;WITH_VOLUME;WITH_DISPLAY;INCLUDE_FEATURE_VOLUME;INCLUDE_FEATURE_DISPLAY;INCLUDE_FEATURE_UPLOAD"
 				MinimalRebuild="true"
 				BasicRuntimeChecks="3"
@@ -397,6 +397,14 @@
 					>
 				</File>
 			</Filter>
+			<Filter
+				Name="AirplayRender"
+				>
+				<File
+					RelativePath="..\..\..\include\dlna\AirplayRender\AirplayRender.h"
+					>
+				</File>
+			</Filter>
 		</Filter>
 		<Filter
 			Name="src"
@@ -630,6 +638,14 @@
 				>
 				<File
 					RelativePath="..\..\..\src\dlna\UploadController\UploadController.c"
+					>
+				</File>
+			</Filter>
+			<Filter
+				Name="AirplayRender"
+				>
+				<File
+					RelativePath="..\..\..\src\dlna\AirplayRender\AirplayRender.c"
 					>
 				</File>
 			</Filter>

@@ -87,10 +87,8 @@ void DHC_Pool(ILibThreadPool sender, void *var)
             }
         }
     }
-
-
-
 }
+
 void DHC_OnSendOK(ILibWebClient_StateObject sender, void *user1, void *user2)
 {
     struct DHC_Data *data = (struct DHC_Data*)user2;

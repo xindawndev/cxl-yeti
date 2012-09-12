@@ -1,14 +1,6 @@
 #ifndef ___ILibAsyncServerSocket___
 #define ___ILibAsyncServerSocket___
 
-/*! \file ILibAsyncServerSocket.h 
-    \brief MicroStack APIs for TCP Server Functionality
-*/
-
-/*! \defgroup ILibAsyncServerSocket ILibAsyncServerSocket Module
-    \{
-*/
-
 #if defined(WIN32) || defined(_WIN32_WCE)
 #include <STDDEF.H>
 #elif defined(_POSIX)
@@ -134,7 +126,5 @@ unsigned short ILibAsyncServerSocket_GetPortNumber(ILibAsyncServerSocket_ServerM
     \param ConnectionToken The connection state for this session
 */
 #define ILibAsyncServerSocket_ResetTotalBytesSent(ServerSocketModule, ConnectionToken) ILibAsyncSocket_ResetTotalBytesSent(ConnectionToken)
-
-/*! \} */
 
 #endif

@@ -298,16 +298,6 @@ int ILibGetLocalIPAddressList(int** pp_int)
     *pp_int = (int*)malloc(sizeof(int)*(ctr));
     memcpy(*pp_int,tempresults,sizeof(int)*ctr);
     return(ctr);
-#elif defined(__SYMBIAN32__)
-    //
-    // The Symbian Way :)
-    //
-    int iplist[16];
-    int ctr;
-    ctr = ILibSocketWrapper_GetLocalIPAddressList(iplist);
-    *pp_int = (int*)malloc(sizeof(int)*(ctr));
-    memcpy(*pp_int,iplist,sizeof(int)*ctr);
-    return(ctr);
 #endif
 }
 
@@ -362,11 +352,6 @@ struct ILibBaseChain
 #else
     FILE *TerminateReadPipe;
     FILE *TerminateWritePipe;
-#endif
-#if defined(__SYMBIAN32__)
-    void *SymbianAdaptor;
-    ILibOnChainStopped OnChainStoppedHandler;
-    void *OnChainStoppedUserObj;
 #endif
     void *Timer;
     void *Object;
@@ -467,6 +452,7 @@ void ILibChain_SafeAdd(void *chain, void *object)
 
     ILibLifeTime_Add(baseChain->Timer,data,0,&ILibChain_SafeAddSink,&ILibChain_Safe_Destroy);
 }
+
 /*! \fn void ILibChain_SafeRemove(void *chain, void *object)
 \brief Dynamically remove a link from a chain that is already running.
 \param chain The chain to remove a link from
@@ -523,9 +509,6 @@ void *ILibCreateChain()
 
     RetVal->Timer = ILibCreateLifeTime(RetVal);
 
-#if defined(__SYMBIAN32__)
-    ILibSocketWrapper_Create();
-#endif
     return(RetVal);
 }
 
@@ -557,44 +540,36 @@ void ILibAddToChain(void *Chain, void *object)
     chain->Next = NULL;
 }
 
-/*! \fn ILibForceUnBlockChain(void *Chain)
-\brief Forces a Chain to unblock, and check for pending operations
-\param Chain The chain to unblock
-*/
+// 触发select返回，快速检测链中操作
 void ILibForceUnBlockChain(void *Chain)
 {
-    struct ILibBaseChain *c = (struct ILibBaseChain*)Chain;
+    struct ILibBaseChain * c = (struct ILibBaseChain *)Chain;
 
 #if defined(WIN32) || defined(_WIN32_WCE)
     SOCKET temp;
 #endif
+
     sem_wait(&ILibChainLock);
 
 #if defined(WIN32) || defined(_WIN32_WCE)
-    //
-    // Closing the socket will trigger the select on Windows
-    //
+    // Windows下关闭套接字将触发select返回
     temp = c->Terminate;
-    c->Terminate = ~0;
+    c->Terminate = ~0; // 还会自动创建
     closesocket(temp);
-#elif defined(__SYMBIAN32__)
-    ILibChainAdaptor_ForceUnBlock(c->SymbianAdaptor);    
 #else
-    //
-    // Writing data on the pipe will trigger the select on Posix
-    //
-    if(c->TerminateWritePipe!=NULL)
-    {
+    // Posix下向管道写数据，将触发select返回
+    if (c->TerminateWritePipe != NULL) {
         fprintf(c->TerminateWritePipe," ");
         fflush(c->TerminateWritePipe);
     }
 #endif
     sem_post(&ILibChainLock);
 }
+
 void ILibChain_SubChain_Destroy(void *object)
 {
-    struct ILibChain_SubChain *c = (struct ILibChain_SubChain*)object;
-    struct ILibBaseChain *baseChain,*temp;
+    struct ILibChain_SubChain * c = (struct ILibChain_SubChain *)object;
+    struct ILibBaseChain *baseChain, *temp;
 
     //
     // Now we actually free the chain
@@ -604,20 +579,16 @@ void ILibChain_SubChain_Destroy(void *object)
     //
     // Free the pipe resources
     //
-    if(baseChain!=NULL)
-    {
-        if(baseChain->TerminateReadPipe!=NULL)
-        {
+    if (baseChain!=NULL) {
+        if (baseChain->TerminateReadPipe!=NULL) {
             fclose(baseChain->TerminateReadPipe);
         }
-        if(baseChain->TerminateWritePipe!=NULL)
-        {
+        if(baseChain->TerminateWritePipe!=NULL) {
             fclose(baseChain->TerminateWritePipe);
         }
     }
 #endif
-    while(baseChain!=NULL)
-    {
+    while (baseChain!=NULL) {
         temp = baseChain->Next;
         free(baseChain);
         baseChain = temp;
@@ -625,42 +596,33 @@ void ILibChain_SubChain_Destroy(void *object)
 #ifdef WIN32
     WSACleanup();
 #endif
-    if(ILibChainLock_RefCounter==1)
-    {
+    if(ILibChainLock_RefCounter==1) {
         sem_destroy(&ILibChainLock);
     }
     --ILibChainLock_RefCounter;    
 }
-/*! \fn void ILibChain_SafeAdd_SubChain(void *chain, void *subChain)
-\brief Dynamically add an entire chain, as a subchain to an existing chain that is already running
-\par
-\b Note: After adding a subchain, you cannot add more links/chains to the subchain. You can however, continue to
-add more links/subchains to the parent chain.
-\param chain The chain to add the subchain to
-\param subChain The subchain to add to the chain
-*/
-void ILibChain_SafeAdd_SubChain(void *chain, void *subChain)
+
+// 已经运行的chain中安全的添加chain
+// 不能在subchain中添加subchain，但是可以在parent chain中继续添加
+void ILibChain_SafeAdd_SubChain(void * chain, void * subChain)
 {
     struct ILibBaseChain* newChain = (struct ILibBaseChain*)subChain;
-    struct ILibChain_SubChain *c = (struct ILibChain_SubChain*)malloc(sizeof(struct ILibChain_SubChain));
+    struct ILibChain_SubChain * c = (struct ILibChain_SubChain*)malloc(sizeof(struct ILibChain_SubChain));
 
-    memset(c,0,sizeof(struct ILibChain_SubChain));
+    memset(c, 0, sizeof(struct ILibChain_SubChain));
     c->Destroy = &ILibChain_SubChain_Destroy;
 
-#if defined(__SYMBIAN32__)
-    newChain->SymbianAdaptor = ((struct ILibBaseChain*)chain)->SymbianAdaptor;
-#endif
     newChain->RunningFlag = ((struct ILibBaseChain*)chain)->RunningFlag;
 
     newChain->Reserved = c;
-    while(newChain!=NULL && newChain->Object!=NULL)
-    {
-        ILibChain_SafeAdd(chain,newChain->Object);
+    while (newChain != NULL && newChain->Object != NULL) {
+        ILibChain_SafeAdd(chain, newChain->Object);
         newChain = newChain->Next;
     }
 
-    ILibChain_SafeAdd(chain,c);
+    ILibChain_SafeAdd(chain, c);
 }
+
 /*! \fn void ILibChain_SafeRemove_SubChain(void *chain, void *subChain)
 \brief Dynamically removes a subchain from an existing chain that is already running
 \param chain The chain to remove the subchain from
@@ -731,123 +693,7 @@ void ILibChain_DestroyEx(void *subChain)
         newChain = temp;
     }
 }
-#if defined(__SYMBIAN32__)
-void ILibChain_OnPreSelect(void *sender)
-{
-    void *Chain = ILibChainAdaptor_GetChain(sender);
-    struct ILibBaseChain *c = (struct ILibBaseChain*)Chain;
-    struct timeval tv;
-    int slct;
-    int v;
-    void *temp;
-    void *SymbianAdaptor = NULL;
-    ILibOnChainStopped OnStopped = c->OnChainStoppedHandler;
-    void *user = c->OnChainStoppedUserObj;
 
-    ILibSocketWrapper_struct_FDSET readset;
-    ILibSocketWrapper_struct_FDSET errorset;
-    ILibSocketWrapper_struct_FDSET writeset;
-
-    ILibSocketWrapper_FDZERO(&readset);
-    ILibSocketWrapper_FDZERO(&errorset);
-    ILibSocketWrapper_FDZERO(&writeset);
-
-    slct = 0;
-
-    tv.tv_sec = UPNP_MAX_WAIT;
-    tv.tv_usec = 0;
-
-    //
-    // Iterate through all the PreSelect function pointers in the chain
-    //
-    c = (struct ILibBaseChain*)Chain;
-    while(c!=NULL && c->Object!=NULL)
-    {
-        if(((struct ILibChain*)c->Object)->PreSelect!=NULL)
-        {
-            v = (tv.tv_sec*1000) + (tv.tv_usec/1000);
-            ((struct ILibChain*)c->Object)->PreSelect(c->Object,&readset,&writeset,&errorset,&v);
-            tv.tv_sec = v/1000;
-            tv.tv_usec = 1000*(v%1000);
-        }
-        c = c->Next;
-    }
-
-    if(((struct ILibBaseChain*)Chain)->TerminateFlag==0)
-    {
-        ILibChainAdaptor_Select(sender, &readset, &writeset, &errorset, v);
-    }
-    else
-    {
-        //
-        // Quitting Time
-        //
-        SymbianAdaptor = ((struct ILibBaseChain*)Chain)->SymbianAdaptor;
-
-        //
-        // This loop will start, when the Chain was signaled to quit. Clean up the chain
-        // by iterating through all the Destroy.
-        //
-        c = (struct ILibBaseChain*)Chain;
-        while(c!=NULL && c->Object!=NULL)
-        {
-            if(((struct ILibChain*)c->Object)->Destroy!=NULL)
-            {
-                ((struct ILibChain*)c->Object)->Destroy(c->Object);
-            }
-            //
-            // After calling the Destroy, we free the link
-            //
-            free(c->Object);
-            c = c->Next;
-        }
-        ILibSocketWrapper_Destroy();
-
-        //
-        // Now we actually free the chain
-        //
-        c = (struct ILibBaseChain*)Chain;
-        while(c!=NULL)
-        {
-            temp = c->Next;
-            free(c);
-            c = temp;
-        }
-        if(ILibChainLock_RefCounter==1)
-        {
-            sem_destroy(&ILibChainLock);
-        }
-        --ILibChainLock_RefCounter;
-
-        ILibChainAdaptor_StopChain(SymbianAdaptor);
-    }
-    if(OnStopped!=NULL)
-    {
-        OnStopped(user);
-    }
-}
-void ILibChain_OnPostSelect(void* sender, void *fds_read, void *fds_write, void *fds_error)
-{
-    void *Chain = ILibChainAdaptor_GetChain(sender);
-    struct ILibBaseChain *c = (struct ILibBaseChain*)Chain;
-
-    //
-    // Iterate through all of the PostSelect in the chain
-    //
-    c = (struct ILibBaseChain*)Chain;
-    while(c!=NULL && c->Object!=NULL)
-    {
-        if(((struct ILibChain*)c->Object)->PostSelect!=NULL)
-        {
-            ((struct ILibChain*)c->Object)->PostSelect(c->Object,1,fds_read,fds_write,fds_error);
-        }
-        c = c->Next;
-    }    
-}
-void ILibChain_OnDestroy(void *sender)
-{
-}
-#endif
 /*! \fn ILibStartChain(void *Chain)
 \brief Starts a Chain
 \par
@@ -861,63 +707,36 @@ void ILibStartChain(void *Chain)
     struct ILibBaseChain *c = (struct ILibBaseChain*)Chain;
     struct ILibBaseChain *temp;
 
-#if defined(__SYMBIAN32__)
-    ILibSocketWrapper_struct_FDSET readset;
-    ILibSocketWrapper_struct_FDSET errorset;
-    ILibSocketWrapper_struct_FDSET writeset;
-    void *ChainAdaptor = ILibChainAdaptor_CreateChainAdaptor(Chain);
-#else
     fd_set readset;
     fd_set errorset;
     fd_set writeset;
-#endif
 
     struct timeval tv;
     int slct;
     int v;
 
-#if !defined(__SYMBIAN32__)
 #if !defined(WIN32) && !defined(_WIN32_WCE)
     int TerminatePipe[2];
     int flags;
 #endif
-#endif
     srand((unsigned int)time(NULL));
 
-#if defined(__SYMBIAN32__)
-    c->SymbianAdaptor = ChainAdaptor;
-    ILibChainAdaptor_StartChain(ChainAdaptor, &ILibChain_OnPreSelect, &ILibChain_OnPostSelect, &ILibChain_OnDestroy);
-    //ToDo: The fact that we are returning, and not blocking may cause problems, so we
-    //        need to investigate this further. 
-    return;
-#endif
-
-    //
-    // Use this thread as if it's our own. Keep looping until we are signaled to stop
-    //
     FD_ZERO(&readset);
     FD_ZERO(&errorset);
     FD_ZERO(&writeset);
 
-#if !defined(__SYMBIAN32__)
 #if !defined(WIN32) && !defined(_WIN32_WCE)
-    // 
-    // For posix, we need to use a pipe to force unblock the select loop
-    //
+    // POSIX下使用管道防止select阻塞
     pipe(TerminatePipe);
-    flags = fcntl(TerminatePipe[0],F_GETFL,0);
-    //
-    // We need to set the pipe to nonblock, so we can blindly empty the pipe
-    //
-    fcntl(TerminatePipe[0],F_SETFL,O_NONBLOCK|flags);
-    ((struct ILibBaseChain*)Chain)->TerminateReadPipe = fdopen(TerminatePipe[0],"r");
-    ((struct ILibBaseChain*)Chain)->TerminateWritePipe = fdopen(TerminatePipe[1],"w");
-#endif
+    flags = fcntl(TerminatePipe[0], F_GETFL, 0);
+    // 设定管道非阻塞
+    fcntl(TerminatePipe[0], F_SETFL, O_NONBLOCK | flags);
+    ((struct ILibBaseChain*)Chain)->TerminateReadPipe = fdopen(TerminatePipe[0], "r");
+    ((struct ILibBaseChain*)Chain)->TerminateWritePipe = fdopen(TerminatePipe[1], "w");
 #endif
 
     ((struct ILibBaseChain*)Chain)->RunningFlag = 1;
-    while(((struct ILibBaseChain*)Chain)->TerminateFlag == 0)
-    {
+    while (((struct ILibBaseChain*)Chain)->TerminateFlag == 0) {
         slct = 0;
         FD_ZERO(&readset);
         FD_ZERO(&errorset);
@@ -927,19 +746,17 @@ void ILibStartChain(void *Chain)
 
         // Iterate through all the PreSelect function pointers in the chain
         c = (struct ILibBaseChain*)Chain;
-        while(c!=NULL && c->Object!=NULL)
-        {
-            if(((struct ILibChain*)c->Object)->PreSelect!=NULL)
-            {
+        while (c != NULL && c->Object != NULL) {
+            if (((struct ILibChain*)c->Object)->PreSelect!=NULL) {
 #ifdef MEMORY_CHECK
 #ifdef WIN32
                 _CrtCheckMemory();
 #endif
 #endif
-                v = (tv.tv_sec*1000) + (tv.tv_usec/1000);
+                v = (tv.tv_sec * 1000) + (tv.tv_usec / 1000);
                 ((struct ILibChain*)c->Object)->PreSelect(c->Object,&readset,&writeset,&errorset,&v);
-                tv.tv_sec = v/1000;
-                tv.tv_usec = 1000*(v%1000);
+                tv.tv_sec = v / 1000;
+                tv.tv_usec = 1000 * (v % 1000);
 
 #ifdef MEMORY_CHECK
 #ifdef WIN32
@@ -953,12 +770,9 @@ void ILibStartChain(void *Chain)
         sem_wait(&ILibChainLock);
 #if defined(WIN32) || defined(_WIN32_WCE)
         // Check the fake socket, for ILibForceUnBlockChain
-        if(((struct ILibBaseChain*)Chain)->Terminate == ~0)
-        {
+        if (((struct ILibBaseChain*)Chain)->Terminate == ~0) {
             slct = -1;
-        }
-        else
-        {
+        } else {
             FD_SET(((struct ILibBaseChain*)Chain)->Terminate,&errorset);
         }
 #elif !defined(__SYMBIAN32__)
@@ -969,58 +783,44 @@ void ILibStartChain(void *Chain)
 #endif
         sem_post(&ILibChainLock);
 
-        //
-        // If this flag is set, force the max block time to be zero
-        //
-        if(slct != 0)
-        {
+        // 立即返回，需要重新初始化Fake Socket
+        if (slct != 0) {
             tv.tv_sec = 0;
             tv.tv_usec = 0;
         }
 
-        // The actual Select Statement
-#if !defined(__SYMBIAN32__)
         slct = select(FD_SETSIZE, &readset, &writeset, &errorset, &tv);
-#endif
-        if(slct == -1)
-        {
-            // If the select simply timed out, we need to clear these sets
+
+        if (slct == -1) {
+            // 超时、清空结合
             FD_ZERO(&readset);
             FD_ZERO(&writeset);
             FD_ZERO(&errorset);
         }
 
 #if defined(WIN32) || defined(_WIN32_WCE)
-        // Reinitialise our fake socket if necessary
-        if(((struct ILibBaseChain*)Chain)->Terminate==~0)
-        {
-            ((struct ILibBaseChain*)Chain)->Terminate = socket(AF_INET,SOCK_DGRAM,0);
+        // 确保Fake Socket有效
+        if (((struct ILibBaseChain*)Chain)->Terminate == ~0) {
+            ((struct ILibBaseChain*)Chain)->Terminate = socket(AF_INET, SOCK_DGRAM, 0);
         }
 #elif !defined(__SYMBIAN32__)
-        if(FD_ISSET(TerminatePipe[0],&readset))
-        {
-            //
-            // Empty the pipe
-            //
-            while(fgetc(((struct ILibBaseChain*)Chain)->TerminateReadPipe)!=EOF)
-            {
-            }
+        if (FD_ISSET(TerminatePipe[0], &readset)) {
+            // 清空读管道
+            while (fgetc(((struct ILibBaseChain*)Chain)->TerminateReadPipe) != EOF) {}
         }
 #endif
         //
         // Iterate through all of the PostSelect in the chain
         //
         c = (struct ILibBaseChain*)Chain;
-        while(c!=NULL && c->Object!=NULL)
-        {
-            if(((struct ILibChain*)c->Object)->PostSelect!=NULL)
-            {
+        while (c != NULL && c->Object != NULL) {
+            if (((struct ILibChain*)c->Object)->PostSelect != NULL) {
 #ifdef MEMORY_CHECK
 #ifdef WIN32
                 _CrtCheckMemory();
 #endif
 #endif
-                ((struct ILibChain*)c->Object)->PostSelect(c->Object,slct,&readset,&writeset,&errorset);
+                ((struct ILibChain*)c->Object)->PostSelect(c->Object, slct, &readset, &writeset, &errorset);
 #ifdef MEMORY_CHECK
 #ifdef WIN32
                 _CrtCheckMemory();
@@ -1031,42 +831,35 @@ void ILibStartChain(void *Chain)
         }
     }
 
-    // This loop will start, when the Chain was signaled to quit. Clean up the chain
-    // by iterating through all the Destroy.
-    c = (struct ILibBaseChain*)Chain;
-    while(c!=NULL && c->Object!=NULL)
-    {
-        if(((struct ILibChain*)c->Object)->Destroy!=NULL)
-        {
-            ((struct ILibChain*)c->Object)->Destroy(c->Object);
+    // 调用链中对象的Destroy，并释放链中的对象。
+    c = (struct ILibBaseChain *)Chain;
+    while (c != NULL && c->Object != NULL) {
+        if (((struct ILibChain *)c->Object)->Destroy != NULL) {
+            ((struct ILibChain *)c->Object)->Destroy(c->Object);
         }
-        //
-        // After calling the Destroy, we free the link
-        //
+        // 释放对象
         freesafe(c->Object);
         c = c->Next;
     }
 
-    // Now we actually free the chain
-    c = (struct ILibBaseChain*)Chain;
+    // 销毁链头部信息
+    c = (struct ILibBaseChain *)Chain;
 #if !defined(WIN32) && !defined(_WIN32_WCE)
-    //
-    // Free the pipe resources
-    //
+    // 释放管道资源
     fclose(c->TerminateReadPipe);
     fclose(c->TerminateWritePipe);
-    c->TerminateReadPipe=0;
-    c->TerminateWritePipe=0;
+    c->TerminateReadPipe = 0;
+    c->TerminateWritePipe = 0;
 #endif
 #if defined(WIN32)
-    if(c->Terminate != ~0)
-    {
+    if (c->Terminate != ~0) {
         closesocket(c->Terminate);
         c->Terminate = ~0;
     }
 #endif
-    while(c != NULL)
-    {
+
+    // 释放BaseChain对象
+    while (c != NULL) {
         temp = c->Next;
         free(c);
         c = temp;
@@ -1074,32 +867,17 @@ void ILibStartChain(void *Chain)
 #ifdef WIN32
     WSACleanup();
 #endif
-    if(ILibChainLock_RefCounter==1)
-    {
+    if(ILibChainLock_RefCounter == 1) {
         sem_destroy(&ILibChainLock);
     }
     --ILibChainLock_RefCounter;
 }
 
-/*! \fn ILibStopChain(void *Chain)
-\brief Stops a chain
-\par
-This will signal the microstack thread to shutdown. When the chain cleans itself up, 
-the thread that is blocked on ILibStartChain will return.
-\param Chain The Chain to stop
-*/
-void ILibStopChain(void *Chain)
+void ILibStopChain(void * Chain)
 {
     ((struct ILibBaseChain*)Chain)->TerminateFlag = 1;
     ILibForceUnBlockChain(Chain);
 }
-#if defined(__SYMBIAN32__)
-void ILibChain_SetOnStoppedHandler(void *chain, void *user, ILibOnChainStopped Handler)
-{
-    ((struct ILibBaseChain*)chain)->OnChainStoppedHandler = Handler;
-    ((struct ILibBaseChain*)chain)->OnChainStoppedUserObj = user;
-}
-#endif
 
 /*! \fn ILibDestructXMLNodeList(struct ILibXMLNode *node)
 \brief Frees resources from an XMLNodeList tree that was returned from ILibParseXML
@@ -3472,49 +3250,26 @@ int ILibGetRawPacket(struct packetheader* packet,char **RetVal)
     return(i);
 }
 
-/*! \fn unsigned short ILibGetDGramSocket(int local, int *TheSocket)
-\brief Allocates a UDP socket for a given interface, choosing a random port number from 50000 to 65535
-\par
-\b Note: Storage type of \a TheSocket is platform dependent. <br>
-Windows Winsock2 = HANDLE*<br>
-Windows Winsock1 = SOCKET*<br>
-Linux/Posix = int*<br>
-\param local The interface to bind to
-\param TheSocket The created UDP socket
-\returns The port number that was bound
-*/
+// 根据给定的本地接口，创建UDP套接字，绑定端口为0时，选择50000~65535之间的随机端口，返回端口号
 #if defined(WIN32) || defined(_WIN32_WCE)
 unsigned short ILibGetDGramSocket(int local, HANDLE *TheSocket)
 #else
 unsigned short ILibGetDGramSocket(int local, int *TheSocket)
 #endif
 {
-    int count = 0;
-    unsigned short PortNum = -1;
-    struct sockaddr_in addr;    
+    int count               = 0;
+    unsigned short PortNum  = -1;
+    struct sockaddr_in addr;
     memset((char *)&(addr), 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = local;
+    addr.sin_family         = AF_INET;
+    addr.sin_addr.s_addr    = local;
 #if defined(WIN32) || defined(_WIN32_WCE)
     *TheSocket = (HANDLE)socket(AF_INET, SOCK_DGRAM, 0);
-#elif defined(__SYMBIAN32__)
-    *TheSocket = ILibSocketWrapper_socket(SOCK_DGRAM);
 #else
     *TheSocket = (int)socket(AF_INET, SOCK_DGRAM, 0);
 #endif
-    //
-    // Keep looping until we find a port number that isn't in use. Since
-    // we're using random numbers, the first try should usually do it.
-    // We can't just bind to 0, because we need to be IANA compliant.
-    //
-    do
-    {
-        //
-        // Choose a random port from 50000 to 65500, which is what IANA says to use
-        // for non standard ports
-        //
-        if (++count >= 20) 
-        {
+    do {
+        if (++count >= 20) {
             PortNum = 0;
             break;
         }
@@ -3523,29 +3278,15 @@ unsigned short ILibGetDGramSocket(int local, int *TheSocket)
     }
 #ifdef WIN32
     while(bind((SOCKET)*TheSocket, (struct sockaddr *) &(addr), sizeof(addr)) < 0);
-#elif defined(__SYMBIAN32__)
-    while(ILibSocketWrapper_bind((int)*TheSocket, (struct sockaddr *) &(addr)) < 0);
 #else
     while(bind((int)*TheSocket, (struct sockaddr *) &(addr), sizeof(addr)) < 0);
 #endif
-    return(PortNum);
+    return (PortNum);
 }
 
-
-/*! \fn unsigned short ILibGetStreamSocket(int local, unsigned short PortNumber, int *TheSocket)
-\brief Allocates a TCP socket for a given interface, choosing a random port number from 50000 to 65535
-\par
-\b Note: Storage type of \a TheSocket is platform dependent. <br>
-Windows Winsock2 = HANDLE*<br>
-Windows Winsock1 = SOCKET*<br>
-Linux/Posix = int*<br>
-\param local The interface to bind to
-\param PortNumber 0 for random IANA specified port number, otherwise the port number to bind to
-\param TheSocket The created TCP socket
-\returns The port number that was bound
-*/
+// 根据给定的本地接口，创建TCP套接字，绑定端口为0时，选择50000~65535之间的随机端口，返回端口号
 #if defined(WIN32) || defined(_WIN32_WCE)
-unsigned short ILibGetStreamSocket(int local, unsigned short PortNumber, HANDLE *TheSocket)
+unsigned short ILibGetStreamSocket(int local, unsigned short PortNumber, HANDLE * TheSocket)
 #else
 unsigned short ILibGetStreamSocket(int local, unsigned short PortNumber, int *TheSocket)
 #endif
@@ -3555,26 +3296,18 @@ unsigned short ILibGetStreamSocket(int local, unsigned short PortNumber, int *Th
     unsigned short PortNum  = -1;
     struct sockaddr_in addr;
     memset((char *)&(addr), 0, sizeof(addr));
-    addr.sin_family = AF_INET;
-    addr.sin_addr.s_addr = local;
+    addr.sin_family         = AF_INET;
+    addr.sin_addr.s_addr    = local;
 
 #if defined(WIN32) || defined(_WIN32_WCE)
     *TheSocket = (HANDLE)socket(AF_INET, SOCK_STREAM, 0);
-#elif defined(__SYMBIAN32__)
-    *TheSocket = ILibSocketWrapper_socket(SOCK_STREAM);
 #else
     *TheSocket = (int)socket(AF_INET, SOCK_STREAM, 0);
 #endif
-    if(PortNumber == 0)
-    {
-        // If PortNumber is 0, we need to choose a random port from MINPORTNUMBER to 
-        // MINPORTNUMBER + PORTNUMBERRANGE.
-        // By default this is 50000 + 15000, which gives us the IANA defined range to use
-        do
-        {
-            if (++count >= 20)
-            {
-                PortNum=0;
+    if (PortNumber == 0) {
+        do {
+            if (++count >= 20) {
+                PortNum = 0;
                 break;
             }
             PortNum = (unsigned short)(MINPORTNUMBER + ((unsigned short)rand() % PORTNUMBERRANGE));
@@ -3582,42 +3315,32 @@ unsigned short ILibGetStreamSocket(int local, unsigned short PortNumber, int *Th
         }
 #ifdef WIN32
         while(bind((SOCKET)*TheSocket, (struct sockaddr *) &(addr), sizeof(addr)) < 0);
-#elif defined(__SYMBIAN32__)
-        while(ILibSocketWrapper_bind((int)*TheSocket, (struct sockaddr *) &(addr)) < 0);
 #else
         while(bind((int)*TheSocket, (struct sockaddr *) &(addr), sizeof(addr)) < 0);
 #endif
-    }
-    else
-    {
-        //
-        // If a specific port was specified, try to use that
-        //
+    } else {
+        // 设置地址复用套接字选项，尽量绑定指定端口
         addr.sin_port = htons(PortNumber);
 #ifdef WIN32
         if (setsockopt((SOCKET)*TheSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&ra, sizeof(ra)) < 0)
-#elif !defined(__SYMBIAN32__)
-#if defined(__APPLE__)
+#else
+    #if defined(__APPLE__)
         if (setsockopt((int)*TheSocket, SOL_SOCKET, SO_REUSEPORT, (char*)&ra, sizeof(ra)) < 0)
-#else
+    #else
         if (setsockopt((int)*TheSocket, SOL_SOCKET, SO_REUSEADDR, (char*)&ra, sizeof(ra)) < 0)
-#endif
-#else
-        if(ILibSocketWrapper_SetReuseAddr((int)*TheSocket,1)<0)
+    #endif
 #endif
         {
+            // 套接字选项设置失败，处理？
         }
 #ifdef WIN32
         PortNum = bind((SOCKET)*TheSocket, (struct sockaddr *) &(addr), sizeof(addr)) < 0 ? 0: PortNumber;
-#elif defined(__SYMBIAN32__)
-        PortNum = ILibSocketWrapper_bind((int)*TheSocket, (struct sockaddr *) &(addr))<0?0:PortNumber;
 #else
         PortNum = bind((int)*TheSocket, (struct sockaddr *) &(addr), sizeof(addr))<0?0:PortNumber;
 #endif
     }
-    return(PortNum);
+    return (PortNum); // 小于零，表示失败
 }
-
 
 /*! \fn ILibParseUri(char* URI, char** IP, unsigned short* Port, char** Path)
 \brief Parses a URI string, into its IP Address, Port Number, and Path components

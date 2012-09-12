@@ -1,14 +1,6 @@
 #ifndef ___ILibAsyncUDPSocket___
 #define ___ILibAsyncUDPSocket___
 
-/*! \file ILibAsyncUDPSocket.h 
-    \brief MicroStack APIs for UDP Functionality
-*/
-
-/*! \defgroup ILibAsyncUDPSocket ILibAsyncUDPSocket Module
-    \{
-*/
-
 #if defined(WIN32) || defined(_WIN32_WCE)
 #include <STDDEF.H>
 #elif defined(_POSIX)
@@ -23,13 +15,10 @@
 
 enum ILibAsyncUDPSocket_Reuse
 {
-    ILibAsyncUDPSocket_Reuse_EXCLUSIVE=0,    /*!< A socket is to be bound for exclusive access */
-    ILibAsyncUDPSocket_Reuse_SHARED=1        /*!< A socket is to be bound for shared access */
+    ILibAsyncUDPSocket_Reuse_EXCLUSIVE  = 0,    /*!< A socket is to be bound for exclusive access */
+    ILibAsyncUDPSocket_Reuse_SHARED     = 1        /*!< A socket is to be bound for shared access */
 };
 
-/*! \typedef ILibAsyncUDPSocket_SocketModule
-    \brief The handle for an ILibAsyncUDPSocket module
-*/
 typedef void* ILibAsyncUDPSocket_SocketModule;
 /*! \typedef ILibAsyncUDPSocket_OnData
     \brief The handler that is called when data is received

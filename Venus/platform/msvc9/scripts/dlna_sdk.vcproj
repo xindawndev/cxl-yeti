@@ -217,10 +217,6 @@
 				Name="Functional"
 				>
 				<File
-					RelativePath="..\..\..\include\dlna\Functional\Airplay_MicroStack.h"
-					>
-				</File>
-				<File
 					RelativePath="..\..\..\include\dlna\Functional\DMR_MicroStack.h"
 					>
 				</File>
@@ -460,10 +456,6 @@
 			<Filter
 				Name="Functional"
 				>
-				<File
-					RelativePath="..\..\..\src\dlna\Functional\Airplay_MicroStack.c"
-					>
-				</File>
 				<File
 					RelativePath="..\..\..\src\dlna\Functional\DMR_MicroStack.c"
 					>

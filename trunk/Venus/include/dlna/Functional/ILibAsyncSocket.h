@@ -1,14 +1,6 @@
 #ifndef ___ILibAsyncSocket___
 #define ___ILibAsyncSocket___
 
-/*! \file ILibAsyncSocket.h 
-    \brief MicroStack APIs for TCP Client Functionality
-*/
-
-/*! \defgroup ILibAsyncSocket ILibAsyncSocket Module
-    \{
-*/
-
 #if defined(WIN32) || defined(_WIN32_WCE)
 #include <STDDEF.H>
 #elif defined(_POSIX)

@@ -3,8 +3,6 @@
 #        include "stdafx.h"
 #    endif
 char* DMRCP_PLATFORM = "WINDOWS UPnP/1.0 PPTV MicroStack/1.0.2777";
-#elif defined(__SYMBIAN32__)
-char* DMRCP_PLATFORM = "SYMBIAN UPnP/1.0 PPTV MicroStack/1.0.2777";
 #else
 char* DMRCP_PLATFORM = "POSIX UPnP/1.0 PPTV MicroStack/1.0.2777";
 #endif

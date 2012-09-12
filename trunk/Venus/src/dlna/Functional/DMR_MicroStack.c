@@ -3,8 +3,6 @@
 #        include "stdafx.h"
 #    endif
 char* DMR_PLATFORM = "WINDOWS";
-#elif defined(__SYMBIAN32__)
-char* DMR_PLATFORM = "SYMBIAN";
 #else
 char* DMR_PLATFORM = "POSIX";
 #endif
@@ -5810,8 +5808,6 @@ void DMR_ProcessHTTPPacket(struct ILibWebServer_Session *session, struct packeth
 
 #if defined(WIN32) || defined(_WIN32_WCE)
     char *responseHeader = "\r\nCONTENT-TYPE:  text/xml; charset=\"utf-8\"\r\nServer: WINDOWS, UPnP/1.0, PPTV MicroStack/1.0.2777";
-#elif defined(__SYMBIAN32__)
-    char *responseHeader = "\r\nCONTENT-TYPE:  text/xml; charset=\"utf-8\"\r\nServer: SYMBIAN, UPnP/1.0, PPTV MicroStack/1.0.2777";
 #else
     char *responseHeader = "\r\nCONTENT-TYPE:  text/xml; charset=\"utf-8\"\r\nServer: POSIX, UPnP/1.0, PPTV MicroStack/1.0.2777";
 #endif
@@ -6997,8 +6993,6 @@ void DMR_ResponseGeneric(const DMR_MicroStackToken DMR_Token,const char* Service
     LVL3DEBUG(printf("SendBody: %s\r\n",packet);)
 #if defined(WIN32) || defined(_WIN32_WCE)
         RVAL=ILibWebServer_StreamHeader_Raw(session,200,"OK","\r\nEXT:\r\nCONTENT-TYPE: text/xml; charset=\"utf-8\"\r\nSERVER: WINDOWS, UPnP/1.0, PPTV MicroStack/1.0.2777",1);
-#elif defined(__SYMBIAN32__)
-        RVAL=ILibWebServer_StreamHeader_Raw(session,200,"OK","\r\nEXT:\r\nCONTENT-TYPE: text/xml; charset=\"utf-8\"\r\nSERVER: SYMBIAN, UPnP/1.0, PPTV MicroStack/1.0.2777",1);
 #else
         RVAL=ILibWebServer_StreamHeader_Raw(session,200,"OK","\r\nEXT:\r\nCONTENT-TYPE: text/xml; charset=\"utf-8\"\r\nSERVER: POSIX, UPnP/1.0, PPTV MicroStack/1.0.2777",1);
 #endif
@@ -7831,8 +7825,6 @@ void DMR_StreamDescriptionDocument(struct ILibWebServer_Session *session, int in
 {
 #if defined(WIN32) || defined(_WIN32_WCE)
     char *responseHeader = "\r\nCONTENT-TYPE:  text/xml; charset=\"utf-8\"\r\nServer: WINDOWS, UPnP/1.0, PPTV MicroStack/1.0.2777";
-#elif defined(__SYMBIAN32__)
-    char *responseHeader = "\r\nCONTENT-TYPE:  text/xml; charset=\"utf-8\"\r\nServer: SYMBIAN, UPnP/1.0, PPTV MicroStack/1.0.2777";
 #else
     char *responseHeader = "\r\nCONTENT-TYPE:  text/xml; charset=\"utf-8\"\r\nServer: POSIX, UPnP/1.0, PPTV MicroStack/1.0.2777";
 #endif

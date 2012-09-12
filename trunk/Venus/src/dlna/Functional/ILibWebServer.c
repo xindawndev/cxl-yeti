@@ -1,6 +1,5 @@
 #define HTTPVERSION "1.1"
 
-
 #if defined(WIN32)
 #define _CRTDBG_MAP_ALLOC
 #endif
@@ -22,7 +21,6 @@
 #if defined(WIN32) && !defined(_WIN32_WCE)
 #include <crtdbg.h>
 #endif
-
 
 #define HTTP_SESSION_IDLE_TIMEOUT 3
 

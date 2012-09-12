@@ -4,15 +4,7 @@
 #include "ILibParsers.h"
 #include "ILibAsyncSocket.h"
 
-/*! \file ILibWebClient.h 
-    \brief MicroStack APIs for HTTP Client functionality
-*/
-
 #define ILibWebClientIsStatusOk(statusCode) (statusCode>=200 && statusCode<=299)
-
-/*! \defgroup ILibWebClient ILibWebClient Module
-    \{
-*/
 
 /*! \def WEBCLIENT_DESTROYED
     \brief The ILibWebClient object was destroyed

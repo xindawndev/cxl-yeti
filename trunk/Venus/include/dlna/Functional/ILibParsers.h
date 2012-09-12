@@ -1,17 +1,6 @@
-/*! \file ILibParsers.h 
-    \brief MicroStack APIs for various functions and tasks
-*/
-
 #ifndef __ILibParsers__
 #define __ILibParsers__
 
-/*! \defgroup ILibParsers ILibParser Modules
-    \{
-*/
-
-/*! \def MAX_HEADER_LENGTH
-    Specifies the maximum allowed length for an HTTP Header
-*/
 #define MAX_HEADER_LENGTH 800
 
 #ifdef MEMORY_CHECK
@@ -59,13 +48,6 @@
 #endif
     #include <fcntl.h>
     #include <signal.h>
-#elif defined(__SYMBIAN32__)
-    #include <libc\stddef.h>
-    #include <libc\sys\types.h>
-    #include <libc\sys\socket.h>
-    #include <libc\netinet\in.h>
-    #include <libc\arpa\inet.h>
-    #include <libc\sys\time.h>
 #endif
 
 #include <stdlib.h>
@@ -84,16 +66,6 @@
     #include <time.h>
     #include <sys/timeb.h>
 #endif
-#if defined(__SYMBIAN32__)
-    #include "ILibSymbianSemaphore.h"
-    #define sem_t void*
-    #define sem_init(x,pShared,InitValue) ILibSymbian_CreateSemaphore(x,InitValue)
-    #define sem_destroy(x) ILibSymbian_DestroySemaphore(x)
-    #define sem_wait(x) ILibSymbian_WaitSemaphore(x)
-    #define sem_trywait(x) ILibSymbian_TryWaitSemaphore(x)
-    #define sem_post(x) ILibSymbian_SignalSemaphore(x)
-#endif
-
 
 #if defined(WIN32) || defined(_WIN32_WCE)
 #ifndef FD_SETSIZE
@@ -102,16 +74,16 @@
     #define SEM_MAX_COUNT FD_SETSIZE
 #endif
     void ILibGetTimeOfDay(struct timeval *tp);
-    #define sem_t HANDLE
-    #define sem_init(x,pShared,InitValue) *x=CreateSemaphore(NULL,InitValue,SEM_MAX_COUNT,NULL)
-    #define sem_destroy(x) (CloseHandle(*x)==0?1:0)
-    #define sem_wait(x) WaitForSingleObject(*x,INFINITE)
-    #define sem_trywait(x) ((WaitForSingleObject(*x,0)==WAIT_OBJECT_0)?0:1)
-    #define sem_post(x) ReleaseSemaphore(*x,1,NULL)
+    #define sem_t                           HANDLE
+    #define sem_init(x,pShared,InitValue)   *x=CreateSemaphore(NULL,InitValue,SEM_MAX_COUNT,NULL)
+    #define sem_destroy(x)                  (CloseHandle(*x)==0?1:0)
+    #define sem_wait(x)                     WaitForSingleObject(*x,INFINITE)
+    #define sem_trywait(x)                  ((WaitForSingleObject(*x,0)==WAIT_OBJECT_0)?0:1)
+    #define sem_post(x)                     ReleaseSemaphore(*x,1,NULL)
 
-    #define strncasecmp(x,y,z) _strnicmp(x,y,z)
-    #define strcasecmp(x,y) _stricmp(x,y)
-    #define gettimeofday(tp,tzp) ILibGetTimeOfDay(tp)
+    #define strncasecmp(x,y,z)              _strnicmp(x,y,z)
+    #define strcasecmp(x,y)                 _stricmp(x,y)
+    #define gettimeofday(tp,tzp)            ILibGetTimeOfDay(tp)
 
     #if !defined(_WIN32_WCE)
         #define tzset() _tzset()
@@ -132,13 +104,7 @@
     #endif
 #endif
 
-/*! \def UPnPMIN(a,b)
-    Returns the minimum of \a a and \a b.
-*/
 #define UPnPMIN(a,b) (((a)<(b))?(a):(b))
-/*! \def ILibIsChainBeingDestroyed(Chain)
-    Determines if the specified chain is in the process of being disposed.
-*/
 #define ILibIsChainBeingDestroyed(Chain) (*((int*)Chain))
 #define ILibIsChainRunning(Chain) (((int*)Chain)[1])
 
@@ -148,7 +114,6 @@ typedef enum
     ILibServerScope_LocalLoopback   = 1,
     ILibServerScope_LocalSegment    = 2
 }ILibServerScope;
-
 
 typedef    void(*ILibChain_PreSelect)(void* object,void *readset, void *writeset, void *errorset, int* blocktime);
 typedef    void(*ILibChain_PostSelect)(void* object,int slct, void *readset, void *writeset, void *errorset);
@@ -169,22 +134,6 @@ int ILibReaderWriterLock_WriteLock(ILibReaderWriterLock rwLock);
 int ILibReaderWriterLock_WriteUnLock(ILibReaderWriterLock rwLock);
 void ILibReaderWriterLock_Destroy(ILibReaderWriterLock rwLock);
 
-#if defined(__SYMBIAN32__)
-typedef void (*ILibOnChainStopped)(void *user);
-#endif
-
-/*! \defgroup DataStructures Data Structures
-    \ingroup ILibParsers
-    \{
-    \}
-*/
-
-/*! \struct parser_result_field ILibParsers.h
-    \brief Data Elements of \a parser_result
-    \par
-    This structure represents individual tokens, resulting from a call to
-    \a ILibParseString and \a ILibParseStringAdv
-*/
 struct parser_result_field
 {
     /*! \var data
@@ -588,9 +537,6 @@ void ILibChain_SafeRemove_SubChain(void *chain, void *subChain);
 void ILibChain_DestroyEx(void *chain);
 void ILibStartChain(void *chain);
 void ILibStopChain(void *chain);
-#if defined(__SYMBIAN32__)
-void ILibChain_SetOnStoppedHandler(void *chain, void *user, ILibOnChainStopped Handler);
-#endif
 void ILibForceUnBlockChain(void *Chain);
 /* \} */
 

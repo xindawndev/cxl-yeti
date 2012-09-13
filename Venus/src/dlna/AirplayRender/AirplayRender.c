@@ -113,6 +113,8 @@ struct AirplayDataObject
     char *                  friendly_name;
     char *                  mac_addr;
     char *                  password;
+
+    void *                  user_tag;
 };
 
 char * AirplayCalcResponse(const char * username,
@@ -292,6 +294,7 @@ AirplayToken AirplayCreate(void * chain,
     ret_val->destroy        = &AirplayDestroy;
     ret_val->friendly_name  = CreateString(friendly_name);
     ret_val->mac_addr       = CreateString(mac_addr);
+    ret_val->user_tag       = NULL;
     if (password != NULL) {
         ret_val->password   = CreateString(password);
     }
@@ -312,4 +315,29 @@ AirplayToken AirplayCreate(void * chain,
     ILibAddToChain(chain, (void *)ret_val);
 
     return (void *)ret_val;
+}
+
+int AirplayGetLocalInterfaceToHost(const AirplaySessionToken session_token)
+{
+    return (ILibWebServer_GetLocalInterface((struct ILibWebServer_Session *)session_token));
+}
+
+void * AirplayGetWebServerToken(const AirplayToken airplay_token)
+{
+    return ((struct AirplayDataObject *)(airplay_token))->http_server;
+}
+
+void AirplaySetTag(const AirplayToken airplay_token, void * user_token)
+{
+    ((struct AirplayDataObject *)(airplay_token))->user_tag = user_token;
+}
+
+void * AirplayGetTag(const AirplayToken airplay_token)
+{
+    return ((struct AirplayDataObject *)(airplay_token))->user_tag;
+}
+
+AirplayToken AirplayTokenFromSessionToken(const AirplaySessionToken session_token)
+{
+    return((struct ILibWebServer_Session *)(session_token))->User;
 }

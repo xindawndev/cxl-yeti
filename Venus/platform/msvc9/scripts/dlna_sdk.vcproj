@@ -241,6 +241,10 @@
 					>
 				</File>
 				<File
+					RelativePath="..\..\..\include\dlna\Functional\ILibMd5.h"
+					>
+				</File>
+				<File
 					RelativePath="..\..\..\include\dlna\Functional\ILibParsers.h"
 					>
 				</File>

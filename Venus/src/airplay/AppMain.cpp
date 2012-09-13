@@ -4,8 +4,8 @@
 int main(int argc, char **argv)
 {
     int listenPort = 36667;
-    std::string password = "123";
-    bool usePassword = true;
+    std::string password = "";
+    bool usePassword = false;
     ZeroconfWin zfw;
 
     if (AirplayServer::start_server(listenPort, true)) {

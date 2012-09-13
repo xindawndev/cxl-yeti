@@ -2,6 +2,7 @@
 #include "AirplayRender.h"
 #include "ILibWebServer.h"
 #include "ILibDnssd.h"
+#include "ILibMd5.h"
 
 #define RECEIVEBUFFER 1024
 
@@ -121,9 +122,19 @@ char * AirplayCalcResponse(const char * username,
                           const char * digestUri,
                           const char * nonce)
 {
-    //char * resp;
-    //char * ha1;
-    //char * ha2;
+    char * resp;
+    char * ha1;
+    char * ha2;
+    char buf[128] = {0};
+    char * bytes = NULL;
+
+    MD5_CTX md5ctx;
+
+    MD5Init(&md5ctx, 0);
+    sprintf(buf, "%s:%s:%s", username, realm, password);
+    MD5Update(&md5ctx, buf, strlen(buf));
+    MD5Final(&md5ctx);
+    bytes = (char *)&(md5ctx.digest);
 
     //ha1 = Md5::GetMD5(username + ":" + realm + ":" + password);
     //ha2 = Md5::GetMD5(method + ":" + digestUri);

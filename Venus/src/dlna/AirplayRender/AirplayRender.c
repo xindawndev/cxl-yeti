@@ -3,6 +3,102 @@
 #include "ILibWebServer.h"
 #include "ILibDnssd.h"
 
+#define RECEIVEBUFFER 1024
+
+#define AIRPLAY_STATUS_OK                  200
+#define AIRPLAY_STATUS_SWITCHING_PROTOCOLS 101
+#define AIRPLAY_STATUS_NEED_AUTH           401
+#define AIRPLAY_STATUS_NOT_FOUND           404
+#define AIRPLAY_STATUS_METHOD_NOT_ALLOWED  405
+#define AIRPLAY_STATUS_NOT_IMPLEMENTED     501
+#define AIRPLAY_STATUS_NO_RESPONSE_NEEDED  1000
+
+#define EVENT_NONE     -1
+#define EVENT_PLAYING   0
+#define EVENT_PAUSED    1
+#define EVENT_LOADING   2
+#define EVENT_STOPPED   3
+const char *eventStrings[] = {"playing", "paused", "loading", "stopped"};
+
+#define PLAYBACK_INFO  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"\
+    "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\r\n"\
+    "<plist version=\"1.0\">\r\n"\
+    "<dict>\r\n"\
+    "<key>duration</key>\r\n"\
+    "<real>%f</real>\r\n"\
+    "<key>loadedTimeRanges</key>\r\n"\
+    "<array>\r\n"\
+    "\t\t<dict>\r\n"\
+    "\t\t\t<key>duration</key>\r\n"\
+    "\t\t\t<real>%f</real>\r\n"\
+    "\t\t\t<key>start</key>\r\n"\
+    "\t\t\t<real>0.0</real>\r\n"\
+    "\t\t</dict>\r\n"\
+    "</array>\r\n"\
+    "<key>playbackBufferEmpty</key>\r\n"\
+    "<true/>\r\n"\
+    "<key>playbackBufferFull</key>\r\n"\
+    "<false/>\r\n"\
+    "<key>playbackLikelyToKeepUp</key>\r\n"\
+    "<true/>\r\n"\
+    "<key>position</key>\r\n"\
+    "<real>%f</real>\r\n"\
+    "<key>rate</key>\r\n"\
+    "<real>%d</real>\r\n"\
+    "<key>readyToPlay</key>\r\n"\
+    "<true/>\r\n"\
+    "<key>seekableTimeRanges</key>\r\n"\
+    "<array>\r\n"\
+    "\t\t<dict>\r\n"\
+    "\t\t\t<key>duration</key>\r\n"\
+    "\t\t\t<real>%f</real>\r\n"\
+    "\t\t\t<key>start</key>\r\n"\
+    "\t\t\t<real>0.0</real>\r\n"\
+    "\t\t</dict>\r\n"\
+    "</array>\r\n"\
+    "</dict>\r\n"\
+    "</plist>\r\n"
+
+#define PLAYBACK_INFO_NOT_READY  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"\
+    "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\r\n"\
+    "<plist version=\"1.0\">\r\n"\
+    "<dict>\r\n"\
+    "<key>readyToPlay</key>\r\n"\
+    "<false/>\r\n"\
+    "</dict>\r\n"\
+    "</plist>\r\n"
+
+#define SERVER_INFO  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"\
+    "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\r\n"\
+    "<plist version=\"1.0\">\r\n"\
+    "<dict>\r\n"\
+    "<key>deviceid</key>\r\n"\
+    "<string>%s</string>\r\n"\
+    "<key>features</key>\r\n"\
+    "<integer>119</integer>\r\n"\
+    "<key>model</key>\r\n"\
+    "<string>AppleTV2,1</string>\r\n"\
+    "<key>protovers</key>\r\n"\
+    "<string>1.0</string>\r\n"\
+    "<key>srcvers</key>\r\n"\
+    "<string>"AIRPLAY_SERVER_VERSION_STR"</string>\r\n"\
+    "</dict>\r\n"\
+    "</plist>\r\n"
+
+#define EVENT_INFO "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\n\r\n"\
+    "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\n\r\n"\
+    "<plist version=\"1.0\">\r\n"\
+    "<dict>\r\n"\
+    "<key>category</key>\r\n"\
+    "<string>video</string>\r\n"\
+    "<key>state</key>\r\n"\
+    "<string>%s</string>\r\n"\
+    "</dict>\r\n"\
+    "</plist>\r\n"\
+
+#define AUTH_REALM "AirPlay"
+#define AUTH_REQUIRED "WWW-Authenticate: Digest realm=\""  AUTH_REALM  "\", nonce=\"%s\"\r\n"
+
 struct AirplayDataObject
 {
     ILibChain_PreSelect     pre_select;
@@ -18,7 +114,82 @@ struct AirplayDataObject
     char *                  password;
 };
 
-void AirplayProcessHTTPPacket()
+char * AirplayCalcResponse(const char * username,
+                          const char * password,
+                          const char * realm,
+                          const char * method,
+                          const char * digestUri,
+                          const char * nonce)
+{
+    //char * resp;
+    //char * ha1;
+    //char * ha2;
+
+    //ha1 = Md5::GetMD5(username + ":" + realm + ":" + password);
+    //ha2 = Md5::GetMD5(method + ":" + digestUri);
+
+    //resp = Md5::GetMD5(str_to_lower(ha1) + ":" + nonce + ":" + str_to_lower(ha2));
+    //return str_to_lower(resp);
+
+    return NULL;
+}
+
+char * AirplayGetFildFromString(const char * auth_str, const char * field)
+{
+    char * retstr = NULL;
+    //int field_index = ILibString_IndexOf(auth_str, strlen(auth_str), field, strlen(field));
+    //if (field_index != -1) {
+    //    int equal_index = ILibString_IndexOf(auth_str + field_index, strlen(auth_str) - field_index, "=", 1);
+    //}
+    return retstr;
+}
+
+int AirplayCheckAuthorization(void * object, char * auth_str, char * method, char * uri)
+{
+    struct AirplayDataObject *s = (struct AirplayDataObject *)object;
+    int auth_valid              = 1;
+    char * username             = NULL;
+
+    if (auth_str == NULL) {
+        return 0;
+    }
+
+    //username = AirplayGetFildFromString(auth_str, "username");
+
+    //if (username == NULL) {
+    //    auth_valid = 0;
+    //}
+
+    //if (auth_valid)
+    //    if (AirplayGetFildFromString(auth_str, "realm") != AUTH_REALM)
+    //        auth_valid = 0;
+
+    //if (auth_valid)
+    //    if (AirplayGetFildFromString(auth_str, "nonce") != m_auth_nonce_)
+    //        auth_valid = 0;
+
+    //if (auth_valid)
+    //    if (AirplayGetFildFromString(auth_str, "uri") != uri)
+    //        auth_valid = 0;
+
+    //if (auth_valid) {
+    //    char *  realm = AUTH_REALM;
+    //    char * our_resp = AirplayCalcResponse(username, server_instance_->m_pwd_, realm, method, uri, m_auth_nonce_);
+    //    char * their_resp = AirplayGetFildFromString(auth_str, "response");
+
+    //    std::string tmp1 = their_resp, tmp2 = our_resp;
+    //    if (str_to_lower(tmp1) != str_to_lower(tmp2)) { // 需要大小写不敏感比较
+    //        auth_valid = 0;
+    //        printf("AirAuth: response mismatch - our: %s theirs: %s\n", our_resp.c_str(), their_resp.c_str());
+    //    } else {
+    //        printf("AirAuth: successfull authentication from AirPlay client\n");
+    //    }
+    //}
+
+    return auth_valid;
+}
+
+void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct packetheader * header, char * bodyBuffer, int offset, int bodyBufferLength)
 {
     
 }
@@ -83,7 +254,8 @@ void AirplayDestroy(void * object)
 
 void AirplayOnDnssdStart(int error_code, void * user)
 {
-
+    (void)user;
+    printf("Start dns_sd ret = %d\n", error_code);
 }
 
 #define CreateString(x)        (char *)strcpy((char *)malloc(strlen(x) + 1), x)

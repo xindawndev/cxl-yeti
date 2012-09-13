@@ -8,11 +8,13 @@ int main(int argc, char **argv)
     bool usePassword = false;
     ZeroconfWin zfw;
 
-    if (AirplayServer::start_server(listenPort, true)) {
-        AirplayServer::set_credentials(usePassword, password);
+    //if (AirplayServer::start_server(listenPort, true)) {
+    //    AirplayServer::set_credentials(usePassword, password);
         std::map<std::string, std::string> txt;
         if (true) {
-            txt["deviceid"] = "00:19:b9:12:8b:23";
+            //txt["deviceid"] = "B8:AC:6F:DA:43:6B";
+            txt["deviceid"] = "74:E5:0B:10:74:72";
+            //txt["deviceid"] = "00:19:b9:12:8b:23";
         } else {
             txt["deviceid"] = "FF:FF:FF:FF:FF:F2";
         }
@@ -20,7 +22,7 @@ int main(int argc, char **argv)
         txt["model"] = "AppleTV2,1";
         txt["srcvers"] = AIRPLAY_SERVER_VERSION_STR;
         zfw.do_publish_service("servers.airplay", "_airplay._tcp", "PPTV_Client", listenPort, txt);
-    }
+    //}
 
     while(1);
     return 0;

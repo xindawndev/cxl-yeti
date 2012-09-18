@@ -199,20 +199,20 @@ struct packetheader *header,
     // Check to make sure that the request contains a host header, as required
     // by RFC-2616, for HTTP/1.1 requests
     //
-    if(done!=0 && header!=NULL && header->Directive!=NULL && atof(header->Version)>1)
-    {
-        if(ILibGetHeaderLine(header, "host", 4)==NULL)
-        {
-            //
-            // Host header is missing
-            //
-            char body[255];
-            int bodyLength;
-            bodyLength = sprintf(body,"HTTP/1.1 400 Bad Request (Missing Host Field)\r\n\r\n");
-            ILibWebServer_Send_Raw(ws,body,bodyLength,ILibAsyncSocket_MemoryOwnership_USER,1);
-            return;
-        }
-    }
+    //if(done!=0 && header!=NULL && header->Directive!=NULL && atof(header->Version)>1)
+    //{
+    //    if(ILibGetHeaderLine(header, "host", 4)==NULL)
+    //    {
+    //        //
+    //        // Host header is missing
+    //        //
+    //        char body[255];
+    //        int bodyLength;
+    //        bodyLength = sprintf(body,"HTTP/1.1 400 Bad Request (Missing Host Field)\r\n\r\n");
+    //        ILibWebServer_Send_Raw(ws,body,bodyLength,ILibAsyncSocket_MemoryOwnership_USER,1);
+    //        return;
+    //    }
+    //}
 
     //
     // Check Virtual Directory

@@ -348,7 +348,9 @@ AirplayServer::TcpClient & AirplayServer::TcpClient::operator =(const TcpClient 
 void AirplayServer::TcpClient::push_buffer(AirplayServer * host, const char * buffer, int length, std::string & session_id, std::map<std::string, int> & reverse_sockets)
 {
     HttpParser::status_t status = m_http_parser_->addBytes(buffer, length);
-
+    FILE * fp = fopen("session.log", "a+");
+    fprintf(fp, "\n\n++++++++++++++++++++++++++++++Request++++++++++++++++++++++++++\n\n");
+    fwrite(buffer, length, 1, fp);
     if (status == HttpParser::Done) {
         std::string resp_header, resp_body;
         std::string reverse_header, reverse_body;
@@ -419,6 +421,9 @@ void AirplayServer::TcpClient::push_buffer(AirplayServer * host, const char * bu
             send(reverse_socket, resp.c_str(), resp.size(), 0);//send the event status on the eventSocket
         }
 
+        fprintf(fp, "\n\n=====================Response===========================\n\n");
+        fwrite(resp.c_str(), resp.size(), 1, fp);
+        fclose(fp);
         delete m_http_parser_;
         m_http_parser_ = new HttpParser;
     }

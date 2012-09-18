@@ -5847,7 +5847,6 @@ void DMR_ProcessHTTPPacket(struct ILibWebServer_Session *session, struct packeth
                 ILibWebServer_StreamHeader_Raw(session,200,"OK",responseHeader,1);
                 ILibWebServer_StreamBody(session,NULL,0,ILibAsyncSocket_MemoryOwnership_STATIC,1);
             }
-
             else
             {
                 //

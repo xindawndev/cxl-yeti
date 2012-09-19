@@ -482,7 +482,49 @@ void APW_Previous                   (void * session_token, unsigned int instance
 {}
 
 void APW_Seek                       (void * session_token, unsigned int instance_id, char * unit, char * target)
-{}
+{
+    APW instance = get_apw_from_session_token(session_token);
+    contex_method_call method = NULL;
+    int h = 0, m = 0, s = 0, validargs = 0;
+
+    printf("Invoke: APW_Seek(%u,%s,%s);\r\n", instance_id, unit, target);
+    if (instance_id != 0) {
+        AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
+        return;
+    }
+    if (check_this(instance) != APW_ERROR_OK) {
+        AirplayResponse_Error(session_token, 501, "Action Failed");
+        return;
+    }
+    if (strcmp(unit, "TRACK_NR") == 0) {
+        int target = (unsigned int)atoi(target);
+        method = create_method(APW_ECS_SEEKTRACK, instance, session_token);
+        add_method_param(method, (methods_param)target);
+
+        call_method_through_thread_pool(instance, method);
+    } else if(strcmp(unit, "ABS_TIME") == 0) {
+        long target_pos = atol(target);
+        method = create_method(APW_ECS_SEEKMEDIATIME, instance, session_token);
+        add_method_param(method, (methods_param)target_pos);
+
+        call_method_through_thread_pool(instance, method);
+    } else if(strcmp(unit, "REL_TIME") == 0) {
+        long target = 0;
+        validargs = sscanf(target, "%d:%d:%d", &h, &m, &s);
+        if ( validargs != 3 ) {
+            AirplayResponse_Error(session_token, 402, "Invalid Args");
+            return;
+        }
+        target = h * 3600 + m * 60 + s;
+
+        method = create_method(APW_ECS_SEEKTRACKTIME, instance, session_token);
+        add_method_param(method, (methods_param)target);
+
+        call_method_through_thread_pool(instance, method);
+    } else {
+        AirplayResponse_Error(session_token, 710, "Seek Mode Not Supported");
+    }
+}
 
 void APW_SetAVTransportURI          (void * session_token, unsigned int instance_id, char * current_uri,char * current_uri_metadata)
 {

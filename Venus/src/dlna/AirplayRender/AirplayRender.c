@@ -410,7 +410,7 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
             if (AirplayCallbackSeek == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
             } else {
-                char * posbuf[128] = {0};
+                char posbuf[128] = {0};
                 sprintf(posbuf, "%d", position);
                 AirplayCallbackSeek(session, 0, "ABS_TIME", posbuf);
             }
@@ -504,7 +504,7 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
     } else if (start_qs == 3 && memcmp(header->DirectiveObj, "200", 3) == 0) {
         status = AIRPLAY_STATUS_NO_RESPONSE_NEEDED;
     } else {
-        printf("AIRPLAY Render: unhandled request [%s]\n", header->DirectiveObj);
+        printf("AIRPLAY Render: unhandled request [%s]\n", header->StatusCode);
         status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
     }
 

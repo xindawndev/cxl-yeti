@@ -13,8 +13,8 @@ endif
 
 ifeq ($(DEFAULT_FLAGS),1)
         ifeq ($(CONFIG_THREAD),multi)
-		CONFIG_COMPILE_FLAGS		:= -pthread $(CONFIG_COMPILE_FLAGS)
-		CONFIG_LINK_FLAGS		:= -pthread $(CONFIG_LINK_FLAGS)
+		CONFIG_COMPILE_FLAGS		:= -lpthread $(CONFIG_COMPILE_FLAGS)
+		CONFIG_LINK_FLAGS		:= -lpthread $(CONFIG_LINK_FLAGS)
         endif
 
         ifeq ($(CONFIG_COMPILE),debug)

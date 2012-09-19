@@ -412,6 +412,10 @@
 					RelativePath="..\..\..\include\dlna\AirplayRender\AirplayRender.h"
 					>
 				</File>
+				<File
+					RelativePath="..\..\..\include\dlna\AirplayRender\AirplayWrapper.h"
+					>
+				</File>
 			</Filter>
 		</Filter>
 		<Filter
@@ -658,6 +662,10 @@
 				>
 				<File
 					RelativePath="..\..\..\src\dlna\AirplayRender\AirplayRender.c"
+					>
+				</File>
+				<File
+					RelativePath="..\..\..\src\dlna\AirplayRender\AirplayWrapper.c"
 					>
 				</File>
 			</Filter>

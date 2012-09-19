@@ -112,7 +112,7 @@ typedef void(* AirplayHandlerGetContrast) (                 void * session_token
 typedef void(* AirplayHandlerGetMute) (                     void * session_token, unsigned int instance_id, char * channel);
 typedef void(* AirplayHandlerGetVolume) (                   void * session_token, unsigned int instance_id, char * channel);
 typedef void(* AirplayHandlerListPresets) (                 void * session_token, unsigned int instance_id);
-typedef void(* AirplayHandlerSelectPreset) (                void * session_token, unsigned int instance_id, char * PresetName);
+typedef void(* AirplayHandlerSelectPreset) (                void * session_token, unsigned int instance_id, char * preset_name);
 typedef void(* AirplayHandlerSetBrightness) (               void * session_token, unsigned int instance_id, unsigned short desired_brightness);
 typedef void(* AirplayHandlerSetContrast) (                 void * session_token, unsigned int instance_id, unsigned short desired_contrast);
 typedef void(* AirplayHandlerSetMute) (                     void * session_token, unsigned int instance_id, char * channel, int desire_mute);
@@ -180,7 +180,7 @@ void AirplayResponse_SetMute(                               const AirplaySession
 void AirplayResponse_SetVolume(                             const AirplaySessionToken session_token);
 
 /* State Variable Eventing Methods */
-void AirplaySetState_LastChange(                            AirplayToken airplay_token, char * val);
+void AirplaySetState_LastChange(                            AirplayToken airplay_token, int state);
 void AirplaySetState_SourceProtocolInfo(                    AirplayToken airplay_token, char * val);
 void AirplaySetState_SinkProtocolInfo(                      AirplayToken airplay_token, char * val);
 void AirplaySetState_CurrentConnectionIDs(                  AirplayToken airplay_token, char * val);

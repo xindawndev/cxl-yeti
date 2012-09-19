@@ -722,3 +722,8 @@ AirplayToken AirplayTokenFromSessionToken(const AirplaySessionToken session_toke
 {
     return((struct ILibWebServer_Session *)(session_token))->User;
 }
+
+void AirplaySetState_LastChange(AirplayToken airplay_token, int state)
+{
+    
+}

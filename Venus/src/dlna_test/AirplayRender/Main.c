@@ -24,10 +24,12 @@
 #include <crtdbg.h>
 #endif
 
-#include "AirplayRender.h"
+#include "TestAPW.h"
 
 void *MicroStackChain;
 void *ILib_Pool;
+
+APW apw;
 
 int WaitForExit = 0;
 
@@ -179,7 +181,6 @@ void Common__CP_IPAddressListChanged()
 int main( int argc, char **argv )
 {
     int x;
-    char * protocolInfo;
 
 #if defined(_POSIX)
     struct sigaction setup_action;
@@ -202,11 +203,24 @@ int main( int argc, char **argv )
 #endif
     }
 
-    AirplayCreate(MicroStackChain,
-        36667,
-        "MyPlayer",
-        "74:E5:0B:10:74:72",
-        NULL);
+    apw = APW_Method_Create(MicroStackChain, ILib_Pool, 36667, "LeoChenPlayer", "74:E5:0B:10:74:72", "");
+
+    apw->Event_SetAVTransportURI    = APW_Callback_SetAVTransportURI;
+    apw->Event_GetAVProtocolInfo    = APW_Callback_GetAVProtocolInfo;
+    apw->Event_SetPlayMode          = APW_Callback_SetPlayMode;
+    apw->Event_Stop                 = APW_Callback_Stop;
+    apw->Event_Play                 = APW_Callback_Play;
+    apw->Event_Pause                = APW_Callback_Pause;
+    apw->Event_SeekTrack            = APW_Callback_SeekTrack;
+    apw->Event_SeekTrackPosition    = APW_Callback_SeekTrackPosition;
+    apw->Event_SeekMediaPosition    = APW_Callback_SeekMediaPosition;
+    apw->Event_Next                 = APW_Callback_Next;
+    apw->Event_Previous             = APW_Callback_Previous;
+    apw->Event_SelectPreset         = APW_Callback_SelectPreset;
+    apw->Event_SetVolume            = APW_Callback_SetVolume;
+    apw->Event_SetMute              = APW_Callback_SetMute;
+    apw->Event_SetContrast          = APW_Callback_SetContrast;
+    apw->Event_SetBrightness        = APW_Callback_SetBrightness;
 
 #if defined(_POSIX)
     ILib_Monitor = ILibCreateLifeTime(MicroStackChain);

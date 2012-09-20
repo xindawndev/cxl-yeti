@@ -107,12 +107,14 @@ struct AirplayDataObject
     ILibChain_Destroy       destroy;
 
     void *                  txt_map;
+    void *                  session_map;
     void *                  http_server;
     void *                  dnssd_module;
     unsigned short          server_port;
     char *                  friendly_name;
     char *                  mac_addr;
     char *                  password;
+    char *                  auth_nonce; // 认证
 
     void *                  user_tag;
 };
@@ -168,39 +170,164 @@ void AirplayResponse_Error(const AirplaySessionToken session_token, const int er
 
 void AirplayResponse_Generic(const AirplaySessionToken session_token, const char * service_uri, const char * method_name,const char * params)
 {
-    struct ILibWebServer_Session * session = (struct ILibWebServer_Session *)session_token;
-    char * packet;
-    int packetlength;
-    int ret_val;
+    AirplayResponse_Error(session_token, 200, "OK");
+}
 
-    packet = (char *)malloc(239+strlen(service_uri)+strlen(params)+(strlen(method_name)*2));
-    packetlength = sprintf(packet,"<?xml version=\"1.0\" encoding=\"utf-8\"?>\r\n<s:Envelope s:encodingStyle=\"http://schemas.xmlsoap.org/soap/encoding/\" xmlns:s=\"http://schemas.xmlsoap.org/soap/envelope/\"><s:Body><u:%sResponse xmlns:u=\"%s\">%s</u:%sResponse></s:Body></s:Envelope>", method_name,service_uri, params, method_name);
-        ret_val=ILibWebServer_StreamHeader_Raw(session,200,"OK","\r\nEXT:\r\nCONTENT-TYPE: text/xml; charset=\"utf-8\"\r\nSERVER: WINDOWS, UPnP/1.0, PPTV MicroStack/1.0.2777",1);
-    if (ret_val != ILibAsyncSocket_SEND_ON_CLOSED_SOCKET_ERROR && ret_val != ILibWebServer_SEND_RESULTED_IN_DISCONNECT) {
-        ret_val =ILibWebServer_StreamBody(session, packet, packetlength, 0, 1);
-    }
+void AirplayResponse_GetCurrentTransportActions(const AirplaySessionToken session_token, const char * actions)
+{
+
+}
+
+void AirplayResponse_GetDeviceCapabilities(const AirplaySessionToken session_token, const char * play_media, const char * rec_media, const char * rec_quality_modes)
+{
+
+}
+
+void AirplayResponse_GetMediaInfo(const AirplaySessionToken session_token, const unsigned int nr_tracks, const char * media_duration, const char * current_uri, const char * current_uri_metadata, const char * next_uri, const char * next_uri_metadata, const char * play_medium, const char * record_medium, const char * write_status)
+{
+
+}
+
+void AirplayResponse_GetPositionInfo(const AirplaySessionToken session_token, const unsigned int track, const char * track_duration, const char * track_metaData, const char * track_uri, const char * rel_time, const char * abs_time, const int rel_count, const int abs_count)
+{
+
+}
+
+void AirplayResponse_GetTransportInfo(const AirplaySessionToken session_token, const char * current_transport_state, const char * current_transport_status, const char * current_speed)
+{
+
+}
+
+void AirplayResponse_GetTransportSettings(const AirplaySessionToken session_token, const char * play_mode, const char * rec_quality_mode)
+{
+
+}
+
+void AirplayResponse_Next(const AirplaySessionToken session_token)
+{
+
+}
+
+void AirplayResponse_Pause(const AirplaySessionToken session_token)
+{
+
+}
+
+void AirplayResponse_Play(const AirplaySessionToken session_token)
+{
+
+}
+
+void AirplayResponse_Previous(const AirplaySessionToken session_token)
+{
+
+}
+
+void AirplayResponse_Seek(const AirplaySessionToken session_token)
+{
+
+}
+
+void AirplayResponse_SetAVTransportURI(const AirplaySessionToken session_token)
+{
+
+}
+
+void AirplayResponse_SetPlayMode(const AirplaySessionToken session_token)
+{
+
+}
+
+void AirplayResponse_Stop(const AirplaySessionToken session_token)
+{
+
+}
+
+void AirplayResponse_GetCurrentConnectionIDs(const AirplaySessionToken session_token, const char * connection_ids)
+{
+
+}
+
+void AirplayResponse_GetCurrentConnectionInfo(const AirplaySessionToken session_token, const int rcs_id, const int AVTransportID, const char * protocol_info, const char * peer_connection_manager, const int peer_connection_id, const char * direction, const char * status)
+{
+
+}
+
+void AirplayResponse_GetProtocolInfo(const AirplaySessionToken session_token, const char * source, const char * sink)
+{
+
+}
+
+void AirplayResponse_GetBrightness(const AirplaySessionToken session_token, const unsigned short current_brightness)
+{
+
+}
+
+void AirplayResponse_GetContrast(const AirplaySessionToken session_token, const unsigned short current_contrast)
+{
+
+}
+
+void AirplayResponse_GetMute(const AirplaySessionToken session_token, const int current_mute)
+{
+
+}
+
+void AirplayResponse_GetVolume(const AirplaySessionToken session_token, const unsigned short current_volume)
+{
+
+}
+
+void AirplayResponse_ListPresets(const AirplaySessionToken session_token, const char * current_preset_name_list)
+{
+
+}
+
+void AirplayResponse_SelectPreset(const AirplaySessionToken session_token)
+{
+
+}
+
+void AirplayResponse_SetBrightness(const AirplaySessionToken session_token)
+{
+
+}
+
+void AirplayResponse_SetContrast(const AirplaySessionToken session_token)
+{
+
+}
+
+void AirplayResponse_SetMute(const AirplaySessionToken session_token)
+{
+
+}
+
+void AirplayResponse_SetVolume(const AirplaySessionToken session_token)
+{
+
 }
 
 char * AirplayCalcResponse(const char * username,
-                          const char * password,
-                          const char * realm,
-                          const char * method,
-                          const char * digestUri,
-                          const char * nonce)
+                           const char * password,
+                           const char * realm,
+                           const char * method,
+                           const char * digestUri,
+                           const char * nonce)
 {
-    char * resp;
-    char * ha1;
-    char * ha2;
-    char buf[128] = {0};
-    char * bytes = NULL;
+    //char * resp;
+    //char * ha1;
+    //char * ha2;
+    //char buf[128] = {0};
+    //char * bytes = NULL;
 
-    MD5_CTX md5ctx;
+    //MD5_CTX md5ctx;
 
-    MD5Init(&md5ctx, 0);
-    sprintf(buf, "%s:%s:%s", username, realm, password);
-    MD5Update(&md5ctx, buf, strlen(buf));
-    MD5Final(&md5ctx);
-    bytes = (char *)&(md5ctx.digest);
+    //MD5Init(&md5ctx, 0);
+    //sprintf(buf, "%s:%s:%s", username, realm, password);
+    //MD5Update(&md5ctx, buf, strlen(buf));
+    //MD5Final(&md5ctx);
+    //bytes = (char *)&(md5ctx.digest);
 
     //ha1 = Md5::GetMD5(username + ":" + realm + ":" + password);
     //ha2 = Md5::GetMD5(method + ":" + digestUri);
@@ -214,10 +341,10 @@ char * AirplayCalcResponse(const char * username,
 char * AirplayGetFildFromString(const char * auth_str, const char * field)
 {
     char * retstr = NULL;
-    //int field_index = ILibString_IndexOf(auth_str, strlen(auth_str), field, strlen(field));
-    //if (field_index != -1) {
-    //    int equal_index = ILibString_IndexOf(auth_str + field_index, strlen(auth_str) - field_index, "=", 1);
-    //}
+    int field_index = ILibString_IndexOf(auth_str, strlen(auth_str), field, strlen(field));
+    if (field_index != -1) {
+        int equal_index = ILibString_IndexOf(auth_str + field_index, strlen(auth_str) - field_index, "=", 1);
+    }
     return retstr;
 }
 
@@ -231,40 +358,400 @@ int AirplayCheckAuthorization(void * object, char * auth_str, char * method, cha
         return 0;
     }
 
-    //username = AirplayGetFildFromString(auth_str, "username");
+    username = AirplayGetFildFromString(auth_str, "username");
 
-    //if (username == NULL) {
-    //    auth_valid = 0;
-    //}
+    if (username == NULL) {
+        auth_valid = 0;
+    }
 
-    //if (auth_valid)
-    //    if (AirplayGetFildFromString(auth_str, "realm") != AUTH_REALM)
-    //        auth_valid = 0;
+    if (auth_valid)
+        if (strcmp(AirplayGetFildFromString(auth_str, "realm"), AUTH_REALM) != 0)
+            auth_valid = 0;
 
-    //if (auth_valid)
-    //    if (AirplayGetFildFromString(auth_str, "nonce") != m_auth_nonce_)
-    //        auth_valid = 0;
+    if (auth_valid)
+        if (strcmp(AirplayGetFildFromString(auth_str, "nonce"), s->auth_nonce) != 0)
+            auth_valid = 0;
 
-    //if (auth_valid)
-    //    if (AirplayGetFildFromString(auth_str, "uri") != uri)
-    //        auth_valid = 0;
+    if (auth_valid)
+        if (strcmp(AirplayGetFildFromString(auth_str, "uri"), uri) != 0)
+            auth_valid = 0;
 
-    //if (auth_valid) {
-    //    char *  realm = AUTH_REALM;
-    //    char * our_resp = AirplayCalcResponse(username, server_instance_->m_pwd_, realm, method, uri, m_auth_nonce_);
-    //    char * their_resp = AirplayGetFildFromString(auth_str, "response");
+    if (auth_valid) {
+        char *  realm = AUTH_REALM;
+        char * our_resp = AirplayCalcResponse(username, s->password, realm, method, uri, s->auth_nonce);
+        char * their_resp = AirplayGetFildFromString(auth_str, "response");
 
-    //    std::string tmp1 = their_resp, tmp2 = our_resp;
-    //    if (str_to_lower(tmp1) != str_to_lower(tmp2)) { // 需要大小写不敏感比较
-    //        auth_valid = 0;
-    //        printf("AirAuth: response mismatch - our: %s theirs: %s\n", our_resp.c_str(), their_resp.c_str());
-    //    } else {
-    //        printf("AirAuth: successfull authentication from AirPlay client\n");
-    //    }
-    //}
+        if (strcmp(ILibString_ToLower(our_resp, strlen(our_resp)), ILibString_ToLower(their_resp, strlen(their_resp))) != 0) {// 需要大小写不敏感比较
+            auth_valid = 0;
+            printf("AirAuth: response mismatch - our: %s theirs: %s\n", our_resp, their_resp);
+        } else {
+            printf("AirAuth: successfull authentication from AirPlay client\n");
+        }
+    }
 
     return auth_valid;
 }
+
+struct packetheader * make_response_header(int status)
+{
+    struct packetheader * resp_header = NULL;
+    time_t ltime;
+    char * date = NULL;
+
+    resp_header = ILibCreateEmptyPacket();
+    ILibSetVersion(resp_header, "1.1", 3);
+    switch (status) {
+case AIRPLAY_STATUS_NOT_IMPLEMENTED:
+    ILibSetStatusCode(resp_header, status, "Not Implemented", strlen("Not Implemented"));
+    break;
+case AIRPLAY_STATUS_SWITCHING_PROTOCOLS:
+    ILibAddHeaderLine(resp_header, "Upgrade", 7, "PTTH/1.0", 8);
+    ILibAddHeaderLine(resp_header, "Connection", 10, "Upgrade", 7);
+    ILibSetStatusCode(resp_header, status, "Switching Protocols", strlen("Switching Protocols"));
+    break;
+case AIRPLAY_STATUS_NEED_AUTH:
+    ILibSetStatusCode(resp_header, status, "Unauthorized", strlen("Unauthorized"));
+    break;
+case AIRPLAY_STATUS_NOT_FOUND:
+    ILibSetStatusCode(resp_header, status, "Not Found", strlen("Not Found"));
+    break;
+case AIRPLAY_STATUS_METHOD_NOT_ALLOWED:
+    ILibSetStatusCode(resp_header, status, "Method Not Allowed", strlen("Method Not Allowed"));
+    break;
+    }
+
+    ltime = time(NULL);
+    date = asctime(gmtime(&ltime));
+    date[strlen(date) - 1] = '\0';
+    ILibAddHeaderLine(resp_header, "Date", 4, date, strlen(date));
+
+    return resp_header;
+}
+
+// Code Backup [9/20/2012 rainleafchen]
+//static const  char * status_msg = "OK";
+//
+//void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct packetheader * header, char * bodyBuffer, int offset, int bodyBufferLength)
+//{
+//    int status;
+//    int need_auth;
+//    int start_qs;
+//    int content_lenth;
+//    char * method;
+//    char * uri;
+//    char * content_type;
+//    char * authorization;
+//    char * session_id;
+//    char body[512] = {0};
+//    time_t ltime;
+//    char * date;
+//    struct packetheader * resp_header;
+//    struct AirplayDataObject * data_obj;
+//
+//    status          = AIRPLAY_STATUS_OK;
+//    need_auth       = 0;
+//    method          = header->Directive;
+//    uri             = header->DirectiveObj;
+//    content_lenth   = atoi(ILibGetHeaderLine(header, "content-length", 14) ? ILibGetHeaderLine(header, "content-length", 14) : "0");
+//    content_type    = ILibGetHeaderLine(header, "content-type", 12);
+//    authorization   = ILibGetHeaderLine(header, "authorization", 13);
+//    session_id      = ILibGetHeaderLine(header, "x-apple-session-id", 18);
+//    data_obj        = (struct AirplayDataObject *)session->User;
+//    start_qs        = ILibString_IndexOf(header->DirectiveObj, header->DirectiveObjLength, "?", 1);
+//
+//    if (start_qs == -1) {
+//        start_qs = header->DirectiveObjLength;
+//    }
+//    if (data_obj != NULL && data_obj->password != NULL) {
+//        need_auth = 1;
+//    }
+//
+//    resp_header = ILibCreateEmptyPacket();
+//    ILibSetVersion(resp_header, "1.1", 3);
+//
+//    if (start_qs == 8 && memcmp(header->DirectiveObj, "/reverse", 8) == 0) {
+//        printf("AIRPLAY Render: got request %s\n", header->DirectiveObj);
+//        status = AIRPLAY_STATUS_SWITCHING_PROTOCOLS;
+//        ILibAddHeaderLine(resp_header, "Upgrade", 7, "PTTH/1.0", 8);
+//        ILibAddHeaderLine(resp_header, "Connection", 10, "Upgrade", 7);
+//    } else if (start_qs == 5 && memcmp(header->DirectiveObj, "/rate", 5) == 0) {
+//        char * found = strstr(header->DirectiveObj, "value=");
+//        int rate = found ? (int)(atof(found + strlen("value=")) + 0.5f) : 0;
+//
+//        printf("AIRPLAY Render: got request %s with rate %i\n", header->DirectiveObj, rate);
+//
+//        if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
+//            status = AIRPLAY_STATUS_NEED_AUTH;
+//        } else if (rate == 0) { // 暂停命令
+//            if (AirplayCallbackPause == NULL) {
+//                status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//            } else {
+//                AirplayCallbackPause(session, 0);
+//            }
+//        } else { // 播放命令
+//            if (AirplayCallbackPlay == NULL) {
+//                status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//            } else {
+//                AirplayCallbackPlay(session, 0, "1");
+//            }
+//        }
+//    } else if (start_qs == 7 && memcmp(header->DirectiveObj, "/volume", 7) == 0) {
+//        const char* found = strstr(header->DirectiveObj, "volume=");
+//        double volume = found ? (double)(atof(found + strlen("volume="))) : 0;
+//
+//        printf("AIRPLAY Render: got request %s with volume %f\n", header->DirectiveObj, volume);
+//
+//        if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
+//            status = AIRPLAY_STATUS_NEED_AUTH;
+//        } else if (volume >= 0 && volume <= 1) {
+//            volume *= 100;
+//            volume = volume < 0 ? 0 : (volume > 100 ? 100 : volume);
+//            if (volume == 0) { // 静音
+//                if (AirplayCallbackSetMute == NULL) {
+//                    status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//                } else {
+//                    AirplayCallbackSetMute(session, 0, "Master", 1);
+//                }
+//            } else { // 设置音量
+//                if (AirplayCallbackSetVolume == NULL || AirplayCallbackSetMute == NULL) {
+//                    status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//                } else {
+//                    AirplayCallbackSetMute(session, 0, "Master", 0);
+//                    AirplayCallbackSetVolume(session, 0, "Master", (unsigned short)volume);
+//                }
+//            }
+//        }
+//    } else if (start_qs == 5 && memcmp(header->DirectiveObj, "/play", 5) == 0) {
+//        char * location = NULL;
+//        int position = 0;
+//        int last_event  = EVENT_NONE;
+//
+//        printf("AIRPLAY Render: got request %s\n", header->DirectiveObj);
+//
+//        if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
+//            status = AIRPLAY_STATUS_NEED_AUTH;
+//        } else if (content_type != NULL && memcmp(content_type, "application/x-apple-binary-plist", 32) == 0) {
+//            // process plist, iphone request
+//        } else {
+//            // iTuns request
+//            int location_pos, start_pos;
+//            location_pos = ILibString_IndexOf(bodyBuffer, bodyBufferLength, "Content-Location", 16);
+//            if (location_pos != -1) {
+//                location_pos += strlen("Content-Location: ");
+//                location = bodyBuffer + location_pos;
+//                start_pos = ILibString_IndexOf(bodyBuffer, bodyBufferLength, "Start-Position", 14);
+//                bodyBuffer[start_pos - 1] = '\0';
+//
+//                printf("AIRPLAY Render: play uri = %s\n", location);
+//
+//                if (start_pos != -1) {
+//                    start_pos += strlen("Start-Position: ");
+//                    bodyBuffer[bodyBufferLength - 1] = '\0';
+//                    position = (int)((float)atof(bodyBuffer + start_pos) * 1000.0);
+//
+//                    printf("AIRPLAY Render: play position = %d\n", position);
+//                } else {
+//                    // 获取不到position
+//                }
+//            } else {
+//                // 获取不到URL
+//                status = AIRPLAY_STATUS_NOT_FOUND;
+//            }
+//        }
+//        if (status != AIRPLAY_STATUS_NEED_AUTH) {
+//            if (AirplayCallbackSetAVTransportURI == NULL) {
+//                status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//            } else {
+//                AirplayCallbackSetAVTransportURI(session, 0, location, "");
+//            }
+//            if (AirplayCallbackPlay == NULL) {
+//                status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//            } else {
+//                AirplayCallbackPlay(session, 0, "1");
+//            }
+//            if (AirplayCallbackSeek == NULL) {
+//                status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//            } else {
+//                char posbuf[128] = {0};
+//                sprintf(posbuf, "%d", position);
+//                AirplayCallbackSeek(session, 0, "ABS_TIME", posbuf);
+//            }
+//        }
+//    } else if (start_qs == 6 && memcmp(header->DirectiveObj, "/scrub", 6) == 0) {
+//        if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
+//            status = AIRPLAY_STATUS_NEED_AUTH;
+//        } else if (memcmp(method, "GET", 3) == 0) { // 获取播放位置
+//            printf("AIRPLAY Render: got GET request %s\n", header->DirectiveObj);
+//            if (AirplayCallbackGetPositionInfo == NULL) {
+//                status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//            } else {
+//                AirplayCallbackGetPositionInfo(session, 0);
+//            }
+//        } else { // POST: Seek 请求
+//            const char* found = strstr(header->DirectiveObj, "position=");
+//            if (found) {
+//                int position = (int) (atof(found + strlen("position=")) * 1000.0);
+//                printf("AIRPLAY Render: got POST request %s with pos %d\n", header->DirectiveObj, position);
+//                if (AirplayCallbackSeek == NULL) {
+//                    status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//                } else {
+//                    char posbuf[128] = {0};
+//                    sprintf(posbuf, "%d", position);
+//                    AirplayCallbackSeek(session, 0, "ABS_TIME", posbuf);
+//                }
+//            }
+//        }
+//    } else if (start_qs == 5 && memcmp(header->DirectiveObj, "/stop", 5) == 0) {
+//        printf("AIRPLAY Render: got request %s\n", header->DirectiveObj);
+//        if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
+//            status = AIRPLAY_STATUS_NEED_AUTH;
+//        } else {
+//            if (AirplayCallbackStop == NULL) {
+//                status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//            } else {
+//                AirplayCallbackStop(session, 0);
+//            }
+//        }
+//    } else if (start_qs == 6 && memcmp(header->DirectiveObj, "/photo", 6) == 0) {
+//        printf("AIRPLAY Render: got request %s\n", header->DirectiveObj);
+//        if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
+//            status = AIRPLAY_STATUS_NEED_AUTH;
+//        } else if (content_lenth > 0) {
+//            // 将图片写入缓存，然后输出显示
+//            // Body 部分为图片数据
+//        }
+//    } else if (start_qs == 14 && memcmp(header->DirectiveObj, "/playback-info", 14) == 0) {
+//        float position      = 0.0f;
+//        float duration      = 0.0f;
+//        float cacheDuration = 0.0f;
+//        int playing         = 0;
+//
+//        printf("AIRPLAY Render: got request %s\n", header->DirectiveObj);
+//
+//        // 获取当前播放状态
+//        if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
+//            status = AIRPLAY_STATUS_NEED_AUTH;
+//            //} else if (g_application.m_pPlayer) {
+//            //    if (g_application.m_pPlayer->GetTotalTime()) {
+//            //        position = ((float) g_application.m_pPlayer->GetTime()) / 1000;
+//            //        duration = (float) g_application.m_pPlayer->GetTotalTime();
+//            //        playing = g_application.m_pPlayer ? !g_application.m_pPlayer->IsPaused() : false;
+//            //        cacheDuration = (float) g_application.m_pPlayer->GetTotalTime() * g_application.GetCachePercentage()/100.0f;
+//            //    }
+//
+//            //    resp_body.Format(PLAYBACK_INFO, duration, cacheDuration, position, (playing ? 1 : 0), duration);
+//            //    resp_header = "Content-Type: text/x-apple-plist+xml\r\n";
+//
+//            //    if (g_application.m_pPlayer->IsCaching()) {
+//            //        _compose_reverse_event(reverse_header, reverse_body, session_id, EVENT_LOADING);
+//            //    } else if (playing) {
+//            //        _compose_reverse_event(reverse_header, reverse_body, session_id, EVENT_PLAYING);
+//            //    } else {
+//            //        _compose_reverse_event(reverse_header, reverse_body, session_id, EVENT_PAUSED);
+//            //    }
+//        } else {
+//            sprintf(body, PLAYBACK_INFO_NOT_READY, duration, cacheDuration, position, (playing ? 1 : 0), duration);
+//            ILibAddHeaderLine(resp_header, "Content-Type", 12, "text/x-apple-plist+xml", 22);
+//        }
+//    } else if (start_qs == 12 && memcmp(header->DirectiveObj, "/server-info", 12) == 0) {
+//        printf("AIRPLAY Render: got request %s\n", header->DirectiveObj);
+//        sprintf(body, SERVER_INFO, data_obj->mac_addr);
+//        ILibAddHeaderLine(resp_header, "Content-Type", 12, "text/x-apple-plist+xml", 22);
+//    } else if (start_qs == 19 && memcmp(header->DirectiveObj, "/slideshow-features", 19) == 0) {
+//    } else if (start_qs == 10 && memcmp(header->DirectiveObj, "/authorize", 10) == 0) {
+//    } else if (start_qs == 11 && memcmp(header->DirectiveObj, "/setProperty", 11) == 0) {
+//        status = AIRPLAY_STATUS_NOT_FOUND;
+//    } else if (start_qs == 11 && memcmp(header->DirectiveObj, "/getProperty", 11) == 0) {
+//        status = AIRPLAY_STATUS_NOT_FOUND;
+//    } else if (start_qs == 3 && memcmp(header->DirectiveObj, "200", 3) == 0) {
+//        status = AIRPLAY_STATUS_NO_RESPONSE_NEEDED;
+//    } else {
+//        printf("AIRPLAY Render: unhandled request [%s]\n", header->StatusCode);
+//        status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//    }
+//
+//    if (status == AIRPLAY_STATUS_NEED_AUTH) {
+//        //_compose_auth_request_answer(resp_header, resp_body);
+//    }
+//
+//    status_msg = "OK";
+//
+//    switch (status) {
+//case AIRPLAY_STATUS_NOT_IMPLEMENTED:
+//    status_msg = "Not Implemented";
+//    break;
+//case AIRPLAY_STATUS_SWITCHING_PROTOCOLS:
+//    status_msg = "Switching Protocols";
+//    ILibAddEntry(data_obj->session_map, session_id, strlen(session_id), ( void * )session );
+//    break;
+//case AIRPLAY_STATUS_NEED_AUTH:
+//    status_msg = "Unauthorized";
+//    break;
+//case AIRPLAY_STATUS_NOT_FOUND:
+//    status_msg = "Not Found";
+//    break;
+//case AIRPLAY_STATUS_METHOD_NOT_ALLOWED:
+//    status_msg = "Method Not Allowed";
+//    break;
+//    }
+//
+//    // 加入错误码，错误信息。
+//    ILibSetStatusCode(resp_header, status, (char *)status_msg, strlen(status_msg));
+//
+//    ltime = time(NULL);
+//    date = asctime(gmtime(&ltime));
+//    date[strlen(date) - 1] = '\0';
+//
+//    // 加入头部日期
+//    ILibAddHeaderLine(resp_header, "Date", 4, date, strlen(date));
+//
+//    //std::string resp;
+//    //char buf[512] = {0};
+//    //const time_t ltime = time(NULL);
+//    //char * date = asctime(gmtime(&ltime));
+//    //date[strlen(date) - 1] = '\0';
+//    //sprintf(buf, "HTTP/1.1 %d %s\nDate: %s\r\n", status, status_msg.c_str(), date);
+//    //resp = buf;
+//
+//    //if (resp_header.size() > 0) {
+//    //    resp += resp_header;
+//    //}
+//    //if (resp_body.size() > 0) {
+//    //    sprintf(buf, "%sContent-Length: %d\r\n", resp.c_str(), resp_body.size());
+//    //    resp = buf;
+//    //}
+//    //resp += "\r\n";
+//
+//    //if (resp_body.size() > 0) {
+//    //    resp + reverse_body;
+//    //}
+//
+//    //if (status != AIRPLAY_STATUS_NO_RESPONSE_NEEDED) {
+//    //    send(m_socket_, resp.c_str(), resp.size(), 0);
+//    //}
+//
+//    //if (reverse_header.size() > 0 && reverse_sockets.find(session_id) != reverse_sockets.end())
+//    //{
+//    //    //search the reverse socket to this sessionid
+//    //    sprintf(buf, "POST /event HTTP/1.1\r\n");
+//    //    resp = buf;
+//    //    reverse_socket = reverse_sockets[session_id]; //that is our reverse socket
+//    //    resp += reverse_header;
+//    //}
+//    //resp += "\r\n";
+//
+//    //if (reverse_body.size() > 0) {
+//    //    resp += reverse_body;
+//    //}
+//
+//    //if (reverse_socket != INVALID_SOCKET) {
+//    //    send(reverse_socket, resp.c_str(), resp.size(), 0);//send the event status on the eventSocket
+//    //}
+//    ILibWebServer_StreamHeader(session, resp_header);
+//    ILibWebServer_StreamBody(session, body, body ? strlen(body) : 0, ILibAsyncSocket_MemoryOwnership_STATIC, 1);
+//    //ILibDestructPacket(resp_header);
+//}
+// Code Backup End [9/20/2012 rainleafchen]
 
 static const  char * status_msg = "OK";
 
@@ -284,7 +771,6 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
     char * date;
     struct packetheader * resp_header;
     struct AirplayDataObject * data_obj;
-    int reverse_socket = INVALID_SOCKET;
 
     status          = AIRPLAY_STATUS_OK;
     need_auth       = 0;
@@ -355,7 +841,7 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
                     status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
                 } else {
                     AirplayCallbackSetMute(session, 0, "Master", 0);
-                    AirplayCallbackSetVolume(session, 0, "Master", volume);
+                    AirplayCallbackSetVolume(session, 0, "Master", (unsigned short)volume);
                 }
             }
         }
@@ -433,7 +919,7 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
                 if (AirplayCallbackSeek == NULL) {
                     status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
                 } else {
-                    char * posbuf[128] = {0};
+                    char posbuf[128] = {0};
                     sprintf(posbuf, "%d", position);
                     AirplayCallbackSeek(session, 0, "ABS_TIME", posbuf);
                 }
@@ -515,30 +1001,32 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
     status_msg = "OK";
 
     switch (status) {
-            case AIRPLAY_STATUS_NOT_IMPLEMENTED:
-                status_msg = "Not Implemented";
-                break;
-            case AIRPLAY_STATUS_SWITCHING_PROTOCOLS:
-                status_msg = "Switching Protocols";
-                //reverse_sockets[session_id] = m_socket_;
-                break;
-            case AIRPLAY_STATUS_NEED_AUTH:
-                status_msg = "Unauthorized";
-                break;
-            case AIRPLAY_STATUS_NOT_FOUND:
-                status_msg = "Not Found";
-                break;
-            case AIRPLAY_STATUS_METHOD_NOT_ALLOWED:
-                status_msg = "Method Not Allowed";
-                break;
+case AIRPLAY_STATUS_NOT_IMPLEMENTED:
+    status_msg = "Not Implemented";
+    break;
+case AIRPLAY_STATUS_SWITCHING_PROTOCOLS:
+    status_msg = "Switching Protocols";
+    ILibAddEntry(data_obj->session_map, session_id, strlen(session_id), ( void * )session );
+    break;
+case AIRPLAY_STATUS_NEED_AUTH:
+    status_msg = "Unauthorized";
+    break;
+case AIRPLAY_STATUS_NOT_FOUND:
+    status_msg = "Not Found";
+    break;
+case AIRPLAY_STATUS_METHOD_NOT_ALLOWED:
+    status_msg = "Method Not Allowed";
+    break;
     }
 
-    ILibSetStatusCode(resp_header, status, status_msg, strlen(status_msg));
+    // 加入错误码，错误信息。
+    ILibSetStatusCode(resp_header, status, (char *)status_msg, strlen(status_msg));
 
     ltime = time(NULL);
     date = asctime(gmtime(&ltime));
     date[strlen(date) - 1] = '\0';
 
+    // 加入头部日期
     ILibAddHeaderLine(resp_header, "Date", 4, date, strlen(date));
 
     //std::string resp;
@@ -642,8 +1130,10 @@ void AirplayDestroy(void * object)
     freesafe(s->friendly_name);
     freesafe(s->mac_addr);
     freesafe(s->password);
+    freesafe(s->auth_nonce);
     // map 内部数据交给dnssd销毁
     ILibDestroyHashTree(s->txt_map);
+    ILibDestroyHashTree(s->session_map);
 }
 
 void AirplayOnDnssdStart(int error_code, void * user)
@@ -676,11 +1166,13 @@ AirplayToken AirplayCreate(void * chain,
     ret_val->friendly_name  = CreateString(friendly_name);
     ret_val->mac_addr       = CreateString(mac_addr);
     ret_val->user_tag       = NULL;
+    ret_val->auth_nonce     = NULL;
     if (password != NULL) {
         ret_val->password   = CreateString(password);
     }
 
     ret_val->txt_map        = ILibInitHashTree();
+    ret_val->session_map    = ILibInitHashTree();
 
     val = CreateString(mac_addr);
     ILibAddEntry(ret_val->txt_map, "deviceid", strlen("deviceid"), ( void * )val );
@@ -725,5 +1217,20 @@ AirplayToken AirplayTokenFromSessionToken(const AirplaySessionToken session_toke
 
 void AirplaySetState_LastChange(AirplayToken airplay_token, int state)
 {
-    
+
+}
+
+void AirplaySetState_SourceProtocolInfo(AirplayToken airplay_token, char * val)
+{
+
+}
+
+void AirplaySetState_SinkProtocolInfo(AirplayToken airplay_token, char * val)
+{
+
+}
+
+void AirplaySetState_CurrentConnectionIDs(AirplayToken airplay_token, char * val)
+{
+
 }

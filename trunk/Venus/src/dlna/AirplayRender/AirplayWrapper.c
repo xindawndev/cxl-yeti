@@ -434,12 +434,14 @@ APW_Error call_method_through_thread_pool(APW instance, contex_method_call metho
 void APW_GetCurrentTransportActions (void * session_token, unsigned int instance_id)
 {}
 
+// 获取设备能力
 void APW_GetDeviceCapabilities      (void * session_token, unsigned int instance_id)
 {}
 
 void APW_GetMediaInfo               (void * session_token, unsigned int instance_id)
 {}
 
+// 获取当前播放位置
 void APW_GetPositionInfo            (void * session_token, unsigned int instance_id)
 {}
 
@@ -449,24 +451,43 @@ void APW_GetTransportInfo           (void * session_token, unsigned int instance
 void APW_GetTransportSettings       (void * session_token, unsigned int instance_id)
 {}
 
+// 下一个
 void APW_Next                       (void * session_token, unsigned int instance_id)
 {}
 
+// 暂停
 void APW_Pause                      (void * session_token, unsigned int instance_id)
-{}
-
-void APW_Play                       (void * session_token, unsigned int instance_id, char * speed)
 {
     APW instance = get_apw_from_session_token(session_token);
     contex_method_call method = NULL;
 
-    printf("Invoke: APW_Play(%u,%s);\r\n",instance_id, speed);
+    printf("Invodk: APW_Pause(%u);\n", instance_id);
 
     if (instance_id != 0) {
         AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
         return;
     }
+    if (check_this(instance) != APW_ERROR_OK) {
+        AirplayResponse_Error(session_token, 501, "Action Failed");
+        return;
+    }
 
+    method = create_method(APW_ECS_PAUSE, instance, session_token);
+    call_method_through_thread_pool(instance, method);
+}
+
+// 播放
+void APW_Play                       (void * session_token, unsigned int instance_id, char * speed)
+{
+    APW instance = get_apw_from_session_token(session_token);
+    contex_method_call method = NULL;
+
+    printf("Invoke: APW_Play(%u, %s);\n",instance_id, speed);
+
+    if (instance_id != 0) {
+        AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
+        return;
+    }
     if (check_this(instance) != APW_ERROR_OK) {
         AirplayResponse_Error(session_token, 501, "Action Failed");
         return;
@@ -481,13 +502,14 @@ void APW_Play                       (void * session_token, unsigned int instance
 void APW_Previous                   (void * session_token, unsigned int instance_id)
 {}
 
-void APW_Seek                       (void * session_token, unsigned int instance_id, char * unit, char * target)
+// 拖动
+void APW_Seek                       (void * session_token, unsigned int instance_id, char * units, char * target)
 {
     APW instance = get_apw_from_session_token(session_token);
     contex_method_call method = NULL;
     int h = 0, m = 0, s = 0, validargs = 0;
 
-    printf("Invoke: APW_Seek(%u,%s,%s);\r\n", instance_id, unit, target);
+    printf("Invoke: APW_Seek(%u, %s, %s);\n", instance_id, units, target);
     if (instance_id != 0) {
         AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
         return;
@@ -496,29 +518,29 @@ void APW_Seek                       (void * session_token, unsigned int instance
         AirplayResponse_Error(session_token, 501, "Action Failed");
         return;
     }
-    if (strcmp(unit, "TRACK_NR") == 0) {
-        int target = (unsigned int)atoi(target);
+    if (strcmp((const char *)units, "TRACK_NR") == 0) {
+        int target_pos = atoi(target);
         method = create_method(APW_ECS_SEEKTRACK, instance, session_token);
-        add_method_param(method, (methods_param)target);
+        add_method_param(method, (methods_param)target_pos);
 
         call_method_through_thread_pool(instance, method);
-    } else if(strcmp(unit, "ABS_TIME") == 0) {
+    } else if(strcmp(units, "ABS_TIME") == 0) {
         long target_pos = atol(target);
         method = create_method(APW_ECS_SEEKMEDIATIME, instance, session_token);
         add_method_param(method, (methods_param)target_pos);
 
         call_method_through_thread_pool(instance, method);
-    } else if(strcmp(unit, "REL_TIME") == 0) {
-        long target = 0;
+    } else if(strcmp(units, "REL_TIME") == 0) {
+        long target_pos = 0;
         validargs = sscanf(target, "%d:%d:%d", &h, &m, &s);
         if ( validargs != 3 ) {
             AirplayResponse_Error(session_token, 402, "Invalid Args");
             return;
         }
-        target = h * 3600 + m * 60 + s;
+        target_pos = h * 3600 + m * 60 + s;
 
         method = create_method(APW_ECS_SEEKTRACKTIME, instance, session_token);
-        add_method_param(method, (methods_param)target);
+        add_method_param(method, (methods_param)target_pos);
 
         call_method_through_thread_pool(instance, method);
     } else {
@@ -526,24 +548,25 @@ void APW_Seek                       (void * session_token, unsigned int instance
     }
 }
 
+// 设置播放串
 void APW_SetAVTransportURI          (void * session_token, unsigned int instance_id, char * current_uri,char * current_uri_metadata)
 {
     APW instance = get_apw_from_session_token(session_token);
     contex_method_call method = NULL;
 
-    printf("Invoke: APW_SetAVTransportURI(%u,%s,%s);\n", instance_id, current_uri, current_uri_metadata ? current_uri_metadata: "");
+    printf("Invoke: APW_SetAVTransportURI(%u, %s, %s);\n", instance_id, current_uri, current_uri_metadata ? current_uri_metadata: "");
 
     if (instance_id != 0) {
         AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
         return;
     }
-
     if (check_this(instance) != APW_ERROR_OK) {
         AirplayResponse_Error(session_token, 501, "Action Failed");
         return;
     }
 
     method = create_method(APW_ECS_SETAVTRANSPORTURI, instance, session_token);
+    current_uri = (current_uri ? current_uri : "");
     add_method_param(method, (methods_param)current_uri);
     current_uri_metadata = (current_uri_metadata ? current_uri_metadata : "");
     add_method_param(method, (methods_param)current_uri_metadata);
@@ -551,18 +574,40 @@ void APW_SetAVTransportURI          (void * session_token, unsigned int instance
     call_method_through_thread_pool(instance, method);
 }
 
+// 设置播放模式
 void APW_SetPlayMode                (void * session_token, unsigned int instance_id, char * new_play_mode)
 {}
 
+// 停止
 void APW_Stop                       (void * session_token, unsigned int instance_id)
-{}
+{
+    APW instance = get_apw_from_session_token(session_token);
+    contex_method_call method = NULL;
 
+    printf("Invodk: APW_Stop(%u);\n", instance_id);
+
+    if (instance_id != 0) {
+        AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
+        return;
+    }
+    if (check_this(instance) != APW_ERROR_OK) {
+        AirplayResponse_Error(session_token, 501, "Action Failed");
+        return;
+    }
+
+    method = create_method(APW_ECS_STOP, instance, session_token);
+    call_method_through_thread_pool(instance, method);
+}
+
+// 获取当前连接ID
 void APW_GetCurrentConnectionIDs    (void * session_token)
 {}
 
+// 获取连接信息
 void APW_GetCurrentConnectionInfo   (void * session_token, unsigned int instance_id)
 {}
 
+// 获取协议信息
 void APW_GetProtocolInfo            (void * session_token)
 {}
 
@@ -572,29 +617,133 @@ void APW_ListPresets                (void * session_token, unsigned int instance
 void APW_SelectPreset               (void * session_token, unsigned int instance_id, char * preset_name)
 {}
 
+// 获取明亮度
 void APW_GetBrightness              (void * session_token, unsigned int instance_id)
 {}
 
+// 获取对比度
 void APW_GetContrast                (void * session_token, unsigned int instance_id)
 {}
 
+// 设置明亮度
 void APW_SetBrightness              (void * session_token, unsigned int instance_id, unsigned short desired_brightness)
 {}
 
+// 设置对比度
 void APW_SetContrast                (void * session_token, unsigned int instance_id, unsigned short desired_contrast)
 {}
 
+// 获取是否静音
 void APW_GetMute                    (void * session_token, unsigned int instance_id, char * channel)
-{}
+{
+    APW instance = get_apw_from_session_token(session_token);
+    APWInternalState state = NULL;
+    contex_method_call method = NULL;
 
+    printf("Invoke: APW_GetMute(%u, %s);\n", instance_id, channel);
+
+    if (instance_id != 0) {
+        AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
+        return;
+    }
+    if (check_this(instance) != APW_ERROR_OK) {
+        AirplayResponse_Error(session_token, 501, "Action Failed");
+        return;
+    }
+
+    state = (APWInternalState)instance->internal_state;
+    if (strcmp(channel, "Master") != 0) {
+        AirplayResponse_Error(session_token, 600, "Argument Value Invalid");
+        return;
+    }
+
+    // 将当前是否静音信息发送给AirplayRender：state->Mute ? 1: 0;
+}
+
+// 获取当前音量
 void APW_GetVolume                  (void * session_token, unsigned int instance_id, char * channel)
-{}
+{
+    APW instance = get_apw_from_session_token(session_token);
+    APWInternalState state = NULL;
+    contex_method_call method = NULL;
 
+    printf("Invoke: APW_GetVolume(%u, %s);\n", instance_id, channel);
+
+    if (instance_id != 0) {
+        AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
+        return;
+    }
+    if (check_this(instance) != APW_ERROR_OK) {
+        AirplayResponse_Error(session_token, 501, "Action Failed");
+        return;
+    }
+
+    state = (APWInternalState)instance->internal_state;
+    if (strcmp(channel, "Master") != 0) {
+        AirplayResponse_Error(session_token, 600, "Argument Value Invalid");
+        return;
+    }
+
+    // 将当前音量信息发送给AirplayRender：state->Volume;
+}
+
+// 设置静音
 void APW_SetMute                    (void * session_token, unsigned int instance_id, char * channel, int desire_mute)
-{}
+{
+    APW instance = get_apw_from_session_token(session_token);
+    APWInternalState state = NULL;
+    contex_method_call method = NULL;
 
+    printf("Invoke: APW_SetMute(%u, %s, %d);\n", instance_id, channel, desire_mute);
+
+    if (instance_id != 0) {
+        AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
+        return;
+    }
+    if (check_this(instance) != APW_ERROR_OK) {
+        AirplayResponse_Error(session_token, 501, "Action Failed");
+        return;
+    }
+
+    state = (APWInternalState)instance->internal_state;
+    if (strcmp(channel, "Master") != 0) {
+        AirplayResponse_Error(session_token, 600, "Argument Value Invalid");
+        return;
+    }
+
+    method = create_method(APW_ECS_SETMUTE, instance, session_token);
+    add_method_param(method, (methods_param)desire_mute);
+    call_method_through_thread_pool(instance, method);
+}
+
+// 设置音量
 void APW_SetVolume                  (void * session_token, unsigned int instance_id, char * channel, unsigned short desired_volume)
-{}
+{
+    APW instance = get_apw_from_session_token(session_token);
+    APWInternalState state = NULL;
+    contex_method_call method = NULL;
+
+    printf("Invoke: APW_SetVolume(%u, %s, %u);\n", instance_id, channel, desired_volume);
+
+    if (instance_id != 0) {
+        AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
+        return;
+    }
+    if (check_this(instance) != APW_ERROR_OK) {
+        AirplayResponse_Error(session_token, 501, "Action Failed");
+        return;
+    }
+
+    state = (APWInternalState)instance->internal_state;
+    if (strcmp(channel, "Master") != 0) {
+        AirplayResponse_Error(session_token, 600, "Argument Value Invalid");
+        return;
+    }
+
+    method = create_method(APW_ECS_SETVOLUME, instance, session_token);
+    add_method_param(method, (methods_param)desired_volume);
+    call_method_through_thread_pool(instance, method);
+}
 
 void apw_destroy_from_chain(APW instance)
 {

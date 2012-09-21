@@ -172,6 +172,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
                 result = instance->Event_SetAVTransportURI(instance, method->session, uri, metadata);
                 String_Destroy(uri);
                 String_Destroy(metadata);
+                AirplayResponse_SetAVTransportURI(method->session);
             } else if(instance->Event_SetAVTransportURI == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -183,6 +184,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
         {
             if (instance->Event_Stop != NULL && method->param_count == 0) {
                 int result = instance->Event_Stop(instance, method->session);
+                AirplayResponse_Stop(method->session);
             } else if(instance->Event_Stop == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -197,6 +199,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
                 char * play_speed = (char *)method->params[0];
                 result = instance->Event_Play(instance, method->session, play_speed);
                 String_Destroy(play_speed);
+                AirplayResponse_Play(method->session);
             } else if(instance->Event_Play == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -208,6 +211,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
         {
             if (instance->Event_Pause != NULL && method->param_count == 0) {
                 int result = instance->Event_Pause(instance, method->session);
+                AirplayResponse_Pause(method->session);
             } else if(instance->Event_Pause == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -221,6 +225,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
                 int result;
                 unsigned int track = (unsigned int)(unsigned long)method->params[0];
                 result = instance->Event_SeekTrack(instance, method->session, track);
+                AirplayResponse_Seek(method->session);
             } else if(instance->Event_SeekTrack == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -234,6 +239,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
                 int result;
                 long position = (long)method->params[0];
                 result = instance->Event_SeekTrackPosition(instance, method->session, position);
+                AirplayResponse_Seek(method->session);
             } else if(instance->Event_SeekTrackPosition == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -247,6 +253,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
                 int result;
                 long position = (long)method->params[0];
                 result = instance->Event_SeekMediaPosition(instance, method->session, position);
+                AirplayResponse_Seek(method->session);
             } else if(instance->Event_SeekMediaPosition == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -258,6 +265,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
         {
             if (instance->Event_Next != NULL && method->param_count == 0) {
                 int result = instance->Event_Next(instance, method->session);
+                AirplayResponse_Next(method->session);
             } else if(instance->Event_Next == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -269,6 +277,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
         {
             if (instance->Event_Previous != NULL && method->param_count == 0) {
                 int result = instance->Event_Previous(instance, method->session);
+                AirplayResponse_Previous(method->session);
             } else if(instance->Event_Previous == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -282,6 +291,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
                 int result;
                 APWMediaPlayMode mode = (APWMediaPlayMode)method->params[0];
                 result = instance->Event_SetPlayMode(instance, method->session, mode);
+                AirplayResponse_SetPlayMode(method->session);
             } else if(instance->Event_SetPlayMode == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -296,6 +306,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
                 char* preset = (char*)method->params[0];
                 result = instance->Event_SelectPreset(instance, method->session, preset);
                 String_Destroy(preset);
+                AirplayResponse_SelectPreset(method->session);
             } else if(instance->Event_SelectPreset == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -309,6 +320,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
                 int result;
                 unsigned char val = (unsigned char)method->params[0];
                 result = instance->Event_SetBrightness(instance, method->session, val);
+                AirplayResponse_SetBrightness(method->session);
             } else if(instance->Event_SetBrightness == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -322,6 +334,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
                 int result;
                 unsigned char val = (unsigned char)method->params[0];
                 result = instance->Event_SetContrast(instance, method->session, val);
+                AirplayResponse_SetContrast(method->session);
             } else if(instance->Event_SetContrast == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -335,6 +348,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
                 int result;
                 unsigned char val = (unsigned char)method->params[0];
                 result = instance->Event_SetVolume(instance, method->session, val);
+                AirplayResponse_SetVolume(method->session);
             } else if(instance->Event_SetVolume == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -348,6 +362,7 @@ void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
                 int result;
                 BOOL val = (BOOL)method->params[0];
                 result = instance->Event_SetMute(instance, method->session, val);
+                AirplayResponse_SetMute(method->session);
             } else if(instance->Event_SetMute == NULL) {
                 AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
             } else {
@@ -443,7 +458,25 @@ void APW_GetMediaInfo               (void * session_token, unsigned int instance
 
 // 获取当前播放位置
 void APW_GetPositionInfo            (void * session_token, unsigned int instance_id)
-{}
+{
+    APW instance = get_apw_from_session_token(session_token);
+    APWInternalState state = NULL;
+    contex_method_call method = NULL;
+
+    printf("Invoke: APW_GetPositionInfo(%u);\n", instance_id);
+
+    if (instance_id != 0) {
+        AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
+        return;
+    }
+    if (check_this(instance) != APW_ERROR_OK) {
+        AirplayResponse_Error(session_token, 501, "Action Failed");
+        return;
+    }
+
+    state = (APWInternalState)instance->internal_state;
+    AirplayResponse_GetPositionInfo(session_token, state->CurrentMediaDuration, state->AbsoluteTimePosition);
+}
 
 void APW_GetTransportInfo           (void * session_token, unsigned int instance_id)
 {}
@@ -772,6 +805,11 @@ APW APW_Method_Create(void * chain, ILibThreadPool thread_pool, unsigned short p
     }
     inner_state->chain = chain;
     inner_state->airplay_token = AirplayCreate(chain, port, friendly_name, mac_addr, pwd);
+    if (inner_state->airplay_token == NULL) { // 发现服务创建失败
+        FREE(apw);
+        FREE(inner_state);
+        return NULL;
+    }
     AirplaySetTag(inner_state->airplay_token, (void *)apw);
     inner_state->apw_monitor = ILibCreateLifeTime(inner_state->chain);
     ILibLifeTime_AddEx(inner_state->apw_monitor, apw, 200, &apw_last_change_timer_event, NULL);

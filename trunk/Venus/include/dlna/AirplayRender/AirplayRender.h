@@ -65,6 +65,8 @@ Airplay 协议：
     获取播放端的状态：总时长、缓冲时长、播放位置、播放器状态（LOADING、PLAYING、PAUSED、STOP）等信息
 /server-info
     获取服务器信息：主要是mac地址信息
+
+mDNSResponser 启动方法：-r -n FriendlyName -t _airplay._tcp. -d local. -x deviceid=38:E7:D8:AC:4E:EB features=0x77 model=AppleTV2,1 srcvers=101.28
 /************************************************************************/
 
 #ifndef _AIRPLAY_RENDER_H_
@@ -150,11 +152,11 @@ void AirplaySetDisconnectFlag(                              AirplaySessionToken 
 
 // Invocation Response Methods
 void AirplayResponse_Error(                                 const AirplaySessionToken session_token, const int error_code, const char * error_msg);
-void AirplayResponse_Generic(                               const AirplaySessionToken session_token, const char * service_uri, const char * method_name,const char * params);
+void AirplayResponse_Generic(                               const AirplaySessionToken session_token);
 void AirplayResponse_GetCurrentTransportActions(            const AirplaySessionToken session_token, const char * actions);
 void AirplayResponse_GetDeviceCapabilities(                 const AirplaySessionToken session_token, const char * play_media, const char * rec_media, const char * rec_quality_modes);
 void AirplayResponse_GetMediaInfo(                          const AirplaySessionToken session_token, const unsigned int nr_tracks, const char * media_duration, const char * current_uri, const char * current_uri_metadata, const char * next_uri, const char * next_uri_metadata, const char * play_medium, const char * record_medium, const char * write_status);
-void AirplayResponse_GetPositionInfo(                       const AirplaySessionToken session_token, const unsigned int track, const char * track_duration, const char * track_metaData, const char * track_uri, const char * rel_time, const char * abs_time, const int rel_count, const int abs_count);
+void AirplayResponse_GetPositionInfo(                       const AirplaySessionToken session_token, int duration, int current_pos);
 void AirplayResponse_GetTransportInfo(                      const AirplaySessionToken session_token, const char * current_transport_state, const char * current_transport_status, const char * current_speed);
 void AirplayResponse_GetTransportSettings(                  const AirplaySessionToken session_token, const char * play_mode, const char * rec_quality_mode);
 void AirplayResponse_Next(                                  const AirplaySessionToken session_token);

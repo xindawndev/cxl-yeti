@@ -168,7 +168,7 @@ void AirplayResponse_Error(const AirplaySessionToken session_token, const int er
     ILibWebServer_Send_Raw((struct ILibWebServer_Session *)session_token, head, head_length, 0, 1);
 }
 
-void AirplayResponse_Generic(const AirplaySessionToken session_token, const char * service_uri, const char * method_name,const char * params)
+void AirplayResponse_Generic(const AirplaySessionToken session_token)
 {
     AirplayResponse_Error(session_token, 200, "OK");
 }
@@ -188,9 +188,27 @@ void AirplayResponse_GetMediaInfo(const AirplaySessionToken session_token, const
 
 }
 
-void AirplayResponse_GetPositionInfo(const AirplaySessionToken session_token, const unsigned int track, const char * track_duration, const char * track_metaData, const char * track_uri, const char * rel_time, const char * abs_time, const int rel_count, const int abs_count)
+void AirplayResponse_GetPositionInfo(const AirplaySessionToken session_token, int duration, int current_pos)
 {
+    time_t ltime;
+    char * date = NULL;
+    char * body = NULL;
+    int retval, body_len;
+    struct packetheader *resp_header = ILibCreateEmptyPacket();
+    ILibSetVersion(resp_header, "1.1", 3);
+    ILibSetStatusCode(resp_header, 200, "OK", 2);
+    ltime = time(NULL);
+    date = asctime(gmtime(&ltime));
+    date[strlen(date) - 1] = '\0';
+    ILibAddHeaderLine(resp_header, "Date", 4, date, strlen(date));
+    ILibAddHeaderLine(resp_header, "Content-Type", 12, "text/parameters", 15);
 
+    body = (char *)malloc(128);
+    body_len = sprintf(body, "duration: %d\r\nposition: %d\r\n", duration, current_pos);
+    retval=ILibWebServer_StreamHeader(session_token, resp_header);
+    if (retval!=ILibAsyncSocket_SEND_ON_CLOSED_SOCKET_ERROR && retval != ILibWebServer_SEND_RESULTED_IN_DISCONNECT) {
+        ILibWebServer_StreamBody(session_token, body, body_len, 0, 1);
+    }
 }
 
 void AirplayResponse_GetTransportInfo(const AirplaySessionToken session_token, const char * current_transport_state, const char * current_transport_status, const char * current_speed)
@@ -210,12 +228,12 @@ void AirplayResponse_Next(const AirplaySessionToken session_token)
 
 void AirplayResponse_Pause(const AirplaySessionToken session_token)
 {
-
+    AirplayResponse_Generic(session_token);
 }
 
 void AirplayResponse_Play(const AirplaySessionToken session_token)
 {
-
+    AirplayResponse_Generic(session_token);
 }
 
 void AirplayResponse_Previous(const AirplaySessionToken session_token)
@@ -225,7 +243,7 @@ void AirplayResponse_Previous(const AirplaySessionToken session_token)
 
 void AirplayResponse_Seek(const AirplaySessionToken session_token)
 {
-
+    AirplayResponse_Generic(session_token);
 }
 
 void AirplayResponse_SetAVTransportURI(const AirplaySessionToken session_token)
@@ -240,7 +258,7 @@ void AirplayResponse_SetPlayMode(const AirplaySessionToken session_token)
 
 void AirplayResponse_Stop(const AirplaySessionToken session_token)
 {
-
+    AirplayResponse_Generic(session_token);
 }
 
 void AirplayResponse_GetCurrentConnectionIDs(const AirplaySessionToken session_token, const char * connection_ids)
@@ -761,6 +779,7 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
     int need_auth;
     int start_qs;
     int content_lenth;
+    int internal_resp;
     char * method;
     char * uri;
     char * content_type;
@@ -772,6 +791,7 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
     struct packetheader * resp_header;
     struct AirplayDataObject * data_obj;
 
+    internal_resp   = 1; // 需要内部处理的请求
     status          = AIRPLAY_STATUS_OK;
     need_auth       = 0;
     method          = header->Directive;
@@ -982,7 +1002,9 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
         sprintf(body, SERVER_INFO, data_obj->mac_addr);
         ILibAddHeaderLine(resp_header, "Content-Type", 12, "text/x-apple-plist+xml", 22);
     } else if (start_qs == 19 && memcmp(header->DirectiveObj, "/slideshow-features", 19) == 0) {
+        // Ignore for now.
     } else if (start_qs == 10 && memcmp(header->DirectiveObj, "/authorize", 10) == 0) {
+        // DRM, ignore for now.
     } else if (start_qs == 11 && memcmp(header->DirectiveObj, "/setProperty", 11) == 0) {
         status = AIRPLAY_STATUS_NOT_FOUND;
     } else if (start_qs == 11 && memcmp(header->DirectiveObj, "/getProperty", 11) == 0) {
@@ -1071,9 +1093,9 @@ case AIRPLAY_STATUS_METHOD_NOT_ALLOWED:
     //if (reverse_socket != INVALID_SOCKET) {
     //    send(reverse_socket, resp.c_str(), resp.size(), 0);//send the event status on the eventSocket
     //}
+    printf("Response body:\n%s", body ? body : "");
     ILibWebServer_StreamHeader(session, resp_header);
     ILibWebServer_StreamBody(session, body, body ? strlen(body) : 0, ILibAsyncSocket_MemoryOwnership_STATIC, 1);
-    //ILibDestructPacket(resp_header);
 }
 
 void AirplaySessionReceiveSink(

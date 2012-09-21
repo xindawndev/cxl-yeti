@@ -66,7 +66,7 @@ Airplay 协议：
 /server-info
     获取服务器信息：主要是mac地址信息
 
-mDNSResponser 启动方法：-r -n FriendlyName -t _airplay._tcp. -d local. -x deviceid=38:E7:D8:AC:4E:EB features=0x77 model=AppleTV2,1 srcvers=101.28
+mDNSResponser 启动方法：-r -p 7000 -n FriendlyName -t _airplay._tcp. -d local. -x deviceid=38:E7:D8:AC:4E:EB features=0x77 model=AppleTV2,1 srcvers=101.28
 /************************************************************************/
 
 #ifndef _AIRPLAY_RENDER_H_

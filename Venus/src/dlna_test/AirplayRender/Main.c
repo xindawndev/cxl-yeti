@@ -205,6 +205,11 @@ int main( int argc, char **argv )
 
     apw = APW_Method_Create(MicroStackChain, ILib_Pool, 36667, "LeoChenPlayer", "74:E5:0B:10:74:72", "");
 
+    if (apw == NULL) { // ´´½¨Ê§°Ü
+        ILibThreadPool_Destroy(ILib_Pool);
+        return -1;
+    }
+
     apw->Event_SetAVTransportURI    = APW_Callback_SetAVTransportURI;
     apw->Event_GetAVProtocolInfo    = APW_Callback_GetAVProtocolInfo;
     apw->Event_SetPlayMode          = APW_Callback_SetPlayMode;

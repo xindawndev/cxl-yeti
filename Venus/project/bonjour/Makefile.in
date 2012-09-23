@@ -36,8 +36,13 @@ PROJECT_HEADER_DIRECTORY	:= \
 
 PROJECT_COMMON_HEADERS  	:=
 
-PROJECT_INTERNAL_INCLUDES	:= \
+#PROJECT_INTERNAL_INCLUDES	:= \
 				$(sort $(patsubst $(ROOT_SOURCE_DIRECTORY)%,%,$(dir $(wildcard $(addsuffix /*.h,$(addprefix $(ROOT_SOURCE_DIRECTORY)$(LOCAL_NAME)/,* */* */*/* */*/*/* */*/*/*/*))))))
+
+PROJECT_INTERNAL_INCLUDES	:= $(PROJECT_INTERNAL_INCLUDES) bonjour \
+				../include/bonjour/mDNSCore \
+				../include/bonjour/mDNSShared \
+				../include/bonjour/mDNSPosix
 
 ## 额外包含目录（多个，相对于包含根目录ROOT_INCLUDE_DIRECTORY）
 

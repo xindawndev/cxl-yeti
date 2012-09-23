@@ -2,6 +2,9 @@
 Microsoft Visual Studio Solution File, Format Version 10.00
 # Visual Studio 2008
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "dlna_sdk", "scripts\dlna_sdk.vcproj", "{856E3377-8CCD-40CE-9CE9-EFE563B9271C}"
+	ProjectSection(ProjectDependencies) = postProject
+		{5FBF0B40-2D1B-4BF7-90D7-5A60C0B9AE3A} = {5FBF0B40-2D1B-4BF7-90D7-5A60C0B9AE3A}
+	EndProjectSection
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "test_projects", "test_projects", "{6C024A72-22C7-4385-8F53-C4037327E65E}"
 EndProject

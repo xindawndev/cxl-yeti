@@ -13,7 +13,7 @@ int main(int argc, char **argv)
         std::map<std::string, std::string> txt;
         if (true) {
             //txt["deviceid"] = "B8:AC:6F:DA:43:6B";
-            txt["deviceid"] = "74:E5:0B:10:74:72";
+            txt["deviceid"] = "C8:9C:DC:FC:84:50";
             //txt["deviceid"] = "00:19:b9:12:8b:23";
         } else {
             txt["deviceid"] = "FF:FF:FF:FF:FF:F2";

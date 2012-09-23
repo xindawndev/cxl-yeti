@@ -95,6 +95,74 @@
 			/>
 		</Configuration>
 		<Configuration
+			Name="Release|Win32"
+			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
+			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
+			ConfigurationType="4"
+			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
+			CharacterSet="2"
+			>
+			<Tool
+				Name="VCPreBuildEventTool"
+			/>
+			<Tool
+				Name="VCCustomBuildTool"
+			/>
+			<Tool
+				Name="VCXMLDataGeneratorTool"
+			/>
+			<Tool
+				Name="VCWebServiceProxyGeneratorTool"
+			/>
+			<Tool
+				Name="VCMIDLTool"
+			/>
+			<Tool
+				Name="VCCLCompilerTool"
+				AdditionalIncludeDirectories="../../../include;../../../include/dns_sd"
+				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;MDNS_DEBUGMSGS=0;WIN32_LEAN_AND_MEAN;USE_TCP_LOOPBACK;_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES=1;NOT_HAVE_SA_LEN"
+				RuntimeLibrary="0"
+				UsePrecompiledHeader="0"
+				AssemblerListingLocation="$(IntDir)\"
+				ProgramDataBaseFileName="$(IntDir)\dns_sd.dll.pdb"
+				WarningLevel="4"
+				Detect64BitPortabilityProblems="true"
+				DebugInformationFormat="3"
+				CallingConvention="2"
+				CompileAs="0"
+				DisableSpecificWarnings="4127;4204"
+			/>
+			<Tool
+				Name="VCManagedResourceCompilerTool"
+			/>
+			<Tool
+				Name="VCResourceCompilerTool"
+				AdditionalIncludeDirectories="../"
+			/>
+			<Tool
+				Name="VCPreLinkEventTool"
+			/>
+			<Tool
+				Name="VCLibrarianTool"
+			/>
+			<Tool
+				Name="VCALinkTool"
+			/>
+			<Tool
+				Name="VCXDCMakeTool"
+			/>
+			<Tool
+				Name="VCBscMakeTool"
+			/>
+			<Tool
+				Name="VCFxCopTool"
+			/>
+			<Tool
+				Name="VCPostBuildEventTool"
+				CommandLine="if not &quot;%RC_XBS%&quot; == &quot;YES&quot; goto END&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\WINDOWS\system32\$(PlatformName)&quot;                     mkdir &quot;$(DSTROOT)\WINDOWS\system32\$(PlatformName)&quot;&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\Program Files\Bonjour SDK\lib&quot;                                     mkdir &quot;$(DSTROOT)\Program Files\Bonjour SDK\lib&quot;&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\Program Files\Bonjour SDK\lib\$(PlatformName)&quot;     mkdir &quot;$(DSTROOT)\Program Files\Bonjour SDK\lib\$(PlatformName)&quot;&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\Program Files\Bonjour SDK\include&quot;                            mkdir &quot;$(DSTROOT)\Program Files\Bonjour SDK\include&quot;&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\AppleInternal&quot;                                                                   mkdir &quot;$(DSTROOT)\AppleInternal&quot;&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\AppleInternal\bin&quot;                                                           mkdir &quot;$(DSTROOT)\AppleInternal\bin&quot;&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\AppleInternal\bin\$(PlatformName)&quot;                           mkdir &quot;$(DSTROOT)\AppleInternal\bin\$(PlatformName)&quot;&#x0D;&#x0A;xcopy /I/Y &quot;$(TargetPath)&quot;                                                                                           &quot;$(DSTROOT)\WINDOWS\system32\$(PlatformName)&quot;&#x0D;&#x0A;xcopy /I/Y &quot;$(OutDir)\dns_sd.dll.pdb&quot;                                                                          &quot;$(DSTROOT)\AppleInternal\bin\$(PlatformName)&quot;&#x0D;&#x0A;xcopy /I/Y &quot;$(ProjectDir)..\..\mDNSShared\dns_sd.h&quot;                                             &quot;$(DSTROOT)\Program Files\Bonjour SDK\include&quot;&#x0D;&#x0A;:END&#x0D;&#x0A;"
+			/>
+		</Configuration>
+		<Configuration
 			Name="Debug|x64"
 			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
 			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
@@ -186,74 +254,6 @@
 			/>
 			<Tool
 				Name="VCPostBuildEventTool"
-			/>
-		</Configuration>
-		<Configuration
-			Name="Release|Win32"
-			OutputDirectory="$(PlatformName)\$(ConfigurationName)"
-			IntermediateDirectory="$(PlatformName)\$(ConfigurationName)"
-			ConfigurationType="4"
-			InheritedPropertySheets="$(VCInstallDir)VCProjectDefaults\UpgradeFromVC71.vsprops"
-			CharacterSet="2"
-			>
-			<Tool
-				Name="VCPreBuildEventTool"
-			/>
-			<Tool
-				Name="VCCustomBuildTool"
-			/>
-			<Tool
-				Name="VCXMLDataGeneratorTool"
-			/>
-			<Tool
-				Name="VCWebServiceProxyGeneratorTool"
-			/>
-			<Tool
-				Name="VCMIDLTool"
-			/>
-			<Tool
-				Name="VCCLCompilerTool"
-				AdditionalIncludeDirectories="../../../include;../../../include/dns_sd"
-				PreprocessorDefinitions="WIN32;NDEBUG;_WINDOWS;_USRDLL;MDNS_DEBUGMSGS=0;WIN32_LEAN_AND_MEAN;USE_TCP_LOOPBACK;_CRT_SECURE_NO_DEPRECATE;_CRT_SECURE_CPP_OVERLOAD_STANDARD_NAMES=1;NOT_HAVE_SA_LEN"
-				RuntimeLibrary="0"
-				UsePrecompiledHeader="0"
-				AssemblerListingLocation="$(IntDir)\"
-				ProgramDataBaseFileName="$(IntDir)\dns_sd.dll.pdb"
-				WarningLevel="4"
-				Detect64BitPortabilityProblems="true"
-				DebugInformationFormat="3"
-				CallingConvention="2"
-				CompileAs="0"
-				DisableSpecificWarnings="4127;4204"
-			/>
-			<Tool
-				Name="VCManagedResourceCompilerTool"
-			/>
-			<Tool
-				Name="VCResourceCompilerTool"
-				AdditionalIncludeDirectories="../"
-			/>
-			<Tool
-				Name="VCPreLinkEventTool"
-			/>
-			<Tool
-				Name="VCLibrarianTool"
-			/>
-			<Tool
-				Name="VCALinkTool"
-			/>
-			<Tool
-				Name="VCXDCMakeTool"
-			/>
-			<Tool
-				Name="VCBscMakeTool"
-			/>
-			<Tool
-				Name="VCFxCopTool"
-			/>
-			<Tool
-				Name="VCPostBuildEventTool"
-				CommandLine="if not &quot;%RC_XBS%&quot; == &quot;YES&quot; goto END&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\WINDOWS\system32\$(PlatformName)&quot;                     mkdir &quot;$(DSTROOT)\WINDOWS\system32\$(PlatformName)&quot;&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\Program Files\Bonjour SDK\lib&quot;                                     mkdir &quot;$(DSTROOT)\Program Files\Bonjour SDK\lib&quot;&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\Program Files\Bonjour SDK\lib\$(PlatformName)&quot;     mkdir &quot;$(DSTROOT)\Program Files\Bonjour SDK\lib\$(PlatformName)&quot;&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\Program Files\Bonjour SDK\include&quot;                            mkdir &quot;$(DSTROOT)\Program Files\Bonjour SDK\include&quot;&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\AppleInternal&quot;                                                                   mkdir &quot;$(DSTROOT)\AppleInternal&quot;&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\AppleInternal\bin&quot;                                                           mkdir &quot;$(DSTROOT)\AppleInternal\bin&quot;&#x0D;&#x0A;if not exist &quot;$(DSTROOT)\AppleInternal\bin\$(PlatformName)&quot;                           mkdir &quot;$(DSTROOT)\AppleInternal\bin\$(PlatformName)&quot;&#x0D;&#x0A;xcopy /I/Y &quot;$(TargetPath)&quot;                                                                                           &quot;$(DSTROOT)\WINDOWS\system32\$(PlatformName)&quot;&#x0D;&#x0A;xcopy /I/Y &quot;$(OutDir)\dns_sd.dll.pdb&quot;                                                                          &quot;$(DSTROOT)\AppleInternal\bin\$(PlatformName)&quot;&#x0D;&#x0A;xcopy /I/Y &quot;$(ProjectDir)..\..\mDNSShared\dns_sd.h&quot;                                             &quot;$(DSTROOT)\Program Files\Bonjour SDK\include&quot;&#x0D;&#x0A;:END&#x0D;&#x0A;"
 			/>
 		</Configuration>
 		<Configuration
@@ -358,10 +358,6 @@
 			<Filter
 				Name="Bonjour"
 				>
-				<File
-					RelativePath="..\..\..\src\bonjour\mDNSPosix\Responder.c"
-					>
-				</File>
 				<Filter
 					Name="mDNSCore"
 					>

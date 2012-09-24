@@ -157,7 +157,7 @@ void * DMR_CommandLoop( void *args )
         printf( "DMR_Program~# " );
         fgets( cmdline, 1024, stdin );
         ret = ( strcmp( cmdline, "exit\n" ) != 0 ) ? 0 : -1;
-        UpdateUi();
+        //UpdateUi();
         /*ret = paraseCmd( cmdline );*/
     } while( ret != -1 );
 

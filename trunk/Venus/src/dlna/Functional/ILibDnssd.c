@@ -3,13 +3,16 @@
 
 #ifdef WIN32
 #   include "dns_sd.h"
-#elif defined(__ANDROID__)
+#else//lif defined(__ANDROID__)
 #   include "mDNSEmbeddedAPI.h"
 #   include "mDNSPosix.h"
 #   include "mDNSUNP.h"
+const char ProgramName[] = "ILibDnssd";
 #endif
 
 #include "ILibDnssd.h"
+
+#define CreateString(x)        (char *)strcpy((char *)malloc(strlen(x) + 1), x)
 
 #ifdef WIN32
 
@@ -149,7 +152,6 @@ int ILibDnssdIsRunning(void * dnssd_token)
     return (s->terminate == 0 ? 1: 0);
 }
 
-#define CreateString(x)        (char *)strcpy((char *)malloc(strlen(x) + 1), x)
 
 void * ILibCreateDnssdModule(void * chain,
                              char * fcr_type,
@@ -189,7 +191,7 @@ void * ILibCreateDnssdModule(void * chain,
     return (void *)ret_val;
 }
 
-#elif defined(__ANDROID__)
+#else //lif defined(__ANDROID__)
 
 struct DnssdObject
 {
@@ -233,7 +235,7 @@ void ILibDnssdStart(struct DnssdObject * object)
     {
         verbosedebugf("select() returned %d errno %d", result, errno);
         if (errno != EINTR) {
-            ILibLifeTime_Remove(object->process_timer);
+            ILibLifeTime_Remove(object->process_timer, NULL);
             return;
         } else {
             //if (gReceivedSigUsr1)
@@ -287,7 +289,7 @@ void ILibDnssdDestroy(void * object)
     mDNS_Close(&s->dns_storage);
 
 
-    ILibStopDnssdModule(object);
+    //ILibStopDnssdModule(object);
 }
 
 static void registration_callback(mDNS *const m, ServiceRecordSet *const thisRegistration, mStatus status)
@@ -301,7 +303,6 @@ case mStatus_NoError:
 case mStatus_NameConflict: 
     debugf("Callback: %##s Name Conflict",     thisRegistration->RR_SRV.resrec.name->c); 
     status = mDNS_RenameAndReregisterService(m, thisRegistration, mDNSNULL);
-    assert(status == mStatus_NoError);
     break;
 
 case mStatus_MemFree:      
@@ -338,6 +339,11 @@ mStatus register_our_services(struct DnssdObject * object)
         }
     }
     return status;
+}
+
+int ILibDaemonIsRunning()
+{
+    return 1;
 }
 
 void * ILibCreateDnssdModule(void * chain,
@@ -387,7 +393,7 @@ void * ILibCreateDnssdModule(void * chain,
     ILibHashTree_DestroyEnumerator(iter);
 
     ret_val->process_timer          = ILibCreateLifeTime(chain);
-    status = register_our_services(struct DnssdObject * object);
+    status = register_our_services(ret_val);
     if (status != mStatus_NoError) {
         freesafe(ret_val->fcr_name);
         freesafe(ret_val->fcr_type);

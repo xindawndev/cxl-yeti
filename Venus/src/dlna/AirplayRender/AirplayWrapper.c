@@ -9,7 +9,32 @@
 #define String_CreateSize(x)    (char *)memset(malloc((size_t)(x + 1)), 0, 1)
 #define String_Destroy(x)       FREE(x)
 
-#define EVENT_CURRENTPLAYMODE   0x00000001
+/****************************************************************************/
+#define EVENT_CONTRAST                          0x00000001
+#define EVENT_BRIGHTNESS                        0x00000002
+#define EVENT_VOLUME                            0x00000004
+#define EVENT_MUTE                              0x00000008
+#define EVENT_TRANSPORTSTATE                    0x00000010
+#define EVENT_TRANSPORTSTATUS                   0x00000020
+#define EVENT_CURRENTPLAYMODE                   0x00000040
+#define EVENT_TRANSPORTPLAYSPEED                0x00000080
+#define EVENT_NUMBEROFTRACKS                    0x00000100
+#define EVENT_CURRENTTRACK                      0x00000200
+#define EVENT_CURRENTTRACKDURATION              0x00000400
+#define EVENT_CURRENTMEDIADURATION              0x00000800
+#define EVENT_CURRENTTRACKURI                   0x00001000
+#define EVENT_CURRENTTRACKMETADATA              0x00002000
+#define EVENT_AVTRANSPORTURI                    0x00004000
+#define EVENT_AVTRANSPORTURIMETADATA            0x00008000
+#define EVENT_CURRENTTRANSPORTACTIONS           0x00010000
+#define EVENT_ABSOLUTETIMEPOSITION              0x00020000
+#define EVENT_RELATIVETIMEPOSITION              0x00040000
+
+#define EVENT_ALL_RENDERINGCONTROL              0x0000000F
+#define EVENT_ALL_AVTRANSPORT                   0x0007FFF0
+#define EVENT_MASK_RENDERINGCONTROL             EVENT_ALL_RENDERINGCONTROL
+#define EVENT_MASK_AVTRANSPORT                  EVENT_ALL_RENDERINGCONTROL
+/****************************************************************************/
 
 #ifdef WIN32
 typedef unsigned __int64 methods_param;
@@ -126,7 +151,7 @@ void apw_unlock(APW instance)
 void fire_last_change_event(APW apw)
 {
     APWInternalState state = (APWInternalState)apw->internal_state;
-    if (TESTMASK(state->last_change_mask, EVENT_CURRENTPLAYMODE) == TRUE) {
+    if (TESTMASK(state->last_change_mask, EVENT_TRANSPORTSTATE) == TRUE) {
         AirplaySetState_LastChange(state->airplay_token, state->transport_state);
     }
 }
@@ -887,7 +912,7 @@ void APW_Method_ErrorEventResponse(void * session, int error_code, char * error_
 
 }
 
-BOOL      APW_Method_AddPresetNameToList(               APW instance, const char* name)
+BOOL APW_Method_AddPresetNameToList(               APW instance, const char* name)
 {
     return TRUE;
 }
@@ -899,6 +924,22 @@ APW_Error APW_StateChange_SinkProtocolInfo(             APW instance, char* info
 
 APW_Error APW_StateChange_TransportPlayState(APW instance, APWPlayState state)
 {
+    APWInternalState istate;
+    APW_Error err = check_this(instance);
+    if (err != APW_ERROR_OK) {
+        return err;
+    }
+    if( (int)state < 1 || (int)state > 63) {
+        return APW_ERROR_INVALIDARGUMENT;
+    }
+    istate = (APWInternalState)instance->internal_state;
+    apw_lock(instance);
+    if (istate->transport_state != state) {
+        istate->transport_state = state;
+        istate->last_change_mask |= EVENT_TRANSPORTSTATE;
+    }
+    apw_unlock(instance);
+
     return APW_ERROR_OK;
 }
 

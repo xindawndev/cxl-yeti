@@ -56,6 +56,7 @@ PROJECT_INTERNAL_INCLUDES	:= $(PROJECT_INTERNAL_INCLUDES) dlna \
 				../include/dlna/ProtocolInfoParser \
 				../include/dlna/PushController \
 				../include/dlna/StringUtils \
+				../include/dlna/AirplayRender \
 				../include/dlna/UploadController
 
 ## 额外包含目录（多个，相对于包含根目录ROOT_INCLUDE_DIRECTORY）
@@ -80,6 +81,7 @@ PROJECT_LINK_FLAGS		:=
 ## 该项目依赖的其他项目
 
 PROJECT_DEPENDS			:= \
+				../bonjour \
 				$(PROJECT_DEPENDS)
 
 ## 该项目特定的引用库

@@ -15,11 +15,11 @@
 #define AIRPLAY_STATUS_NO_RESPONSE_NEEDED  1000
 
 #define EVENT_NONE     -1
-#define EVENT_PLAYING   0
-#define EVENT_PAUSED    1
-#define EVENT_LOADING   2
-#define EVENT_STOPPED   3
-const char *eventStrings[] = {"playing", "paused", "loading", "stopped"};
+#define EVENT_STOPPED   1
+#define EVENT_PAUSED    2
+#define EVENT_PLAYING   3
+#define EVENT_LOADING   4
+const char *eventStrings[] = {"stopped", "paused", "playing", "loading"};
 
 #define PLAYBACK_INFO  "<?xml version=\"1.0\" encoding=\"UTF-8\"?>\r\n"\
     "<!DOCTYPE plist PUBLIC \"-//Apple//DTD PLIST 1.0//EN\" \"http://www.apple.com/DTDs/PropertyList-1.0.dtd\">\r\n"\
@@ -1287,7 +1287,39 @@ AirplayToken AirplayTokenFromSessionToken(const AirplaySessionToken session_toke
 
 void AirplaySetState_LastChange(AirplayToken airplay_token, int state)
 {
+    char * key                          = NULL;
+    void * val                          = NULL;
+    struct AirplayDataObject * object   = NULL;
+    void * iter                         = NULL;
 
+    switch (state) {
+            case 1: // stopped
+            case 2: // paused
+            case 3: // playing
+            case 4: // loading
+                break;
+            default:
+                // no media
+                return;
+    }
+
+    object = (struct AirplayDataObject *)airplay_token;
+    if (object == NULL) return;
+    iter = ILibHashTree_GetEnumerator(object->session_map);
+    if (iter) return;
+    while ( !ILibHashTree_MoveNext( iter ) ) {
+        char snd_buf[1024]  = {0};
+        int snd_len         = 0;
+        char snd_body[512]  = {0};
+        int len             = 0;
+        ILibHashTree_GetValue( iter, &key, &len, ((void **)(&val)));
+        len = sprintf(snd_body, EVENT_INFO, eventStrings[state - 1]);
+        printf("AIRPLAY Render: sending event: %s\n", eventStrings[state]);
+
+        snd_len =sprintf(snd_buf, "POST /event HTTP/1.1\r\nContent-Type: text/x-apple-plist+xml\r\nContent-Length: %d\r\nx-apple-session-id: %s\r\n\r\n%s", len, key, snd_body);
+        ILibWebServer_Send_Raw((struct ILibWebServer_Session *)val, snd_buf, snd_len, 1, 1);
+    }
+    ILibHashTree_DestroyEnumerator(iter);
 }
 
 void AirplaySetState_SourceProtocolInfo(AirplayToken airplay_token, char * val)

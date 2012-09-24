@@ -876,6 +876,54 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
             status = AIRPLAY_STATUS_NEED_AUTH;
         } else if (content_type != NULL && memcmp(content_type, "application/x-apple-binary-plist", 32) == 0) {
             // process plist, iphone request
+//            plist_t dict = NULL;
+//            plist_from_bin(bodyBuffer, bodyBufferLength, &dict);
+//
+//            if (plist_dict_get_size(dict)) {
+//                plist_t tmpNode = >plist_dict_get_item(dict, "Start-Position");
+//                if (tmpNode) {
+//                    double tmpDouble = 0;
+//                    plist_get_real_val(tmpNode, &tmpDouble);
+//                    position = (int)tmpDouble * 1000;
+//                }
+//
+//                tmpNode = plist_dict_get_item(dict, "Content-Location");
+//                if (tmpNode) {
+//                    char *tmpStr = NULL;
+//                    plist_get_string_val(tmpNode, &tmpStr);
+//                    location = String_Create(tmpStr);
+//#ifdef _WIN32
+//                    plist_free_string_val(tmpStr);
+//#else
+//                    free(tmpStr);
+//#endif
+//                }
+//
+//                if (dict) {
+//                    plist_free(dict);
+//                }
+//
+//                if (AirplayCallbackSetAVTransportURI == NULL) {
+//                    status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//                } else {
+//                    AirplayCallbackSetAVTransportURI(session, 0, location, "");
+//                }
+//                if (AirplayCallbackPlay == NULL) {
+//                    status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//                } else {
+//                    AirplayCallbackPlay(session, 0, "1");
+//                }
+//                if (AirplayCallbackSeek == NULL) {
+//                    status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
+//                } else {
+//                    char posbuf[128] = {0};
+//                    sprintf(posbuf, "%d", position);
+//                    AirplayCallbackSeek(session, 0, "ABS_TIME", posbuf);
+//                }
+//                freesafe(position);
+//            } else {
+//                perror("Error parsing plist");
+//            }
         } else {
             // iTuns request
             int location_pos, start_pos;

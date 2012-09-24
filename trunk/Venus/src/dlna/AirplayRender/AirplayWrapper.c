@@ -853,3 +853,141 @@ APW APW_Method_Create(void * chain, ILibThreadPool thread_pool, unsigned short p
 
     return apw;
 }
+
+BOOL APW_Method_IsRunning(APW instance)
+{
+    if (instance != NULL) {
+        APWInternalState state = (APWInternalState)instance->internal_state;
+        if (state != NULL) {
+            if(state->chain != NULL) {
+                return (ILibIsChainRunning(state->chain))? TRUE: FALSE;
+            }
+        }
+    }
+    return FALSE;
+}
+
+void APW_Method_NotifyMicrostackOfIPAddressChange(APW instance)
+{
+
+}
+
+APW_Error APW_Method_SetEventContextMask(APW instance, APWEventContextSwitch bit_flags)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_Method_SetDeviceCapabilities(APW instance, const char * play_media, const char * rec_media, const char * rec_quality_modes)
+{
+    return APW_ERROR_OK;
+}
+
+void APW_Method_ErrorEventResponse(void * session, int error_code, char * error_message)
+{
+
+}
+
+BOOL      APW_Method_AddPresetNameToList(               APW instance, const char* name)
+{
+    return TRUE;
+}
+
+APW_Error APW_StateChange_SinkProtocolInfo(             APW instance, char* info)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_TransportPlayState(APW instance, APWPlayState state)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_TransportPlaySpeed(APW instance, char* play_speed)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_TransportStatus(APW instance, APWTransportStatus status)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_CurrentTransportActions(APW instance, unsigned short allowed_actions)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_NumberOfTracks(APW instance, unsigned int max_number_of_tracks)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_CurrentTrack(APW instance, unsigned int index)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_CurrentPlayMode(APW instance, APWMediaPlayMode mode)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_CurrentTrackURI(APW instance, char* track_uri)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_CurrentTrackMetaData(APW instance, struct CdsObject* track_metadata)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_CurrentTrackDuration(APW instance, long duration)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_Volume(APW instance, unsigned char volume)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_Mute(APW instance, BOOL mute)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_Contrast(APW instance, unsigned char contrast)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_Brightness(APW instance, unsigned char brightness)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_AVTransportURI(APW instance, char* uri)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_AVTransportURIMetaData(APW instance, struct CdsObject* metadata)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_CurrentMediaDuration(APW instance, long duration)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_AbsoluteTimePosition(APW instance, long position, int is_notify)
+{
+    return APW_ERROR_OK;
+}
+
+APW_Error APW_StateChange_RelativeTimePosition(APW instance, long position, int is_notify)
+{
+    return APW_ERROR_OK;
+}

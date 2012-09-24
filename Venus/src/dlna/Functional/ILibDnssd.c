@@ -234,6 +234,9 @@ void ILibDnssdLoop(struct DnssdObject * object)
     if (result < 0)
     {
         verbosedebugf("select() returned %d errno %d", result, errno);
+        printf("select() returned %d errno %d", result, errno);
+        ILibLifeTime_Remove(object->process_timer, NULL);
+        return;
         if (errno != EINTR) {
             ILibLifeTime_Remove(object->process_timer, NULL);
             return;
@@ -300,6 +303,7 @@ case mStatus_NameConflict:
 
 case mStatus_MemFree:      
     debugf("Callback: %##s Memory Free",       thisRegistration->RR_SRV.resrec.name->c); 
+    printf("Callback: %s Memory Free",       thisRegistration->RR_SRV.resrec.name->c); 
     break;
 
 default:                   
@@ -350,6 +354,7 @@ void * ILibCreateDnssdModule(void * chain,
     struct DnssdObject * ret_val    = (struct DnssdObject *)malloc(sizeof(struct DnssdObject));
     void * iter                     = NULL;
     char * key                      = NULL;
+    char tbuf[128]                  = {0};
     int  len                        = 0;
     char * val                      = NULL;
     mStatus status                  = mStatus_NoError;
@@ -378,8 +383,9 @@ void * ILibCreateDnssdModule(void * chain,
     iter = ILibHashTree_GetEnumerator(txt_map);
     while ( !ILibHashTree_MoveNext( iter ) ) { // 注意：多一次指针引用，使用完毕由内部释放，外部创建不用释放
         ILibHashTree_GetValue( iter, &key, &len, ((void **)(&val)));
-        ret_val->service_text[ret_val->service_text_len] = strlen((char *)(val));
-        mDNSPlatformMemCopy(ret_val->service_text + ret_val->service_text_len + 1, val, ret_val->service_text[ret_val->service_text_len]);
+        len = sprintf(tbuf, "%s=%s", (char *)key, (char *)val);
+        ret_val->service_text[ret_val->service_text_len] = len;
+        mDNSPlatformMemCopy(ret_val->service_text + ret_val->service_text_len + 1, tbuf, ret_val->service_text[ret_val->service_text_len]);
         ret_val->service_text_len += 1 + ret_val->service_text[ret_val->service_text_len];
         freesafe(val);
     }

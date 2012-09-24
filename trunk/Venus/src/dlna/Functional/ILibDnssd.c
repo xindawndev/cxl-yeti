@@ -214,7 +214,7 @@ struct DnssdObject
     int                     terminate;
 };
 
-void ILibDnssdStart(struct DnssdObject * object)
+void ILibDnssdLoop(struct DnssdObject * object)
 {
     int nfds = 0;
     fd_set readfds;
@@ -262,23 +262,19 @@ void ILibDnssdStart(struct DnssdObject * object)
     } else {
         mDNSPosixProcessFDSet(&object->dns_storage, &readfds);
     }
-    ILibLifeTime_AddEx(object->process_timer, object, 200, ILibDnssdStart, NULL);
+    ILibLifeTime_AddEx(object->process_timer, object, 200, ILibDnssdLoop, NULL);
 }
 
 void ILibDnssdPreSelect(void * object,void * readset, void * writeset, void * errorset, int * blocktime)
 {
     struct DnssdObject *s   = (struct DnssdObject *)object;
-    ILibDnssdStart(s);
+    ILibDnssdLoop(s);
     s->terminate            = 0;
     s->pre_select = NULL;
 }
 
 void ILibDnssdDestroy(void * object)
 {
-    void * iter             = NULL;
-    char * key              = NULL;
-    int  len                = 0;
-    char * val              = NULL;
     struct DnssdObject * s  = (struct DnssdObject *)object;
 
     freesafe(s->fcr_name);
@@ -287,9 +283,6 @@ void ILibDnssdDestroy(void * object)
 
     mDNS_DeregisterService(&s->dns_storage, &s->core_serv);
     mDNS_Close(&s->dns_storage);
-
-
-    //ILibStopDnssdModule(object);
 }
 
 static void registration_callback(mDNS *const m, ServiceRecordSet *const thisRegistration, mStatus status)

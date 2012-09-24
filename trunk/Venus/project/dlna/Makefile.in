@@ -56,8 +56,11 @@ PROJECT_INTERNAL_INCLUDES	:= $(PROJECT_INTERNAL_INCLUDES) dlna \
 				../include/dlna/ProtocolInfoParser \
 				../include/dlna/PushController \
 				../include/dlna/StringUtils \
+				../include/dlna/UploadController \
 				../include/dlna/AirplayRender \
-				../include/dlna/UploadController
+				../include/bonjour/mDNSCore \
+				../include/bonjour/mDNSShared \
+				../include/bonjour/mDNSPosix
 
 ## 额外包含目录（多个，相对于包含根目录ROOT_INCLUDE_DIRECTORY）
 

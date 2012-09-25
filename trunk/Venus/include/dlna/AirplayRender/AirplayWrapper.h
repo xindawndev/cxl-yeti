@@ -3,6 +3,7 @@
 
 #include "ILibParsers.h"
 #include "ILibThreadPool.h"
+#include "CdsObject.h"
 
 #if !defined(WIN32)
 #   define BOOL    int

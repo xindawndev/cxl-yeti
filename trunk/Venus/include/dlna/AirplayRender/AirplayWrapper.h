@@ -1,8 +1,7 @@
 #ifndef _AIRPLAY_WRAPPER_H_
 #define _AIRPLAY_WRAPPER_H_
 
-#include "ILibParsers.h"
-#include "ILibThreadPool.h"
+typedef void * ILibThreadPool;
 
 #if !defined(WIN32)
 #   define BOOL    int

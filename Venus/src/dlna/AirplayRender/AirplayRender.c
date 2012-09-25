@@ -3,7 +3,7 @@
 #include "ILibWebServer.h"
 #include "ILibDnssd.h"
 #include "ILibMd5.h"
-#include "plist/plist.h"
+//#include "plist/plist.h"
 
 #define RECEIVEBUFFER 1024
 

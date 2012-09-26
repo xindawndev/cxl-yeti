@@ -28,8 +28,7 @@ typedef enum {
     APW_ECS_SETVOLUME           = 0x2000,
     APW_ECS_SETMUTE             = 0x4000,
     APW_ECS_GETAVPROTOCOLINFO   = 0x8000,
-    APW_ECS_DEFAULT             = 0xffff 
-
+    APW_ECS_DEFAULT             = 0xffff
 } APWEventContextSwitch;
 
 typedef enum {

@@ -170,7 +170,7 @@ void apw_last_change_timer_event(void * object)
         state->last_change_mask = 0;
     }
 
-    ILibLifeTime_AddEx(state->apw_monitor, apw, 200, &apw_last_change_timer_event, NULL);
+    ILibLifeTime_AddEx(state->apw_monitor, apw, 0, &apw_last_change_timer_event, NULL);
 }
 
 void callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
@@ -837,7 +837,7 @@ APW APW_Method_Create(void * chain, ILibThreadPool thread_pool, unsigned short p
     }
     AirplaySetTag(inner_state->airplay_token, (void *)apw);
     inner_state->apw_monitor = ILibCreateLifeTime(inner_state->chain);
-    ILibLifeTime_AddEx(inner_state->apw_monitor, apw, 200, &apw_last_change_timer_event, NULL);
+    ILibLifeTime_AddEx(inner_state->apw_monitor, apw, 0, &apw_last_change_timer_event, NULL);
     sem_init(&inner_state->resource_lock, 0, 1);
 
     apw->ILib1 = NULL;

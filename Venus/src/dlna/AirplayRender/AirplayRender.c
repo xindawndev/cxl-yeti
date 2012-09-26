@@ -804,6 +804,17 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
     data_obj        = (struct AirplayDataObject *)session->User;
     start_qs        = ILibString_IndexOf(header->DirectiveObj, header->DirectiveObjLength, "?", 1);
 
+
+    {
+        char * header_buf = NULL;
+        int len = ILibGetRawPacket(header, &header_buf);
+        header_buf[len] = '\0';
+        printf("Request :\n%s", header_buf ? header_buf : "");
+        if (bodyBuffer) bodyBuffer[bodyBufferLength] = '\0';
+        printf("%s", bodyBuffer ? bodyBuffer: "");
+        free(header_buf);
+    }
+
     if (start_qs == -1) {
         start_qs = header->DirectiveObjLength;
     }
@@ -1041,7 +1052,7 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
         // 获取当前播放状态
         if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
             status = AIRPLAY_STATUS_NEED_AUTH;
-            internal_resp = 1;
+        //} else if () {
             //} else if (g_application.m_pPlayer) {
             //    if (g_application.m_pPlayer->GetTotalTime()) {
             //        position = ((float) g_application.m_pPlayer->GetTime()) / 1000;
@@ -1061,14 +1072,22 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
             //        _compose_reverse_event(reverse_header, reverse_body, session_id, EVENT_PAUSED);
             //    }
         } else {
-            sprintf(body, PLAYBACK_INFO_NOT_READY, duration, cacheDuration, position, (playing ? 1 : 0), duration);
+            char len_buf[128] = {0};
+            int lenlen = 0;
+            int body_len =  sprintf(body, PLAYBACK_INFO_NOT_READY, duration, cacheDuration, position, (playing ? 1 : 0), duration);
+            lenlen = sprintf(len_buf, "%d", body_len);
             ILibAddHeaderLine(resp_header, "Content-Type", 12, "text/x-apple-plist+xml", 22);
-            internal_resp = 1;
+            ILibAddHeaderLine(resp_header, "Content-Length", 14, len_buf, lenlen);
         }
+        internal_resp = 1;
     } else if (start_qs == 12 && memcmp(header->DirectiveObj, "/server-info", 12) == 0) {
+        int body_length = 0, len = 0;
+        char length_buf[128] = {0};
         printf("AIRPLAY Render: got request %s\n", header->DirectiveObj);
-        sprintf(body, SERVER_INFO, data_obj->mac_addr);
+        body_length = sprintf(body, SERVER_INFO, data_obj->mac_addr);
+        len = sprintf(length_buf, "%d", body_length);
         ILibAddHeaderLine(resp_header, "Content-Type", 12, "text/x-apple-plist+xml", 22);
+        ILibAddHeaderLine(resp_header, "Content-Length", 14, length_buf, len);
         internal_resp = 1;
     } else if (start_qs == 19 && memcmp(header->DirectiveObj, "/slideshow-features", 19) == 0) {
         // Ignore for now.
@@ -1084,7 +1103,7 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
         status = AIRPLAY_STATUS_NO_RESPONSE_NEEDED;
         internal_resp = 1;
     } else {
-        printf("AIRPLAY Render: unhandled request [%s]\n", header->StatusCode);
+        printf("AIRPLAY Render: unhandled request [%d]\n", header->StatusCode);
         status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
         internal_resp = 1;
     }
@@ -1125,8 +1144,13 @@ case AIRPLAY_STATUS_METHOD_NOT_ALLOWED:
     // 加入头部日期
     ILibAddHeaderLine(resp_header, "Date", 4, date, strlen(date));
 
-    if (internal_resp != 0) {
-        printf("Response body:\n%s", body ? body : "");
+    if (internal_resp != 0 && status != AIRPLAY_STATUS_NO_RESPONSE_NEEDED) {
+        char * header_buf = NULL;
+        int len = ILibGetRawPacket(resp_header, &header_buf);
+        header_buf[len] = '\0';
+        printf("Response :\n%s", header_buf ? header_buf : "");
+        printf("%s", body ? body : "");
+        free(header_buf);
         ILibWebServer_StreamHeader(session, resp_header);
         ILibWebServer_StreamBody(session, body, body ? strlen(body) : 0, ILibAsyncSocket_MemoryOwnership_STATIC, 1);
     }
@@ -1292,7 +1316,7 @@ default:
     object = (struct AirplayDataObject *)airplay_token;
     if (object == NULL) return;
     iter = ILibHashTree_GetEnumerator(object->session_map);
-    if (iter) return;
+    if (!iter) return;
     while ( !ILibHashTree_MoveNext( iter ) ) {
         char snd_buf[1024]  = {0};
         int snd_len         = 0;
@@ -1300,7 +1324,7 @@ default:
         int len             = 0;
         ILibHashTree_GetValue( iter, &key, &len, ((void **)(&val)));
         len = sprintf(snd_body, EVENT_INFO, eventStrings[state - 1]);
-        printf("AIRPLAY Render: sending event: %s\n", eventStrings[state]);
+        printf("AIRPLAY Render: sending event: %s\n", eventStrings[state - 1]);
 
         snd_len =sprintf(snd_buf, "POST /event HTTP/1.1\r\nContent-Type: text/x-apple-plist+xml\r\nContent-Length: %d\r\nx-apple-session-id: %s\r\n\r\n%s", len, key, snd_body);
         ILibWebServer_Send_Raw((struct ILibWebServer_Session *)val, snd_buf, snd_len, 1, 1);

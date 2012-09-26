@@ -23,18 +23,21 @@ int APW_Callback_SetPlayMode (        APW instance, void * session, APWMediaPlay
 int APW_Callback_Stop (               APW instance, void * session)
 {
     LogFun();
+    APW_StateChange_TransportPlayState(instance, APW_PS_Stopped);
     return 0;
 }
 
 int APW_Callback_Play (               APW instance, void * session, char* playSpeed)
 {
     LogFun();
+    APW_StateChange_TransportPlayState(instance, APW_PS_Playing);
     return 0;
 }
 
 int APW_Callback_Pause (              APW instance, void * session)
 {
     LogFun();
+    APW_StateChange_TransportPlayState(instance, APW_PS_Paused);
     return 0;
 }
 

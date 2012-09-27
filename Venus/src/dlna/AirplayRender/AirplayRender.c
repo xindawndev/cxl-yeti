@@ -194,22 +194,17 @@ void AirplayResponse_GetPositionInfo(const AirplaySessionToken session_token, in
     time_t ltime;
     char * date = NULL;
     char * body = NULL;
-    int retval, body_len;
-    struct packetheader *resp_header = ILibCreateEmptyPacket();
-    ILibSetVersion(resp_header, "1.1", 3);
-    ILibSetStatusCode(resp_header, 200, "OK", 2);
+    int len = 0, body_len = 0;
+    char * packet = NULL;
     ltime = time(NULL);
     date = asctime(gmtime(&ltime));
     date[strlen(date) - 1] = '\0';
-    ILibAddHeaderLine(resp_header, "Date", 4, date, strlen(date));
-    ILibAddHeaderLine(resp_header, "Content-Type", 12, "text/parameters", 15);
-
+    packet = (char *)malloc(512);
     body = (char *)malloc(128);
     body_len = sprintf(body, "duration: %d\r\nposition: %d\r\n", duration, current_pos);
-    retval=ILibWebServer_StreamHeader(session_token, resp_header);
-    if (retval!=ILibAsyncSocket_SEND_ON_CLOSED_SOCKET_ERROR && retval != ILibWebServer_SEND_RESULTED_IN_DISCONNECT) {
-        ILibWebServer_StreamBody(session_token, body, body_len, 0, 1);
-    }
+    len = sprintf(packet, "HTTP/1.1 200 OK\r\nDate: %s\r\nContent-Type: text/parameters\r\nContent-Length: %d\r\n\r\n%s", date, body_len, body);
+    free(body);
+    ILibWebServer_Send_Raw((struct ILibWebServer_Session *)session_token, packet, len, 0, 1);
 }
 
 void AirplayResponse_GetTransportInfo(const AirplaySessionToken session_token, const char * current_transport_state, const char * current_transport_status, const char * current_speed)
@@ -409,42 +404,6 @@ int AirplayCheckAuthorization(void * object, char * auth_str, char * method, cha
     }
 
     return auth_valid;
-}
-
-struct packetheader * make_response_header(int status)
-{
-    struct packetheader * resp_header = NULL;
-    time_t ltime;
-    char * date = NULL;
-
-    resp_header = ILibCreateEmptyPacket();
-    ILibSetVersion(resp_header, "1.1", 3);
-    switch (status) {
-case AIRPLAY_STATUS_NOT_IMPLEMENTED:
-    ILibSetStatusCode(resp_header, status, "Not Implemented", strlen("Not Implemented"));
-    break;
-case AIRPLAY_STATUS_SWITCHING_PROTOCOLS:
-    ILibAddHeaderLine(resp_header, "Upgrade", 7, "PTTH/1.0", 8);
-    ILibAddHeaderLine(resp_header, "Connection", 10, "Upgrade", 7);
-    ILibSetStatusCode(resp_header, status, "Switching Protocols", strlen("Switching Protocols"));
-    break;
-case AIRPLAY_STATUS_NEED_AUTH:
-    ILibSetStatusCode(resp_header, status, "Unauthorized", strlen("Unauthorized"));
-    break;
-case AIRPLAY_STATUS_NOT_FOUND:
-    ILibSetStatusCode(resp_header, status, "Not Found", strlen("Not Found"));
-    break;
-case AIRPLAY_STATUS_METHOD_NOT_ALLOWED:
-    ILibSetStatusCode(resp_header, status, "Method Not Allowed", strlen("Method Not Allowed"));
-    break;
-    }
-
-    ltime = time(NULL);
-    date = asctime(gmtime(&ltime));
-    date[strlen(date) - 1] = '\0';
-    ILibAddHeaderLine(resp_header, "Date", 4, date, strlen(date));
-
-    return resp_header;
 }
 
 // Code Backup [9/20/2012 rainleafchen]
@@ -780,7 +739,6 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
     int need_auth;
     int start_qs;
     int content_lenth;
-    int internal_resp;
     char * method;
     char * uri;
     char * content_type;
@@ -789,10 +747,9 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
     char body[512] = {0};
     time_t ltime;
     char * date;
-    struct packetheader * resp_header;
+    char * packet;
     struct AirplayDataObject * data_obj;
 
-    internal_resp   = 0; // 需要内部处理的请求
     status          = AIRPLAY_STATUS_OK;
     need_auth       = 0;
     method          = header->Directive;
@@ -822,15 +779,13 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
         need_auth = 1;
     }
 
-    resp_header = ILibCreateEmptyPacket();
-    ILibSetVersion(resp_header, "1.1", 3);
+    ltime = time(NULL);
+    date = asctime(gmtime(&ltime));
+    date[strlen(date) - 1] = '\0';
 
     if (start_qs == 8 && memcmp(header->DirectiveObj, "/reverse", 8) == 0) {
         printf("AIRPLAY Render: got request %s\n", header->DirectiveObj);
         status = AIRPLAY_STATUS_SWITCHING_PROTOCOLS;
-        ILibAddHeaderLine(resp_header, "Upgrade", 7, "PTTH/1.0", 8);
-        ILibAddHeaderLine(resp_header, "Connection", 10, "Upgrade", 7);
-        internal_resp = 1;
     } else if (start_qs == 5 && memcmp(header->DirectiveObj, "/rate", 5) == 0) {
         char * found = strstr(header->DirectiveObj, "value=");
         int rate = found ? (int)(atof(found + strlen("value=")) + 0.5f) : 0;
@@ -842,14 +797,12 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
         } else if (rate == 0) { // 暂停命令
             if (AirplayCallbackPause == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-                internal_resp = 1;
             } else {
                 AirplayCallbackPause(session, 0);
             }
         } else { // 播放命令
             if (AirplayCallbackPlay == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-                internal_resp = 1;
             } else {
                 AirplayCallbackPlay(session, 0, "1");
             }
@@ -862,21 +815,18 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
 
         if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
             status = AIRPLAY_STATUS_NEED_AUTH;
-            internal_resp = 1;
         } else if (volume >= 0 && volume <= 1) {
             volume *= 100;
             volume = volume < 0 ? 0 : (volume > 100 ? 100 : volume);
             if (volume == 0) { // 静音
                 if (AirplayCallbackSetMute == NULL) {
                     status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-                    internal_resp = 1;
                 } else {
                     AirplayCallbackSetMute(session, 0, "Master", 1);
                 }
             } else { // 设置音量
                 if (AirplayCallbackSetVolume == NULL || AirplayCallbackSetMute == NULL) {
                     status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-                    internal_resp = 1;
                 } else {
                     AirplayCallbackSetMute(session, 0, "Master", 0);
                     AirplayCallbackSetVolume(session, 0, "Master", (unsigned short)volume);
@@ -892,7 +842,6 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
 
         if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
             status = AIRPLAY_STATUS_NEED_AUTH;
-            internal_resp = 1;
         } else if (content_type != NULL && memcmp(content_type, "application/x-apple-binary-plist", 32) == 0) {
             // process plist, iphone request
 //            plist_t dict = NULL;
@@ -967,25 +916,21 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
             } else {
                 // 获取不到URL
                 status = AIRPLAY_STATUS_NOT_FOUND;
-                internal_resp = 1;
             }
         }
         if (status != AIRPLAY_STATUS_NEED_AUTH) {
             if (AirplayCallbackSetAVTransportURI == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-                internal_resp = 1;
             } else {
                 AirplayCallbackSetAVTransportURI(session, 0, location, "");
             }
             if (AirplayCallbackPlay == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-                internal_resp = 1;
             } else {
                 AirplayCallbackPlay(session, 0, "1");
             }
             if (AirplayCallbackSeek == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-                internal_resp = 1;
             } else {
                 char posbuf[128] = {0};
                 sprintf(posbuf, "%d", position);
@@ -995,12 +940,10 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
     } else if (start_qs == 6 && memcmp(header->DirectiveObj, "/scrub", 6) == 0) {
         if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
             status = AIRPLAY_STATUS_NEED_AUTH;
-            internal_resp = 1;
         } else if (memcmp(method, "GET", 3) == 0) { // 获取播放位置
             printf("AIRPLAY Render: got GET request %s\n", header->DirectiveObj);
             if (AirplayCallbackGetPositionInfo == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-                internal_resp = 1;
             } else {
                 AirplayCallbackGetPositionInfo(session, 0);
             }
@@ -1011,7 +954,6 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
                 printf("AIRPLAY Render: got POST request %s with pos %d\n", header->DirectiveObj, position);
                 if (AirplayCallbackSeek == NULL) {
                     status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-                    internal_resp = 1;
                 } else {
                     char posbuf[128] = {0};
                     sprintf(posbuf, "%d", position);
@@ -1023,11 +965,9 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
         printf("AIRPLAY Render: got request %s\n", header->DirectiveObj);
         if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
             status = AIRPLAY_STATUS_NEED_AUTH;
-            internal_resp = 1;
         } else {
             if (AirplayCallbackStop == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-                internal_resp = 1;
             } else {
                 AirplayCallbackStop(session, 0);
             }
@@ -1036,7 +976,6 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
         printf("AIRPLAY Render: got request %s\n", header->DirectiveObj);
         if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
             status = AIRPLAY_STATUS_NEED_AUTH;
-            internal_resp = 1;
         } else if (content_lenth > 0) {
             // 将图片写入缓存，然后输出显示
             // Body 部分为图片数据
@@ -1072,87 +1011,89 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
             //        _compose_reverse_event(reverse_header, reverse_body, session_id, EVENT_PAUSED);
             //    }
         } else {
-            char len_buf[128] = {0};
             int lenlen = 0;
-            int body_len =  sprintf(body, PLAYBACK_INFO_NOT_READY, duration, cacheDuration, position, (playing ? 1 : 0), duration);
-            lenlen = sprintf(len_buf, "%d", body_len);
-            ILibAddHeaderLine(resp_header, "Content-Type", 12, "text/x-apple-plist+xml", 22);
-            ILibAddHeaderLine(resp_header, "Content-Length", 14, len_buf, lenlen);
+            int body_len = 0;
+            packet = (char *)malloc(512);
+            memset(packet, 0, 512);
+            body_len =  sprintf(body, PLAYBACK_INFO_NOT_READY, duration, cacheDuration, position, (playing ? 1 : 0), duration);
+            lenlen = sprintf(packet, "HTTP/1.1 200 OK\r\nDate: %s\r\nContent-Type: text/x-apple-plist+xml\r\nContent-Length: %d\r\n\r\n%s", date, body_len, body);
+            ILibWebServer_Send_Raw(session, packet, lenlen, 0, 1);
+            return;
         }
-        internal_resp = 1;
     } else if (start_qs == 12 && memcmp(header->DirectiveObj, "/server-info", 12) == 0) {
+        
         int body_length = 0, len = 0;
         char length_buf[128] = {0};
         printf("AIRPLAY Render: got request %s\n", header->DirectiveObj);
         body_length = sprintf(body, SERVER_INFO, data_obj->mac_addr);
-        len = sprintf(length_buf, "%d", body_length);
-        ILibAddHeaderLine(resp_header, "Content-Type", 12, "text/x-apple-plist+xml", 22);
-        ILibAddHeaderLine(resp_header, "Content-Length", 14, length_buf, len);
-        internal_resp = 1;
+
+        packet = (char *)malloc(1024);
+        memset(packet, 0, 1024);
+        len = sprintf(packet, "HTTP/1.1 200 OK\r\nDate: %s\r\nContent-Type: text/x-apple-plist+xml\r\nContent-Length: %d\r\n\r\n%s", date, body_length, body);
+        ILibWebServer_Send_Raw(session, packet, len, 0, 1);
+        return;
     } else if (start_qs == 19 && memcmp(header->DirectiveObj, "/slideshow-features", 19) == 0) {
         // Ignore for now.
+        return;
     } else if (start_qs == 10 && memcmp(header->DirectiveObj, "/authorize", 10) == 0) {
         // DRM, ignore for now.
+        return;
     } else if (start_qs == 11 && memcmp(header->DirectiveObj, "/setProperty", 11) == 0) {
         status = AIRPLAY_STATUS_NOT_FOUND;
-        internal_resp = 1;
     } else if (start_qs == 11 && memcmp(header->DirectiveObj, "/getProperty", 11) == 0) {
         status = AIRPLAY_STATUS_NOT_FOUND;
-        internal_resp = 1;
     } else if (start_qs == 3 && memcmp(header->DirectiveObj, "200", 3) == 0) {
-        status = AIRPLAY_STATUS_NO_RESPONSE_NEEDED;
-        internal_resp = 1;
+        return;
     } else {
         printf("AIRPLAY Render: unhandled request [%d]\n", header->StatusCode);
         status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-        internal_resp = 1;
     }
 
     if (status == AIRPLAY_STATUS_NEED_AUTH) {
         //_compose_auth_request_answer(resp_header, resp_body);
-        internal_resp = 1;
     }
 
-    status_msg = "OK";
+    packet = (char *)malloc(512);
+    memset(packet, 0, 512);
 
     switch (status) {
 case AIRPLAY_STATUS_NOT_IMPLEMENTED:
-    status_msg = "Not Implemented";
+    {
+        int len = 0;
+        len = sprintf(packet, "HTTP/1.1 %d Not Implemented\r\nDate: %s\r\n\r\n", AIRPLAY_STATUS_NOT_IMPLEMENTED, date);
+        ILibWebServer_Send_Raw(session, packet, len, 0, 1);
+        return;
+    }
     break;
 case AIRPLAY_STATUS_SWITCHING_PROTOCOLS:
-    status_msg = "Switching Protocols";
-    ILibAddEntry(data_obj->session_map, session_id, strlen(session_id), ( void * )session );
+    {
+        int len = 0;
+        ILibAddEntry(data_obj->session_map, session_id, strlen(session_id), ( void * )session );
+        len = sprintf(packet, "HTTP/1.1 %d Switching Protocols\r\nDate: %s\r\nUpgrade: PTTH/1.0\r\nConnection: Upgrade\r\n\r\n", AIRPLAY_STATUS_SWITCHING_PROTOCOLS, date);
+        ILibWebServer_Send_Raw(session, packet, len, 0, 1);
+    }
     break;
 case AIRPLAY_STATUS_NEED_AUTH:
-    status_msg = "Unauthorized";
+    {
+        int len = 0;
+        len = sprintf(packet, "HTTP/1.1 %d Unauthorized\r\nDate: %s\r\n\r\n", AIRPLAY_STATUS_NEED_AUTH, date);
+        ILibWebServer_Send_Raw(session, packet, len, 0, 1);
+    }
     break;
 case AIRPLAY_STATUS_NOT_FOUND:
-    status_msg = "Not Found";
+    {
+        int len = 0;
+        len = sprintf(packet, "HTTP/1.1 %d Not Found\r\nDate: %s\r\n\r\n", AIRPLAY_STATUS_NOT_FOUND, date);
+        ILibWebServer_Send_Raw(session, packet, len, 0, 1);
+    }
     break;
 case AIRPLAY_STATUS_METHOD_NOT_ALLOWED:
-    status_msg = "Method Not Allowed";
-    break;
+    {
+        int len = 0;
+        len = sprintf(packet, "HTTP/1.1 %d Method Not Allowed\r\nDate: %s\r\n\r\n", AIRPLAY_STATUS_METHOD_NOT_ALLOWED, date);
+        ILibWebServer_Send_Raw(session, packet, len, 0, 1);
     }
-
-    // 加入错误码，错误信息。
-    ILibSetStatusCode(resp_header, status, (char *)status_msg, strlen(status_msg));
-
-    ltime = time(NULL);
-    date = asctime(gmtime(&ltime));
-    date[strlen(date) - 1] = '\0';
-
-    // 加入头部日期
-    ILibAddHeaderLine(resp_header, "Date", 4, date, strlen(date));
-
-    if (internal_resp != 0 && status != AIRPLAY_STATUS_NO_RESPONSE_NEEDED) {
-        char * header_buf = NULL;
-        int len = ILibGetRawPacket(resp_header, &header_buf);
-        header_buf[len] = '\0';
-        printf("Response :\n%s", header_buf ? header_buf : "");
-        printf("%s", body ? body : "");
-        free(header_buf);
-        ILibWebServer_StreamHeader(session, resp_header);
-        ILibWebServer_StreamBody(session, body, body ? strlen(body) : 0, ILibAsyncSocket_MemoryOwnership_STATIC, 1);
+    break;
     }
 }
 

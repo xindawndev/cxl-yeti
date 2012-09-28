@@ -67,13 +67,14 @@ Airplay 协议：
     获取服务器信息：主要是mac地址信息
 
 mDNSResponser 启动方法：-r -p 7000 -n FriendlyName -t _airplay._tcp. -d local. -x deviceid=38:E7:D8:AC:4E:EB features=0x77 model=AppleTV2,1 srcvers=101.28
-/************************************************************************/
+************************************************************************/
 
 #ifndef _AIRPLAY_RENDER_H_
 #define _AIRPLAY_RENDER_H_
 
 #include "ILibAsyncSocket.h"
 
+#if defined( ENABLED_AIRPLAY )
 #define AIRPLAY_SERVER_VERSION_STR "101.28"
 
 typedef void * AirplayToken;
@@ -187,4 +188,5 @@ void AirplaySetState_SourceProtocolInfo(                    AirplayToken airplay
 void AirplaySetState_SinkProtocolInfo(                      AirplayToken airplay_token, char * val);
 void AirplaySetState_CurrentConnectionIDs(                  AirplayToken airplay_token, char * val);
 
+#endif // ENABLED_AIRPLAY
 #endif

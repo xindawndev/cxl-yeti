@@ -5,6 +5,8 @@
 #include "ILibThreadPool.h"
 #include "CdsObject.h"
 
+#if defined( ENABLED_AIRPLAY )
+
 #if !defined(WIN32)
 #   define BOOL    int
 #   define TRUE    1
@@ -163,5 +165,7 @@ APW_Error APW_StateChange_AVTransportURIMetaData(       APW instance, struct Cds
 APW_Error APW_StateChange_CurrentMediaDuration(         APW instance, long duration);
 APW_Error APW_StateChange_AbsoluteTimePosition(         APW instance, long position, int is_notify);
 APW_Error APW_StateChange_RelativeTimePosition(         APW instance, long position, int is_notify);
+
+#endif // ENABLED_AIRPLAY
 
 #endif // _AIRPLAY_WRAPPER_H_

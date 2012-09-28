@@ -1,5 +1,8 @@
 #include "ILibParsers.h"
 #include "AirplayRender.h"
+
+#if defined( ENABLED_AIRPLAY )
+
 #include "ILibWebServer.h"
 #include "ILibDnssd.h"
 #include "ILibMd5.h"
@@ -1038,11 +1041,11 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
     } else if (start_qs == 10 && memcmp(header->DirectiveObj, "/authorize", 10) == 0) {
         // DRM, ignore for now.
         return;
-    } else if (start_qs == 11 && memcmp(header->DirectiveObj, "/setProperty", 11) == 0) {
+    } else if (start_qs == 12 && memcmp(header->DirectiveObj, "/setProperty", 12) == 0) {
         status = AIRPLAY_STATUS_NOT_FOUND;
-    } else if (start_qs == 11 && memcmp(header->DirectiveObj, "/getProperty", 11) == 0) {
+    } else if (start_qs == 12 && memcmp(header->DirectiveObj, "/getProperty", 12) == 0) {
         status = AIRPLAY_STATUS_NOT_FOUND;
-    } else if (start_qs == 3 && memcmp(header->DirectiveObj, "200", 3) == 0) {
+    } else if (header->DirectiveObj == NULL && header->StatusCode == 200) {
         return;
     } else {
         printf("AIRPLAY Render: unhandled request [%d]\n", header->StatusCode);
@@ -1287,3 +1290,5 @@ void AirplaySetState_CurrentConnectionIDs(AirplayToken airplay_token, char * val
 {
 
 }
+
+#endif // ENABLED_AIRPLAY

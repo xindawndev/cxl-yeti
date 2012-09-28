@@ -3,6 +3,8 @@
 
 #include "ILibParsers.h"
 
+#if defined( ENABLED_AIRPLAY )
+
 int ILibDaemonIsRunning();
 void * ILibCreateDnssdModule(void * chain,
                              char * fcr_type,
@@ -13,4 +15,5 @@ void * ILibCreateDnssdModule(void * chain,
                              void * user);
 int ILibDnssdIsRunning(void * dnssd_token);
 
+#endif // ENABLED_AIRPLAY
 #endif // _ILIBDNSSD_H_

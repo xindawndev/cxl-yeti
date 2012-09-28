@@ -1,6 +1,8 @@
 // ILibDnssd.c
 #include "ILibParsers.h"
 
+#if defined( ENABLED_AIRPLAY )
+
 #ifdef WIN32
 #   include "dns_sd.h"
 #else//lif defined(__ANDROID__)
@@ -407,3 +409,4 @@ void * ILibCreateDnssdModule(void * chain,
 }
 
 #endif
+#endif // ENABLED_AIRPLAY

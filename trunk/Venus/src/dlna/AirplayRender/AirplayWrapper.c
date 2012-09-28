@@ -1,5 +1,7 @@
-#include "AirplayRender.h"
 #include "AirplayWrapper.h"
+
+#if defined( ENABLED_AIRPLAY )
+#include "AirplayRender.h"
 #include "ILibWebServer.h"
 
 #define TESTMASK(x, y)          (((x & y) == y)? TRUE: FALSE)
@@ -1032,3 +1034,5 @@ APW_Error APW_StateChange_RelativeTimePosition(APW instance, long position, int 
 {
     return APW_ERROR_OK;
 }
+
+#endif // ENABLED_AIRPLAY

@@ -120,6 +120,8 @@ typedef void(* AirplayHandlerSetBrightness) (               void * session_token
 typedef void(* AirplayHandlerSetContrast) (                 void * session_token, unsigned int instance_id, unsigned short desired_contrast);
 typedef void(* AirplayHandlerSetMute) (                     void * session_token, unsigned int instance_id, char * channel, int desire_mute);
 typedef void(* AirplayHandlerSetVolume) (                   void * session_token, unsigned int instance_id, char * channel, unsigned short desired_volume);
+// 底层获取上层播放状态
+typedef void(* AirplayGetPlayStatus) (                      void * session_token, float * position, float * duration, float * cache_duration, int * is_playing);
 
 extern AirplayHandlerGetCurrentTransportActions             AirplayCallbackGetCurrentTransportActions;
 extern AirplayHandlerGetDeviceCapabilities                  AirplayCallbackGetDeviceCapabilities;
@@ -148,6 +150,7 @@ extern AirplayHandlerSetBrightness                          AirplayCallbackSetBr
 extern AirplayHandlerSetContrast                            AirplayCallbackSetContrast;
 extern AirplayHandlerSetMute                                AirplayCallbackSetMute;
 extern AirplayHandlerSetVolume                              AirplayCallbackSetVolume;
+extern AirplayGetPlayStatus                                 AirplayCallbackGetPlayStatus;
 
 void AirplaySetDisconnectFlag(                              AirplaySessionToken token,void * flag);
 

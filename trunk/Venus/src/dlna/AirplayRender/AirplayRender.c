@@ -514,60 +514,33 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
         int position = 0;
         int last_event  = EVENT_NONE;
 
+        FILE * fp = fopen("play.bin", "ab+");
+        fwrite(bodyBuffer, bodyBufferLength, 1, fp);
+        fclose(fp);
         printf("AIRPLAY Render: got request %s\n", header->DirectiveObj);
 
         if (data_obj->password != NULL && AirplayCheckAuthorization(data_obj, authorization, method, uri)) {
             status = AIRPLAY_STATUS_NEED_AUTH;
         } else if (content_type != NULL && memcmp(content_type, "application/x-apple-binary-plist", 32) == 0) {
-            // process plist, iphone request
-//            plist_t dict = NULL;
-//            plist_from_bin(bodyBuffer, bodyBufferLength, &dict);
-//
-//            if (plist_dict_get_size(dict)) {
-//                plist_t tmpNode = plist_dict_get_item(dict, "Start-Position");
-//                if (tmpNode) {
-//                    double tmpDouble = 0;
-//                    plist_get_real_val(tmpNode, &tmpDouble);
-//                    position = (int)tmpDouble * 1000;
-//                }
-//
-//                tmpNode = plist_dict_get_item(dict, "Content-Location");
-//                if (tmpNode) {
-//                    char *tmpStr = NULL;
-//                    plist_get_string_val(tmpNode, &tmpStr);
-//                    location = String_Create(tmpStr);
-//#ifdef _WIN32
-//                    plist_free_string_val(tmpStr);
-//#else
-//                    free(tmpStr);
-//#endif
-//                }
-//
-//                if (dict) {
-//                    plist_free(dict);
-//                }
-//
-//                if (AirplayCallbackSetAVTransportURI == NULL) {
-//                    status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-//                } else {
-//                    AirplayCallbackSetAVTransportURI(session, 0, location, "");
-//                }
-//                if (AirplayCallbackPlay == NULL) {
-//                    status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-//                } else {
-//                    AirplayCallbackPlay(session, 0, "1");
-//                }
-//                if (AirplayCallbackSeek == NULL) {
-//                    status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-//                } else {
-//                    char posbuf[128] = {0};
-//                    sprintf(posbuf, "%d", position);
-//                    AirplayCallbackSeek(session, 0, "ABS_TIME", posbuf);
-//                }
-//                freesafe(position);
-//            } else {
-//                perror("Error parsing plist");
-//            }
+            int location_pos, start_pos;
+            start_pos = ILibString_IndexOf(bodyBuffer, bodyBufferLength, "Start-Position", 14);
+            if (start_pos != -1) {
+                start_pos += 14;
+                // 暂时不加position
+                //position |= ((unsigned char)(bodyBuffer[start_pos]));
+                //position |= ((unsigned char)(bodyBuffer[start_pos + 1])) << 8;
+                location_pos = ILibString_IndexOf(bodyBuffer, bodyBufferLength, "http://", 7);
+                if (location_pos != -1) {
+                    int url_len = 0;
+                    url_len |= (unsigned char)(bodyBuffer[location_pos -1]);
+                    bodyBuffer[location_pos + url_len] = '\0';
+                    location = bodyBuffer + location_pos;
+                } else {
+                    // 获取不到URL
+                }
+            } else {
+                // 获取不到position
+            }
         } else {
             // iTuns request
             int location_pos, start_pos;
@@ -607,7 +580,7 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
             }
             if (AirplayCallbackSeek == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
-            } else {
+            } else if (position != 0) {
                 char posbuf[128] = {0};
                 sprintf(posbuf, "%d", position);
                 AirplayCallbackSeek(session, 0, "ABS_TIME", posbuf);

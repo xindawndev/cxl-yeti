@@ -805,6 +805,31 @@ void APW_SetVolume                  (void * session_token, unsigned int instance
     call_method_through_thread_pool(instance, method);
 }
 
+void APW_GetStatus(void * session_token, float * position, float * duration, float * cache_duration, int * is_playing)
+{
+    APW instance = get_apw_from_session_token(session_token);
+    APWInternalState state = NULL;
+
+    if (check_this(instance) != APW_ERROR_OK) {
+        AirplayResponse_Error(session_token, 501, "Action Failed");
+        return;
+    }
+
+    state = (APWInternalState)instance->internal_state;
+    if (position != NULL) {
+        *position = (float)state->AbsoluteTimePosition;
+    }
+    if (duration != NULL) {
+        *duration = (float)state->CurrentMediaDuration;
+    }
+    if (cache_duration != NULL) {
+        *position = (float)state->AbsoluteTimePosition;
+    }
+    if (is_playing != NULL) {
+        *is_playing = (state->transport_state == APW_PS_Playing) ? 1: 0;
+    }
+}
+
 void apw_destroy_from_chain(APW instance)
 {
     if (instance != NULL) {
@@ -875,6 +900,7 @@ APW APW_Method_Create(void * chain, ILibThreadPool thread_pool, unsigned short p
     AirplayCallbackGetVolume                    = (AirplayHandlerGetVolume                  )&APW_GetVolume;
     AirplayCallbackSetMute                      = (AirplayHandlerSetMute                    )&APW_SetMute;
     AirplayCallbackSetVolume                    = (AirplayHandlerSetVolume                  )&APW_SetVolume;
+    AirplayCallbackGetPlayStatus                = (AirplayGetPlayStatus                     )&APW_GetStatus;
 
     ILibAddToChain(chain, apw);
 
@@ -987,16 +1013,55 @@ APW_Error APW_StateChange_CurrentTrackMetaData(APW instance, struct CdsObject* t
 
 APW_Error APW_StateChange_CurrentTrackDuration(APW instance, long duration)
 {
+    APWInternalState istate;
+    APW_Error err = check_this(instance);
+    if (err != APW_ERROR_OK) {
+        return err;
+    }
+
+    istate = (APWInternalState)instance->internal_state;
+    apw_lock(instance);
+    if (istate->CurrentTrackDuration != duration) {
+        istate->CurrentTrackDuration = duration;
+    }
+    apw_unlock(instance);
+
     return APW_ERROR_OK;
 }
 
 APW_Error APW_StateChange_Volume(APW instance, unsigned char volume)
 {
+    APWInternalState istate;
+    APW_Error err = check_this(instance);
+    if (err != APW_ERROR_OK) {
+        return err;
+    }
+
+    istate = (APWInternalState)instance->internal_state;
+    apw_lock(instance);
+    if (istate->Volume != (unsigned short)volume) {
+        istate->Volume = (unsigned short)volume;
+    }
+    apw_unlock(instance);
+
     return APW_ERROR_OK;
 }
 
 APW_Error APW_StateChange_Mute(APW instance, BOOL mute)
 {
+    APWInternalState istate;
+    APW_Error err = check_this(instance);
+    if (err != APW_ERROR_OK) {
+        return err;
+    }
+
+    istate = (APWInternalState)instance->internal_state;
+    apw_lock(instance);
+    if (istate->Mute != mute) {
+        istate->Mute = mute;
+    }
+    apw_unlock(instance);
+
     return APW_ERROR_OK;
 }
 
@@ -1022,16 +1087,55 @@ APW_Error APW_StateChange_AVTransportURIMetaData(APW instance, struct CdsObject*
 
 APW_Error APW_StateChange_CurrentMediaDuration(APW instance, long duration)
 {
+    APWInternalState istate;
+    APW_Error err = check_this(instance);
+    if (err != APW_ERROR_OK) {
+        return err;
+    }
+
+    istate = (APWInternalState)instance->internal_state;
+    apw_lock(instance);
+    if (istate->CurrentMediaDuration != duration) {
+        istate->CurrentMediaDuration = duration;
+    }
+    apw_unlock(instance);
+
     return APW_ERROR_OK;
 }
 
 APW_Error APW_StateChange_AbsoluteTimePosition(APW instance, long position, int is_notify)
 {
+    APWInternalState istate;
+    APW_Error err = check_this(instance);
+    if (err != APW_ERROR_OK) {
+        return err;
+    }
+
+    istate = (APWInternalState)instance->internal_state;
+    apw_lock(instance);
+    if (istate->AbsoluteTimePosition != position) {
+        istate->AbsoluteTimePosition = position;
+    }
+    apw_unlock(instance);
+
     return APW_ERROR_OK;
 }
 
 APW_Error APW_StateChange_RelativeTimePosition(APW instance, long position, int is_notify)
 {
+    APWInternalState istate;
+    APW_Error err = check_this(instance);
+    if (err != APW_ERROR_OK) {
+        return err;
+    }
+
+    istate = (APWInternalState)instance->internal_state;
+    apw_lock(instance);
+    if (istate->RelativeTimePosition != position) {
+        istate->RelativeTimePosition = position;
+    }
+    apw_unlock(instance);
+
     return APW_ERROR_OK;
 }
 

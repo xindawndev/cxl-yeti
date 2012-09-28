@@ -421,7 +421,7 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
     char * content_type;
     char * authorization;
     char * session_id;
-    char body[512] = {0};
+    char body[1024] = {0};
     time_t ltime;
     char * date;
     char * packet;
@@ -670,8 +670,8 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
         } else if (AirplayCallbackGetPlayStatus != NULL) {
             int lenlen = 0;
             int body_len = 0;
-            packet = (char *)malloc(512);
-            memset(packet, 0, 512);
+            packet = (char *)malloc(2048);
+            memset(packet, 0, 2048);
             AirplayCallbackGetPlayStatus(session, &position, &duration, &cacheDuration, &playing);
             body_len =  sprintf(body, PLAYBACK_INFO, duration, cacheDuration, position, (playing ? 1 : 0), duration);
             lenlen = sprintf(packet, "HTTP/1.1 200 OK\r\nDate: %s\r\nContent-Type: text/x-apple-plist+xml\r\nContent-Length: %d\r\n\r\n%s", date, body_len, body);

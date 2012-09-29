@@ -193,6 +193,18 @@ YETI_Result HttpHeaders::add_header(const char * name, const char * value)
     return m_headers_.add(new HttpHeader(name, value));
 }
 
+YETI_Result HttpHeaders::remove_header(const char * name)
+{
+    bool found = false;
+    HttpHeader * header = NULL;
+    while (header = get_header(name)) {
+        m_headers_.remove(header);
+        delete header;
+        found = true;
+    }
+    return found ? YETI_SUCCESS : YETI_ERROR_NO_SUCH_ITEM;
+}
+
 class HttpEntityBodyInputStream : public InputStream
 {
 public:
@@ -262,16 +274,47 @@ void HttpEntityBodyInputStream::on_fully_read()
     }
 }
 
-YETI_Result HttpHeaders::remove_header(const char * name)
+YETI_Result HttpEntityBodyInputStream::read(void * buffer, YETI_Size bytes_to_read, YETI_Size * bytes_read /* = NULL */)
 {
-    bool found = false;
-    HttpHeader * header = NULL;
-    while (header = get_header(name)) {
-        m_headers_.remove(header);
-        delete header;
-        found = true;
+    if (bytes_read) *bytes_read = 0;
+    if (m_source_.is_null()) return YETI_ERROR_EOS;
+    if (!m_is_chunked_ && m_size_is_known_) {
+        YETI_LargeSize max_can_read = m_size_ - m_position_;
+        if (max_can_read == 0) return YETI_ERROR_EOS;
+        if (bytes_to_read > max_can_read) bytes_to_read = (YETI_Size)max_can_read;
     }
-    return found ? YETI_SUCCESS : YETI_ERROR_NO_SUCH_ITEM;
+
+    YETI_Size source_bytes_read = 0;
+    YETI_Result result = m_source_->read(buffer, bytes_to_read, &source_bytes_read);
+    if (YETI_SUCCEEDED(result)) {
+        m_position_ += source_bytes_read;
+        if (bytes_read) *bytes_read = source_bytes_read;
+    }
+
+    if (result == YETI_ERROR_EOS || (m_size_is_known_ && (m_position_ == m_size_))) {
+        on_fully_read();
+    }
+
+    return result;
+}
+
+YETI_Result HttpEntityBodyInputStream::get_available(YETI_LargeSize & available)
+{
+    if (m_source_.is_null()) {
+        available = 0;
+        return YETI_SUCCESS;
+    }
+
+    YETI_Result result = m_source_->get_available(available);
+    if (YETI_FAILED(result)) {
+        available = 0;
+        return result;
+    }
+    if (available > m_size_ - m_position_) {
+        available = m_size_ - m_position_;
+    }
+
+    return YETI_SUCCESS;
 }
 
 HttpEntity::HttpEntity()
@@ -399,6 +442,12 @@ YETI_Result HttpEntity::set_transfer_encoding(const char * encoding)
     return YETI_SUCCESS;
 }
 
+HttpMessage::HttpMessage(const char * protocol)
+: m_protocol_(protocol)
+, m_entity_(NULL)
+{
+}
+
 HttpMessage::~HttpMessage()
 {
     delete m_entity_;
@@ -416,12 +465,6 @@ YETI_Result HttpMessage::set_entity(HttpEntity * entity)
 YETI_Result HttpMessage::parse_headers(BufferedInputStream & stream)
 {
     return m_headers_.parse(stream);
-}
-
-HttpMessage::HttpMessage(const char * protocol)
-: m_protocol_(protocol)
-, m_entity_(NULL)
-{
 }
 
 YETI_Result HttpRequest::parse(BufferedInputStream & stream,
@@ -643,90 +686,144 @@ YETI_Result HttpResponse::emit(OutputStream & stream) const
 
     return YETI_SUCCESS;
 }
-//
-//class HttpProxySelector
-//{
-//public:
-//private:
-//};
-//
-//class HttpRequestContext;
-//
-//class HttpClient
-//{
-//public:
-//private:
-//};
-//
-//class HttpConnectionManager : public Thread
-//{
-//public:
-//private:
-//};
-//
-//class HttpRequestContext
-//{
-//public:
-//private:
-//};
-//
-//class HttpRequestHandler
-//{
-//public:
-//    YETI_IMPLEMENT_DYNAMIC_CAST(HttpRequestHandler)
-//
-//    virtual ~HttpRequestHandler() {}
-//
-//    virtual YETI_Result setup_response(HttpRequest & request,
-//        const HttpRequestContext & context,
-//        HttpResponse & response) = 0;
-//    virtual YETI_Result send_response_body(const HttpRequestContext & context,
-//        HttpResponse & response,
-//        OutputStream & output);
-//};
-//
-//class HttpStaticRequestHandler : public HttpRequestHandler
-//{
-//public:
-//private:
-//};
-//
-//typedef struct HttpFileRequestHandler_DefaultFileTypeMapEntry {
-//    const char * entension;
-//    const char * mime_type;
-//} HttpFileRequestHandler_FileTypeMapEntry;
-//
-//class HttpFileRequestHandler : public HttpRequestHandler
-//{
-//public:
-//protected:
-//private:
-//};
-//
-//class HttpServer
-//{
-//public:
-//protected:
-//};
-//
-//class HttpResponder
-//{
-//public:
-//protected:
-//};
-//
-//class HttpChunkedInputStream : public InputStream
-//{
-//public:
-//protected:
-//};
-//
-//class HttpChunkedOutputStream : public OutputStream
-//{
-//public:
-//
-//protected:
-//    OutputStream & m_stream_;
-//};
+
+class HttpSimpleConnection : public HttpClient::Connection
+{
+public:
+    virtual ~HttpSimpleConnection() {
+        HttpClient::ConnectionCanceller::untrack(this);
+    }
+
+    virtual InputStreamReference & get_input_stream() {
+        return m_inputstream_;
+    }
+
+    virtual OutputStreamReference & get_output_stream() {
+        return m_outputstream_;
+    }
+
+    virtual YETI_Result get_info(SocketInfo & info) {
+        return m_socket_->get_info(info);
+    }
+
+    virtual YETI_Result abort() {
+        return m_socket_->cancel();
+    }
+
+    SocketReference         m_socket_;
+    InputStreamReference    m_inputstream_;
+    OutputStreamReference   m_outputstream_;
+};
+
+class HttpTcpConnector : public HttpClient::Connector
+{
+    virtual YETI_Result connect(const HttpUrl & url,
+        HttpClient & client,
+        const HttpProxyAddress * proxy,
+        bool reuse,
+        HttpClient::Connection *& connection);
+};
+
+YETI_Result HttpTcpConnector::connect(const HttpUrl & url,
+                                      HttpClient & client,
+                                      const HttpProxyAddress * proxy,
+                                      bool reuse, HttpClient::Connection *& connection)
+{
+    connection = NULL;
+    const char * server_hostname;
+    YETI_UInt16 server_port;
+    if (proxy) {
+        server_hostname = (const char *)proxy->get_hostname();
+        server_port = proxy->get_port();
+    } else {
+        server_hostname = (const char *)url.get_host();
+        server_port = url.get_port();
+    }
+
+    IpAddress address;
+    YETI_CHECK_FINE(address.resolve_name(server_hostname, client.get_config().m_name_resolver_timeout_));
+    YETI_LOG_FINE_2("TCP connector will connect to %s : %d", server_hostname, server_port);
+    TcpClientSocket * tcp_socket = new TcpClientSocket();
+    SocketReference socket(tcp_socket, true);
+    tcp_socket->set_read_timeout(client.get_config().m_io_timeout_);
+    tcp_socket->set_write_timeout(client.get_config().m_io_timeout_);
+    SocketAddress socket_address(address, server_port);
+    YETI_CHECK_FINE(tcp_socket->connect(socket_address, client.get_config().m_connection_timeout_));
+
+    HttpSimpleConnection * _connection = new HttpSimpleConnection();
+    _connection->m_socket_ = socket;
+    connection = _connection;
+    tcp_socket->get_input_stream(_connection->m_inputstream_);
+    tcp_socket->get_output_stream(_connection->m_outputstream_);
+
+    return YETI_SUCCESS;
+}
+
+class HttpEnvProxySelector : public HttpProxySelector
+{
+public:
+    class Cleanner {
+        static Cleanner automatic_cleaner;
+        ~Cleanner() {
+            if (m_instance_) {
+                delete m_instance_;
+                m_instance_ = NULL;
+            }
+        }
+    };
+
+    static HttpEnvProxySelector * get_instance();
+
+    YETI_Result get_proxy_for_url(const HttpUrl & url, HttpProxyAddress & proxy);
+
+private:
+    static HttpEnvProxySelector * m_instance_;
+    static void _parse_proxy_env(const String & env, HttpProxyAddress & proxy);
+
+    HttpProxyAddress m_http_proxy_;
+    HttpProxyAddress m_https_proxy_;
+    List<String>     m_no_proxy_;
+    HttpProxyAddress m_all_proxy_;
+};
+
+HttpEnvProxySelector * HttpEnvProxySelector::m_instance_ = NULL;
+HttpEnvProxySelector::Cleanner HttpEnvProxySelector::Cleanner::automatic_cleaner;
+
+HttpEnvProxySelector * HttpEnvProxySelector::get_instance()
+{
+    if (m_instance_) return m_instance_;
+    SingletonLock::get_instance().lock();
+    if (m_instance_ == NULL) {
+        m_instance_ = new HttpEnvProxySelector();
+        String http_proxy;
+        Environment::get("http_proxy", http_proxy);
+        _parse_proxy_env(http_proxy, m_instance_->m_http_proxy_);
+        YETI_LOG_FINE_2("http_proxy: %s:%d", m_instance_->m_http_proxy_.get_hostname().get_chars(), m_instance_->m_http_proxy_.get_port());
+
+        String https_proxy;
+        if (YETI_FAILED(Environment::get("HTTPS_PROXY", https_proxy))) {
+            Environment::get("https_proxy", https_proxy);
+        }
+        _parse_proxy_env(https_proxy, m_instance_->m_https_proxy_);
+        YETI_LOG_FINE_2("https_proxy: %s:%d", m_instance_->m_https_proxy_.get_hostname().get_chars(), m_instance_->m_https_proxy_.get_port());
+
+        String all_proxy;
+        if (YETI_FAILED(Environment::get("ALL_PROXY", all_proxy))) {
+            Environment::get("all_proxy", all_proxy);
+        }
+        _parse_proxy_env(all_proxy, m_instance_->m_all_proxy_);
+        YETI_LOG_FINE_2("all_proxy: %s:%d", m_instance_->m_all_proxy_.get_hostname().get_chars(), m_instance_->m_all_proxy_.get_port());
+
+        String no_proxy;
+        if (YETI_FAILED(Environment::get("NO_PROXY", no_proxy))) {
+            Environment::get("no_proxy", no_proxy);
+        }
+        if (no_proxy.get_length()) {
+            m_instance_->m_no_proxy_ = no_proxy.split(",");
+        }
+    }
+    SingletonLock::get_instance().unlock();
+    return m_instance_;
+}
 
 NAMEEND

@@ -312,6 +312,14 @@
 				>
 			</File>
 			<File
+				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32Queue.cpp"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32SerialPort.cpp"
+				>
+			</File>
+			<File
 				RelativePath="..\..\..\..\Source\System\Win32\YetiWin32System.cpp"
 				>
 			</File>
@@ -483,6 +491,10 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\YetiRingBuffer.h"
+				>
+			</File>
+			<File
+				RelativePath="..\..\..\..\Source\Core\YetiSerialPort.h"
 				>
 			</File>
 			<File

@@ -826,4 +826,61 @@ HttpEnvProxySelector * HttpEnvProxySelector::get_instance()
     return m_instance_;
 }
 
+void HttpEnvProxySelector::_parse_proxy_env(const String & env, HttpProxyAddress & proxy)
+{
+    if (env.get_length() == 0) return;
+    String proxy_spec;
+    if (env.find("://") >= 0) {
+        proxy_spec = env;
+    } else {
+        proxy_spec = "http://" + env;
+    }
+    Url url(proxy_spec);
+    proxy.set_hostname(url.get_host());
+    proxy.set_port(url.get_port());
+}
+
+YETI_Result HttpEnvProxySelector::get_proxy_for_url(const HttpUrl & url, HttpProxyAddress & proxy)
+{
+    HttpProxyAddress * protocol_proxy = NULL;
+    switch (url.get_schemeid()) {
+case Uri::SCHEME_ID_HTTP:
+    protocol_proxy = &m_http_proxy_;
+    break;
+
+case Uri::SCHEME_ID_HTTPS:
+    protocol_proxy = &m_https_proxy_;
+    break;
+
+default:
+    return YETI_ERROR_HTTP_NO_PROXY;
+    }
+
+    if (m_no_proxy_.get_item_count()) {
+        for (List<String>::iterator i = m_no_proxy_.get_first_item();
+            i;
+            ++i) {
+                if ((*i) == "*") {
+                    return YETI_ERROR_HTTP_NO_PROXY;
+                }
+                if (url.get_host().ends_with(*i, true)) {
+                    if (url.get_host().get_length() == (*i).get_length()) {
+                        return YETI_ERROR_HTTP_NO_PROXY;
+                    }
+                    if (url.get_host().get_chars()[url.get_host().get_length() - (*i).get_length() - 1] == '.') {
+                        return YETI_ERROR_HTTP_NO_PROXY;
+                    }
+                }
+        }
+    }
+
+    if (protocol_proxy->get_hostname().get_length()) {
+        proxy = *protocol_proxy;
+        return YETI_SUCCESS;
+    }
+
+    proxy = m_all_proxy_;
+    return proxy.get_hostname().get_length() ? YETI_SUCCESS : YETI_ERROR_HTTP_NO_PROXY;
+}
+
 NAMEEND

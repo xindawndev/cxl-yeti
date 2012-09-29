@@ -88,7 +88,7 @@ public:
     YETI_Result clear();
     YETI_Result get(YETI_Ordinal index, T & data) const;
     YETI_Result get(YETI_Ordinal index, T *& data) const;
-    YETI_Result get_item_count() const { return m_item_count_; }
+    YETI_Cardinal get_item_count() const { return m_item_count_; }
     iterator    get_first_item() const { return iterator(m_head_); }
     iterator    get_last_item() const { return iterator(m_tail_); }
     iterator    get_item(YETI_Ordinal index) const;

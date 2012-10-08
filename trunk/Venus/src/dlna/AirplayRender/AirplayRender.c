@@ -845,7 +845,7 @@ AirplayToken AirplayCreate(void * chain,
     ILibAddEntry(ret_val->txt_map, "srcvers", strlen("srcvers"), ( void * )val );
 
     ret_val->http_server    = ILibWebServer_Create(chain, 5, port, &AirplaySessionSink, ret_val);
-    ret_val->dnssd_module   = ILibCreateDnssdModule(chain, "_airplay._tcp", ret_val->friendly_name, port, ret_val->txt_map, AirplayOnDnssdStart, ret_val);
+    ret_val->dnssd_module   = ILibCreateDnssdModule(chain, "_airplay._tcp", ret_val->friendly_name, ILibWebServer_GetPortNumber(ret_val->http_server), ret_val->txt_map, AirplayOnDnssdStart, ret_val);
     ILibAddToChain(chain, (void *)ret_val);
 
     return (void *)ret_val;

@@ -474,13 +474,13 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
             if (AirplayCallbackPause == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
             } else {
-                AirplayCallbackPause(session, 0);
+                AirplayCallbackPause(session, ~0);
             }
         } else { // 播放命令
             if (AirplayCallbackPlay == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
             } else {
-                AirplayCallbackPlay(session, 0, "1");
+                AirplayCallbackPlay(session, ~0, "1");
             }
         }
     } else if (start_qs == 7 && memcmp(header->DirectiveObj, "/volume", 7) == 0) {
@@ -498,14 +498,14 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
                 if (AirplayCallbackSetMute == NULL) {
                     status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
                 } else {
-                    AirplayCallbackSetMute(session, 0, "Master", 1);
+                    AirplayCallbackSetMute(session, ~0, "Master", 1);
                 }
             } else { // 设置音量
                 if (AirplayCallbackSetVolume == NULL || AirplayCallbackSetMute == NULL) {
                     status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
                 } else {
-                    AirplayCallbackSetMute(session, 0, "Master", 0);
-                    AirplayCallbackSetVolume(session, 0, "Master", (unsigned short)volume);
+                    AirplayCallbackSetMute(session, ~0, "Master", 0);
+                    AirplayCallbackSetVolume(session, ~0, "Master", (unsigned short)volume);
                 }
             }
         }
@@ -571,19 +571,19 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
             if (AirplayCallbackSetAVTransportURI == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
             } else {
-                AirplayCallbackSetAVTransportURI(session, 0, location, "");
+                AirplayCallbackSetAVTransportURI(session, ~0, location, "");
             }
             if (AirplayCallbackPlay == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
             } else {
-                AirplayCallbackPlay(session, 0, "1");
+                AirplayCallbackPlay(session, ~0, "1");
             }
             if (AirplayCallbackSeek == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
             } else if (position != 0) {
                 char posbuf[128] = {0};
                 sprintf(posbuf, "%d", position);
-                AirplayCallbackSeek(session, 0, "ABS_TIME", posbuf);
+                AirplayCallbackSeek(session, ~0, "ABS_TIME", posbuf);
             }
         }
     } else if (start_qs == 6 && memcmp(header->DirectiveObj, "/scrub", 6) == 0) {
@@ -594,19 +594,19 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
             if (AirplayCallbackGetPositionInfo == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
             } else {
-                AirplayCallbackGetPositionInfo(session, 0);
+                AirplayCallbackGetPositionInfo(session, ~0);
             }
         } else { // POST: Seek 请求
             const char* found = strstr(header->DirectiveObj, "position=");
             if (found) {
-                int position = (int) (atof(found + strlen("position=")) * 1000.0);
+                int position = (int) (atof(found + strlen("position=")));
                 printf("AIRPLAY Render: got POST request %s with pos %d\n", header->DirectiveObj, position);
                 if (AirplayCallbackSeek == NULL) {
                     status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
                 } else {
                     char posbuf[128] = {0};
                     sprintf(posbuf, "%d", position);
-                    AirplayCallbackSeek(session, 0, "ABS_TIME", posbuf);
+                    AirplayCallbackSeek(session, ~0, "ABS_TIME", posbuf);
                 }
             }
         }
@@ -618,7 +618,7 @@ void AirplayProcessHTTPPacket(struct ILibWebServer_Session * session, struct pac
             if (AirplayCallbackStop == NULL) {
                 status = AIRPLAY_STATUS_NOT_IMPLEMENTED;
             } else {
-                AirplayCallbackStop(session, 0);
+                AirplayCallbackStop(session, ~0);
             }
         }
     } else if (start_qs == 6 && memcmp(header->DirectiveObj, "/photo", 6) == 0) {

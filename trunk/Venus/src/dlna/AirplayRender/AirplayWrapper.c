@@ -492,7 +492,7 @@ void APW_GetPositionInfo            (void * session_token, unsigned int instance
 
     printf("Invoke: APW_GetPositionInfo(%u);\n", instance_id);
 
-    if (instance_id != 0) {
+    if (instance_id != ~0) {
         AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
         return;
     }
@@ -523,7 +523,7 @@ void APW_Pause                      (void * session_token, unsigned int instance
 
     printf("Invodk: APW_Pause(%u);\n", instance_id);
 
-    if (instance_id != 0) {
+    if (instance_id != ~0) {
         AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
         return;
     }
@@ -544,7 +544,7 @@ void APW_Play                       (void * session_token, unsigned int instance
 
     printf("Invoke: APW_Play(%u, %s);\n",instance_id, speed);
 
-    if (instance_id != 0) {
+    if (instance_id != ~0) {
         AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
         return;
     }
@@ -570,7 +570,7 @@ void APW_Seek                       (void * session_token, unsigned int instance
     int h = 0, m = 0, s = 0, validargs = 0;
 
     printf("Invoke: APW_Seek(%u, %s, %s);\n", instance_id, units, target);
-    if (instance_id != 0) {
+    if (instance_id != ~0) {
         AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
         return;
     }
@@ -616,7 +616,7 @@ void APW_SetAVTransportURI          (void * session_token, unsigned int instance
 
     printf("Invoke: APW_SetAVTransportURI(%u, %s, %s);\n", instance_id, current_uri, current_uri_metadata ? current_uri_metadata: "");
 
-    if (instance_id != 0) {
+    if (instance_id != ~0) {
         AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
         return;
     }
@@ -646,7 +646,7 @@ void APW_Stop                       (void * session_token, unsigned int instance
 
     printf("Invodk: APW_Stop(%u);\n", instance_id);
 
-    if (instance_id != 0) {
+    if (instance_id != ~0) {
         AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
         return;
     }
@@ -702,7 +702,7 @@ void APW_GetMute                    (void * session_token, unsigned int instance
 
     printf("Invoke: APW_GetMute(%u, %s);\n", instance_id, channel);
 
-    if (instance_id != 0) {
+    if (instance_id != ~0) {
         AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
         return;
     }
@@ -729,7 +729,7 @@ void APW_GetVolume                  (void * session_token, unsigned int instance
 
     printf("Invoke: APW_GetVolume(%u, %s);\n", instance_id, channel);
 
-    if (instance_id != 0) {
+    if (instance_id != ~0) {
         AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
         return;
     }
@@ -756,7 +756,7 @@ void APW_SetMute                    (void * session_token, unsigned int instance
 
     printf("Invoke: APW_SetMute(%u, %s, %d);\n", instance_id, channel, desire_mute);
 
-    if (instance_id != 0) {
+    if (instance_id != ~0) {
         AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
         return;
     }
@@ -785,7 +785,7 @@ void APW_SetVolume                  (void * session_token, unsigned int instance
 
     printf("Invoke: APW_SetVolume(%u, %s, %u);\n", instance_id, channel, desired_volume);
 
-    if (instance_id != 0) {
+    if (instance_id != ~0) {
         AirplayResponse_Error(session_token, 718, "Invalid InstanceID");
         return;
     }

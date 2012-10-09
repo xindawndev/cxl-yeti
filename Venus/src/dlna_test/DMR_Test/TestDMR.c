@@ -168,6 +168,7 @@ void _clearTransportUri( DMR instance,  int update_dmr )
 int Callback_SetAVTransportURI(DMR instance, void* session, char* uri, struct CdsObject* data)
 {
     printf( "\n%d:%s(%s)\n", __LINE__, __FUNCTION__, uri ? uri : "" );
+    UpdateUi();
     //if ( g_dmrInfo.playState == DMR_PS_Paused || g_dmrInfo.playState == DMR_PS_Playing || g_dmrInfo.playState == DMR_PS_Transitioning )
     //{
     //    CDS_ObjRef_Add( data );
@@ -206,6 +207,7 @@ int Callback_SetAVTransportURI(DMR instance, void* session, char* uri, struct Cd
 int Callback_GetAVProtocolInfo(DMR instance, void* session, char** protocolInfo)
 {
     printf( "\n%d:%s(%s)\n", __LINE__, __FUNCTION__, *protocolInfo ? *protocolInfo : "" );
+    UpdateUi();
     return 0;
 }
 
@@ -214,6 +216,7 @@ int Callback_SetPlayMode(DMR instance, void* session, DMR_MediaPlayMode playMode
     printf( "\n%d:%s(%d)\n", __LINE__, __FUNCTION__, playMode );
     g_dmrInfo.playMode = playMode;
     DMR_StateChange_CurrentPlayMode( instance, g_dmrInfo.playMode );
+    UpdateUi();
 
     return 0;
 }
@@ -226,6 +229,9 @@ int Callback_Stop(DMR instance, void* session)
         // RenderStop();
         g_dmrInfo.isstop = TRUE;
     }
+    UpdateUi();
+
+    DMR_StateChange_TransportPlayState(instance, DMR_PS_Stopped);
 
     return 0;
 }
@@ -246,6 +252,7 @@ BOOL _isImageClass( unsigned int mediaClass )
 int Callback_Play(DMR instance, void* session, char* playSpeed)
 {
     printf( "\n%d:%s(%s)\n", __LINE__, __FUNCTION__, playSpeed ? playSpeed : "" );
+    UpdateUi();
     if (g_dmrInfo.playState == DMR_PS_Stopped || g_dmrInfo.playState == DMR_PS_Paused )
     {
         DMR_StateChange_TransportPlaySpeed( instance, "1" );
@@ -308,6 +315,7 @@ int Callback_Play(DMR instance, void* session, char* playSpeed)
             }
         }
     }
+    DMR_StateChange_TransportPlayState(instance, DMR_PS_Playing);
     return 0;
 }
 
@@ -320,6 +328,8 @@ int Callback_Pause(DMR instance, void* session)
         //RenderPause();
         g_dmrInfo.ispause = TRUE;
     }
+    UpdateUi();
+    DMR_StateChange_TransportPlayState(instance, DMR_PS_Paused);
     return 0;
 }
 

@@ -5,6 +5,9 @@
 /* DMR related includes */
 #include "DMR.h"
 #include "CdsDidlSerializer.h"
+#if defined( ENABLED_AIRPLAY )
+#include "AirplayRender.h"
+#endif
 
 /* Optimization: No code for the printfs is generated in RELEASE mode builds */
 #if defined(WIN32) && defined(_DEBUG)
@@ -84,6 +87,10 @@ typedef struct _internalState
     char* ProtocolInfo;
 
     /*>>> add by leochen*/
+#if defined( ENABLED_AIRPLAY )
+    int EnabledAirplay;
+    void * Airplay_microStack;
+#endif
     char* PlayMedia;
     char* RecMedia;
     char* RecQualityModes;
@@ -148,9 +155,11 @@ typedef struct _contextMethodCall
 /* Forward references for functions */
 void DMR_LastChangeTimerEvent(void* object);
 void FireGenaLastChangeEvent(DMR instance);
+#if defined( ENABLED_AIRPLAY )
+DMR_Error airplay_call_method_through_thread_pool(DMR instance, ContextMethodCall method);
+#endif
 DMR_Error CallMethodThroughThreadPool(DMR instance, ContextMethodCall method);
 /****************************************************************************/
-
 
 /****************************************************************************/
 /* milliseconds to a time string */
@@ -495,6 +504,14 @@ DMR GetDMRFromSessionToken(DMR_SessionToken upnptoken)
 {
     return (DMR)DMR_GetTag(((struct ILibWebServer_Session*)upnptoken)->User);
 }
+
+#if defined( ENABLED_AIRPLAY )
+DMR get_dmr_from_session_token(void * session_token)
+{
+    return (DMR)AirplayGetTag(((struct ILibWebServer_Session *)session_token)->User);
+}
+#endif
+
 /****************************************************************************/
 
 
@@ -909,54 +926,69 @@ void DMR_AVTransport_GetPositionInfo(DMR_SessionToken upnptoken,unsigned int Ins
     char* relTime = NULL;
     char* absTime = NULL;
     unsigned int track = 0;
-    DMR instance = GetDMRFromSessionToken(upnptoken);
+    DMR instance = NULL;
     DMR_InternalState state;
 
     ERROROUT2("Invoke: DMR_AVTransport_GetPositionInfo(%u);\r\n",InstanceID);
-    
-    if(InstanceID != 0)
-    {
-        DMR_Response_Error(upnptoken, 718, "Invalid InstanceID");
-        return;
-    }
 
-    if(CheckThis(instance) != DMR_ERROR_OK)
-    {
-        DMR_Response_Error(upnptoken, 501, "Action Failed");
-        return;
-    }
+    if (InstanceID == ~0) {
+#if defined( ENABLED_AIRPLAY )
+        instance = get_dmr_from_session_token(upnptoken);
+        if (CheckThis(instance) != DMR_ERROR_OK) {
+            AirplayResponse_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
 
-    state = (DMR_InternalState)instance->internal_state;
-    DMR_Lock(instance);
-    track = state->CurrentTrack;
-    trackDuration = MillisecondsToTimeString(state->CurrentTrackDuration);
-    trackMetaData = _MakeMetadataConformant(state->CurrentTrackMetaData); //String_Create((const char*)state->CurrentTrackMetaData);
-    trackURI = String_Create((const char*)state->CurrentTrackURI);
-    if(state->RelativeTimePosition < 0)
-    {
-        relTime = String_Create("NOT_IMPLEMENTED");
-    }
-    else
-    {
-        relTime = MillisecondsToTimeString(state->RelativeTimePosition);
-    }
-    if(state->AbsoluteTimePosition < 0)
-    {
-        absTime = String_Create("NOT_IMPLEMENTED");
-    }
-    else
-    {
-        absTime = MillisecondsToTimeString(state->AbsoluteTimePosition);
-    }
-    DMR_Unlock(instance);
+        state = (DMR_InternalState)instance->internal_state;
+        AirplayResponse_GetPositionInfo(upnptoken, state->CurrentMediaDuration, state->AbsoluteTimePosition);
+#endif
+    } else {
+        instance = GetDMRFromSessionToken(upnptoken);
 
-    DMR_Response_AVTransport_GetPositionInfo(upnptoken, track, (const char*)trackDuration, (const char*)trackMetaData, (const char*)trackURI, (const char*)relTime, (const char*)absTime, 0x7fffffff, 0x7fffffff);
+        if(InstanceID != 0)
+        {
+            DMR_Response_Error(upnptoken, 718, "Invalid InstanceID");
+            return;
+        }
 
-    String_Destroy(trackDuration);
-    String_Destroy(trackMetaData);
-    String_Destroy(trackURI);
-    String_Destroy(relTime);
-    String_Destroy(absTime);
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            DMR_Response_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
+
+        state = (DMR_InternalState)instance->internal_state;
+        DMR_Lock(instance);
+        track = state->CurrentTrack;
+        trackDuration = MillisecondsToTimeString(state->CurrentTrackDuration);
+        trackMetaData = _MakeMetadataConformant(state->CurrentTrackMetaData); //String_Create((const char*)state->CurrentTrackMetaData);
+        trackURI = String_Create((const char*)state->CurrentTrackURI);
+        if(state->RelativeTimePosition < 0)
+        {
+            relTime = String_Create("NOT_IMPLEMENTED");
+        }
+        else
+        {
+            relTime = MillisecondsToTimeString(state->RelativeTimePosition);
+        }
+        if(state->AbsoluteTimePosition < 0)
+        {
+            absTime = String_Create("NOT_IMPLEMENTED");
+        }
+        else
+        {
+            absTime = MillisecondsToTimeString(state->AbsoluteTimePosition);
+        }
+        DMR_Unlock(instance);
+
+        DMR_Response_AVTransport_GetPositionInfo(upnptoken, track, (const char*)trackDuration, (const char*)trackMetaData, (const char*)trackURI, (const char*)relTime, (const char*)absTime, 0x7fffffff, 0x7fffffff);
+
+        String_Destroy(trackDuration);
+        String_Destroy(trackMetaData);
+        String_Destroy(trackURI);
+        String_Destroy(relTime);
+        String_Destroy(absTime);
+    }
 }
 
 void DMR_AVTransport_GetTransportInfo(DMR_SessionToken upnptoken,unsigned int InstanceID)
@@ -1051,51 +1083,86 @@ void DMR_AVTransport_Next(DMR_SessionToken upnptoken,unsigned int InstanceID)
 
 void DMR_AVTransport_Pause(DMR_SessionToken upnptoken,unsigned int InstanceID)
 {
-    DMR instance = GetDMRFromSessionToken(upnptoken);
+    DMR instance = NULL;
     ContextMethodCall method = NULL;
 
     ERROROUT2("Invoke: DMR_AVTransport_Pause(%u);\r\n",InstanceID);
     
-    if(InstanceID != 0)
-    {
-        DMR_Response_Error(upnptoken, 718, "Invalid InstanceID");
-        return;
+    if (InstanceID == ~0) {
+#if defined( ENABLED_AIRPLAY )
+        instance = get_dmr_from_session_token(upnptoken);
+
+        if (CheckThis(instance) != DMR_ERROR_OK) {
+            AirplayResponse_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
+
+        instance = get_dmr_from_session_token(upnptoken);
+
+        method = _createMethod(DMR_ECS_PAUSE, instance, upnptoken);
+
+        airplay_call_method_through_thread_pool(instance, method);
+#endif
+    } else {
+        instance = GetDMRFromSessionToken(upnptoken);
+        if(InstanceID != 0)
+        {
+            DMR_Response_Error(upnptoken, 718, "Invalid InstanceID");
+            return;
+        }
+
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            DMR_Response_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
+
+        method = _createMethod(DMR_ECS_PAUSE, instance, upnptoken);
+
+        CallMethodThroughThreadPool(instance, method);
     }
-
-    if(CheckThis(instance) != DMR_ERROR_OK)
-    {
-        DMR_Response_Error(upnptoken, 501, "Action Failed");
-        return;
-    }
-
-    method = _createMethod(DMR_ECS_PAUSE, instance, upnptoken);
-
-    CallMethodThroughThreadPool(instance, method);
 }
 
 void DMR_AVTransport_Play(DMR_SessionToken upnptoken,unsigned int InstanceID,char* Speed)
 {
-    DMR instance = GetDMRFromSessionToken(upnptoken);
+    DMR instance = NULL;
     ContextMethodCall method = NULL;
 
     ERROROUT3("Invoke: DMR_AVTransport_Play(%u,%s);\r\n",InstanceID,Speed);
     
-    if(InstanceID != 0)
-    {
-        DMR_Response_Error(upnptoken, 718, "Invalid InstanceID");
-        return;
+    if (InstanceID == ~0) {
+#if defined( ENABLED_AIRPLAY )
+        instance = get_dmr_from_session_token(upnptoken);
+
+        if (CheckThis(instance) != DMR_ERROR_OK) {
+            AirplayResponse_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
+        method = _createMethod(DMR_ECS_PLAY, instance, upnptoken);
+        _addMethodParameter(method, (METHOD_PARAM)Speed);
+
+        airplay_call_method_through_thread_pool(instance, method);
+#endif
+    } else {
+        instance = GetDMRFromSessionToken(upnptoken);
+
+        if(InstanceID != 0)
+        {
+            DMR_Response_Error(upnptoken, 718, "Invalid InstanceID");
+            return;
+        }
+
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            DMR_Response_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
+
+        method = _createMethod(DMR_ECS_PLAY, instance, upnptoken);
+        _addMethodParameter(method, (METHOD_PARAM)Speed);
+
+        CallMethodThroughThreadPool(instance, method);
     }
-
-    if(CheckThis(instance) != DMR_ERROR_OK)
-    {
-        DMR_Response_Error(upnptoken, 501, "Action Failed");
-        return;
-    }
-
-    method = _createMethod(DMR_ECS_PLAY, instance, upnptoken);
-    _addMethodParameter(method, (METHOD_PARAM)Speed);
-
-    CallMethodThroughThreadPool(instance, method);
 }
 
 void DMR_AVTransport_Previous(DMR_SessionToken upnptoken,unsigned int InstanceID)
@@ -1124,88 +1191,157 @@ void DMR_AVTransport_Previous(DMR_SessionToken upnptoken,unsigned int InstanceID
 
 void DMR_AVTransport_Seek(DMR_SessionToken upnptoken,unsigned int InstanceID,char* Unit,char* Target)
 {
-    DMR instance = GetDMRFromSessionToken(upnptoken);
+    DMR instance = NULL;
     ContextMethodCall method = NULL;
     int h = 0, m = 0, s = 0, validargs = 0;
 
     ERROROUT4("Invoke: DMR_AVTransport_Seek(%u,%s,%s);\r\n", InstanceID, Unit, Target);
 
-    if(InstanceID != 0)
-    {
-        DMR_Response_Error(upnptoken, 718, "Invalid InstanceID");
-        return;
-    }
-    
-    if(CheckThis(instance) != DMR_ERROR_OK)
-    {
-        DMR_Response_Error(upnptoken, 501, "Action Failed");
-        return;
-    }
-    if(strcmp(Unit, "TRACK_NR") == 0)
-    {
-        int target = (unsigned int)atoi(Target);
-        method = _createMethod(DMR_ECS_SEEKTRACK, instance, upnptoken);
-        _addMethodParameter(method, (METHOD_PARAM)target);
-
-        CallMethodThroughThreadPool(instance, method);
-    }
-    else if(strcmp(Unit, "ABS_TIME") == 0)
-    {
-        long target = atol(Target);
-        method = _createMethod(DMR_ECS_SEEKMEDIATIME, instance, upnptoken);
-        _addMethodParameter(method, (METHOD_PARAM)target);
-
-        CallMethodThroughThreadPool(instance, method);
-    }
-    else if(strcmp(Unit, "REL_TIME") == 0)
-    {
-        // Bug fixed by leochen
-        long target = 0;
-        validargs = sscanf( Target, "%d:%d:%d", &h, &m, &s );
-        if ( validargs != 3 )
-        {
-            DMR_Response_Error( upnptoken, 402, "Invalid Args" );
+    if (InstanceID == ~0) {
+#if defined( ENABLED_AIRPLAY )
+        instance = get_dmr_from_session_token(upnptoken);
+        if (CheckThis(instance) != DMR_ERROR_OK) {
+            AirplayResponse_Error(upnptoken, 501, "Action Failed");
             return;
         }
-        target = h * 3600 + m * 60 + s;
+        if(strcmp(Unit, "TRACK_NR") == 0)
+        {
+            int target = (unsigned int)atoi(Target);
+            method = _createMethod(DMR_ECS_SEEKTRACK, instance, upnptoken);
+            _addMethodParameter(method, (METHOD_PARAM)target);
 
-        method = _createMethod(DMR_ECS_SEEKTRACKTIME, instance, upnptoken);
-        _addMethodParameter(method, (METHOD_PARAM)target);
+            airplay_call_method_through_thread_pool(instance, method);
+        }
+        else if(strcmp(Unit, "ABS_TIME") == 0)
+        {
+            long target = atol(Target);
+            method = _createMethod(DMR_ECS_SEEKMEDIATIME, instance, upnptoken);
+            _addMethodParameter(method, (METHOD_PARAM)target);
 
-        CallMethodThroughThreadPool(instance, method);
-    }
-    else
-    {
-        DMR_Response_Error(upnptoken, 710, "Seek Mode Not Supported");
+            airplay_call_method_through_thread_pool(instance, method);
+        }
+        else if(strcmp(Unit, "REL_TIME") == 0)
+        {
+            // Bug fixed by leochen
+            long target = 0;
+            validargs = sscanf( Target, "%d:%d:%d", &h, &m, &s );
+            if ( validargs != 3 )
+            {
+                AirplayResponse_Error( upnptoken, 402, "Invalid Args" );
+                return;
+            }
+            target = h * 3600 + m * 60 + s;
+
+            method = _createMethod(DMR_ECS_SEEKTRACKTIME, instance, upnptoken);
+            _addMethodParameter(method, (METHOD_PARAM)target);
+
+            airplay_call_method_through_thread_pool(instance, method);
+        }
+        else
+        {
+            AirplayResponse_Error(upnptoken, 710, "Seek Mode Not Supported");
+        }
+#endif
+    } else {
+        instance = GetDMRFromSessionToken(upnptoken);
+        if(InstanceID != 0)
+        {
+            DMR_Response_Error(upnptoken, 718, "Invalid InstanceID");
+            return;
+        }
+
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            DMR_Response_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
+        if(strcmp(Unit, "TRACK_NR") == 0)
+        {
+            int target = (unsigned int)atoi(Target);
+            method = _createMethod(DMR_ECS_SEEKTRACK, instance, upnptoken);
+            _addMethodParameter(method, (METHOD_PARAM)target);
+
+            CallMethodThroughThreadPool(instance, method);
+        }
+        else if(strcmp(Unit, "ABS_TIME") == 0)
+        {
+            long target = atol(Target);
+            method = _createMethod(DMR_ECS_SEEKMEDIATIME, instance, upnptoken);
+            _addMethodParameter(method, (METHOD_PARAM)target);
+
+            CallMethodThroughThreadPool(instance, method);
+        }
+        else if(strcmp(Unit, "REL_TIME") == 0)
+        {
+            // Bug fixed by leochen
+            long target = 0;
+            validargs = sscanf( Target, "%d:%d:%d", &h, &m, &s );
+            if ( validargs != 3 )
+            {
+                DMR_Response_Error( upnptoken, 402, "Invalid Args" );
+                return;
+            }
+            target = h * 3600 + m * 60 + s;
+
+            method = _createMethod(DMR_ECS_SEEKTRACKTIME, instance, upnptoken);
+            _addMethodParameter(method, (METHOD_PARAM)target);
+
+            CallMethodThroughThreadPool(instance, method);
+        }
+        else
+        {
+            DMR_Response_Error(upnptoken, 710, "Seek Mode Not Supported");
+        }
     }
 }
 
 void DMR_AVTransport_SetAVTransportURI(DMR_SessionToken upnptoken, unsigned int InstanceID, char* CurrentURI, char* CurrentURIMetaData)
 {
-    DMR instance = GetDMRFromSessionToken(upnptoken);
+    DMR instance = NULL;
     struct CdsObject* CDS = NULL;
     ContextMethodCall method = NULL;
 
     ERROROUT4("Invoke: DMR_AVTransport_SetAVTransportURI(%u,%s,%s);\r\n", InstanceID, CurrentURI, CurrentURIMetaData);
 
-    if(InstanceID != 0)
-    {
-        DMR_Response_Error(upnptoken, 718, "Invalid InstanceID");
-        return;
-    }
+    if (InstanceID == ~0) {
+#if defined( ENABLED_AIRPLAY )
+        instance = get_dmr_from_session_token(upnptoken);
 
-    if(CheckThis(instance) != DMR_ERROR_OK)
-    {
-        DMR_Response_Error(upnptoken, 501, "Action Failed");
-        return;
-    }
-    
-    method = _createMethod(DMR_ECS_SETAVTRANSPORTURI, instance, upnptoken);
-    _addMethodParameter(method, (METHOD_PARAM)CurrentURI);
-    CDS = _metadataToCDS(CurrentURIMetaData);
-    _addMethodParameter(method, (METHOD_PARAM)CDS);
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            AirplayResponse_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
 
-    CallMethodThroughThreadPool(instance, method);
+        method = _createMethod(DMR_ECS_SETAVTRANSPORTURI, instance, upnptoken);
+        _addMethodParameter(method, (METHOD_PARAM)CurrentURI);
+        CDS = _metadataToCDS(CurrentURIMetaData);
+        _addMethodParameter(method, (METHOD_PARAM)CDS);
+
+        airplay_call_method_through_thread_pool(instance, method);
+#endif
+    } else {
+        instance = GetDMRFromSessionToken(upnptoken);
+
+        if(InstanceID != 0)
+        {
+            DMR_Response_Error(upnptoken, 718, "Invalid InstanceID");
+            return;
+        }
+
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            DMR_Response_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
+
+        method = _createMethod(DMR_ECS_SETAVTRANSPORTURI, instance, upnptoken);
+        _addMethodParameter(method, (METHOD_PARAM)CurrentURI);
+        CDS = _metadataToCDS(CurrentURIMetaData);
+        _addMethodParameter(method, (METHOD_PARAM)CDS);
+
+        CallMethodThroughThreadPool(instance, method);
+    }
 }
 
 void DMR_AVTransport_SetPlayMode(DMR_SessionToken upnptoken,unsigned int InstanceID,char* NewPlayMode)
@@ -1238,26 +1374,42 @@ void DMR_AVTransport_SetPlayMode(DMR_SessionToken upnptoken,unsigned int Instanc
 
 void DMR_AVTransport_Stop(DMR_SessionToken upnptoken,unsigned int InstanceID)
 {
-    DMR instance = GetDMRFromSessionToken(upnptoken);
+    DMR instance = NULL;
     ContextMethodCall method = NULL;
 
     ERROROUT2("Invoke: DMR_AVTransport_Stop(%u);\r\n",InstanceID);
 
-    if(InstanceID != 0)
-    {
-        DMR_Response_Error(upnptoken, 718, "Invalid InstanceID");
-        return;
-    }
-    
-    if(CheckThis(instance) != DMR_ERROR_OK)
-    {
-        DMR_Response_Error(upnptoken, 501, "Action Failed");
-        return;
-    }
+    if (InstanceID == ~0) {
+#if defined( ENABLED_AIRPLAY )
+        instance = get_dmr_from_session_token(upnptoken);
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            AirplayResponse_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
 
-    method = _createMethod(DMR_ECS_STOP, instance, upnptoken);
+        method = _createMethod(DMR_ECS_STOP, instance, upnptoken);
 
-    CallMethodThroughThreadPool(instance, method);
+        airplay_call_method_through_thread_pool(instance, method);
+#endif
+    } else {
+        instance = GetDMRFromSessionToken(upnptoken);
+        if(InstanceID != 0)
+        {
+            DMR_Response_Error(upnptoken, 718, "Invalid InstanceID");
+            return;
+        }
+
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            DMR_Response_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
+
+        method = _createMethod(DMR_ECS_STOP, instance, upnptoken);
+
+        CallMethodThroughThreadPool(instance, method);
+    }
 }
 /****************************************************************************/
 
@@ -1436,121 +1588,237 @@ void DMR_RenderingControl_SetContrast(DMR_SessionToken upnptoken, unsigned int I
 #if defined(INCLUDE_FEATURE_VOLUME)
 void DMR_RenderingControl_GetMute(DMR_SessionToken upnptoken, unsigned int InstanceID, char* Channel)
 {
-    DMR instance = GetDMRFromSessionToken(upnptoken);
+    DMR instance = NULL;
     DMR_InternalState state ;
 
     ERROROUT3("Invoke: DMR_RenderingControl_GetMute(%u,%s);\r\n",InstanceID,Channel);
     
-    if(InstanceID != 0)
-    {
-        DMR_Response_Error(upnptoken, 702, "Invalid InstanceID");
-        return;
-    }
-    
-    if(CheckThis(instance) != DMR_ERROR_OK)
-    {
-        DMR_Response_Error(upnptoken, 501, "Action Failed");
-        return;
-    }
+    if (InstanceID == ~0) {
+#if defined( ENABLED_AIRPLAY )
+        instance = get_dmr_from_session_token(upnptoken);
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            AirplayResponse_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
 
-    state = (DMR_InternalState)instance->internal_state;
-    if(strcmp(Channel, "Master") != 0)
-    {
-        DMR_Response_Error(upnptoken, 600, "Argument Value Invalid");
-        return;
+        state = (DMR_InternalState)instance->internal_state;
+        if(strcmp(Channel, "Master") != 0)
+        {
+            AirplayResponse_Error(upnptoken, 600, "Argument Value Invalid");
+            return;
+        }
+
+        AirplayResponse_GetMute(upnptoken, state->Mute? 1: 0);
+#endif
+    } else {
+        instance = GetDMRFromSessionToken(upnptoken);
+
+        if(InstanceID != 0)
+        {
+            DMR_Response_Error(upnptoken, 702, "Invalid InstanceID");
+            return;
+        }
+
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            DMR_Response_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
+
+        state = (DMR_InternalState)instance->internal_state;
+        if(strcmp(Channel, "Master") != 0)
+        {
+            DMR_Response_Error(upnptoken, 600, "Argument Value Invalid");
+            return;
+        }
+
+        DMR_Response_RenderingControl_GetMute(upnptoken, state->Mute?1:0);
     }
-    
-    DMR_Response_RenderingControl_GetMute(upnptoken, state->Mute?1:0);
 }
 
 void DMR_RenderingControl_GetVolume(DMR_SessionToken upnptoken, unsigned int InstanceID, char* Channel)
 {
-    DMR instance = GetDMRFromSessionToken(upnptoken);
+    DMR instance = NULL;
     DMR_InternalState state;
 
     ERROROUT3("Invoke: DMR_RenderingControl_GetVolume(%u,%s);\r\n", InstanceID, Channel);
     
-    if(InstanceID != 0)
-    {
-        DMR_Response_Error(upnptoken, 702, "Invalid InstanceID");
-        return;
-    }
-    
-    if(CheckThis(instance) != DMR_ERROR_OK)
-    {
-        DMR_Response_Error(upnptoken, 501, "Action Failed");
-        return;
-    }
+    if (InstanceID == ~0) {
+#if defined( ENABLED_AIRPLAY )
+        instance = get_dmr_from_session_token(upnptoken);
 
-    state = (DMR_InternalState)instance->internal_state;
-    if(strcmp(Channel, "Master") != 0)
-    {
-        DMR_Response_Error(upnptoken, 600, "Argument Value Invalid");
-        return;
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            AirplayResponse_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
+
+        state = (DMR_InternalState)instance->internal_state;
+        if(strcmp(Channel, "Master") != 0)
+        {
+            AirplayResponse_Error(upnptoken, 600, "Argument Value Invalid");
+            return;
+        }
+
+        AirplayResponse_GetVolume(upnptoken, state->Volume);
+#endif
+    } else {
+        instance = GetDMRFromSessionToken(upnptoken);
+
+        if(InstanceID != 0)
+        {
+            DMR_Response_Error(upnptoken, 702, "Invalid InstanceID");
+            return;
+        }
+
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            DMR_Response_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
+
+        state = (DMR_InternalState)instance->internal_state;
+        if(strcmp(Channel, "Master") != 0)
+        {
+            DMR_Response_Error(upnptoken, 600, "Argument Value Invalid");
+            return;
+        }
+
+        DMR_Response_RenderingControl_GetVolume(upnptoken, state->Volume);
     }
-    
-    DMR_Response_RenderingControl_GetVolume(upnptoken, state->Volume);
 }
 
 void DMR_RenderingControl_SetMute(DMR_SessionToken upnptoken,unsigned int InstanceID,char* Channel,int DesiredMute)
 {
-    DMR instance = GetDMRFromSessionToken(upnptoken);
+    DMR instance = NULL;
     DMR_InternalState state;
     ContextMethodCall method = NULL;
 
     ERROROUT4("Invoke: DMR_RenderingControl_SetMute(%u,%s,%d);\r\n", InstanceID, Channel, DesiredMute);
     
-    if(InstanceID != 0)
-    {
-        DMR_Response_Error(upnptoken, 702, "Invalid InstanceID");
-        return;
-    }
-    
-    if(CheckThis(instance) != DMR_ERROR_OK)
-    {
-        DMR_Response_Error(upnptoken, 501, "Action Failed");
-        return;
-    }
+    if (InstanceID == ~0) {
+        instance = get_dmr_from_session_token(upnptoken);
+#if defined( ENABLED_AIRPLAY )
 
-    state = (DMR_InternalState)instance->internal_state;
-    if(strcmp(Channel, "Master") != 0)
-    {
-        DMR_Response_Error(upnptoken, 600, "Argument Value Invalid");
-        return;
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            AirplayResponse_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
+
+        state = (DMR_InternalState)instance->internal_state;
+        if(strcmp(Channel, "Master") != 0)
+        {
+            AirplayResponse_Error(upnptoken, 600, "Argument Value Invalid");
+            return;
+        }
+
+        method = _createMethod(DMR_ECS_SETMUTE, instance, upnptoken);
+        _addMethodParameter(method, (METHOD_PARAM)DesiredMute);
+
+        airplay_call_method_through_thread_pool(instance, method);
+#endif
+    } else {
+        instance = GetDMRFromSessionToken(upnptoken);
+
+        if(InstanceID != 0)
+        {
+            DMR_Response_Error(upnptoken, 702, "Invalid InstanceID");
+            return;
+        }
+
+        if(CheckThis(instance) != DMR_ERROR_OK)
+        {
+            DMR_Response_Error(upnptoken, 501, "Action Failed");
+            return;
+        }
+
+        state = (DMR_InternalState)instance->internal_state;
+        if(strcmp(Channel, "Master") != 0)
+        {
+            DMR_Response_Error(upnptoken, 600, "Argument Value Invalid");
+            return;
+        }
+
+        method = _createMethod(DMR_ECS_SETMUTE, instance, upnptoken);
+        _addMethodParameter(method, (METHOD_PARAM)DesiredMute);
+
+        CallMethodThroughThreadPool(instance, method);
     }
-
-    method = _createMethod(DMR_ECS_SETMUTE, instance, upnptoken);
-    _addMethodParameter(method, (METHOD_PARAM)DesiredMute);
-
-    CallMethodThroughThreadPool(instance, method);
 }
 
 void DMR_RenderingControl_SetVolume(DMR_SessionToken upnptoken,unsigned int InstanceID,char* Channel,unsigned short DesiredVolume)
 {
-    DMR instance = GetDMRFromSessionToken(upnptoken);
-    DMR_InternalState state = (DMR_InternalState)instance->internal_state;
+    DMR instance = NULL;
     ContextMethodCall method = NULL;
 
     ERROROUT4("Invoke: DMR_RenderingControl_SetVolume(%u,%s,%u);\r\n",InstanceID,Channel,DesiredVolume);
     
-    if(InstanceID != 0)
-    {
-        DMR_Response_Error(upnptoken, 702, "Invalid InstanceID");
-        return;
-    }
+    if (InstanceID == ~0) {
+#if defined( ENABLED_AIRPLAY )
+        instance = get_dmr_from_session_token(upnptoken);
+        if(strcmp(Channel, "Master") != 0)
+        {
+            AirplayResponse_Error(upnptoken, 600, "Argument Value Invalid");
+            return;
+        }
 
-    if(strcmp(Channel, "Master") != 0)
-    {
-        DMR_Response_Error(upnptoken, 600, "Argument Value Invalid");
-        return;
-    }
-    
-    method = _createMethod(DMR_ECS_SETVOLUME, instance, upnptoken);
-    _addMethodParameter(method, (METHOD_PARAM)DesiredVolume);
+        method = _createMethod(DMR_ECS_SETVOLUME, instance, upnptoken);
+        _addMethodParameter(method, (METHOD_PARAM)DesiredVolume);
 
-    CallMethodThroughThreadPool(instance, method);
+        airplay_call_method_through_thread_pool(instance, method);
+#endif
+    } else {
+        instance = GetDMRFromSessionToken(upnptoken);
+
+        if(InstanceID != 0)
+        {
+            DMR_Response_Error(upnptoken, 702, "Invalid InstanceID");
+            return;
+        }
+
+        if(strcmp(Channel, "Master") != 0)
+        {
+            DMR_Response_Error(upnptoken, 600, "Argument Value Invalid");
+            return;
+        }
+
+        method = _createMethod(DMR_ECS_SETVOLUME, instance, upnptoken);
+        _addMethodParameter(method, (METHOD_PARAM)DesiredVolume);
+
+        CallMethodThroughThreadPool(instance, method);
+    }
 }
 #endif /* INCLUDE_FEATURE_VOLUME */
+
+#if defined( ENABLED_AIRPLAY )
+void DMR_GetStatus(void * session_token, float * position, float * duration, float * cache_duration, int * is_playing)
+{
+    DMR instance = get_dmr_from_session_token(session_token);
+    DMR_InternalState state = NULL;
+
+    if (CheckThis(instance) != DMR_ERROR_OK) {
+        AirplayResponse_Error(session_token, 501, "Action Failed");
+        return;
+    }
+
+    state = (DMR_InternalState)instance->internal_state;
+    if (position != NULL) {
+        *position = (float)state->AbsoluteTimePosition;
+    }
+    if (duration != NULL) {
+        *duration = (float)state->CurrentMediaDuration;
+    }
+    if (cache_duration != NULL) {
+        *position = (float)state->AbsoluteTimePosition;
+    }
+    if (is_playing != NULL) {
+        *is_playing = (state->TransportState == DMR_PS_Playing) ? 1: 0;
+    }
+}
+#endif
+
 /****************************************************************************/
 
 void DMRDestroyFromChain(DMR instance)
@@ -1592,7 +1860,6 @@ void DMRDestroyFromChain(DMR instance)
     }
 }
 
-
 /****************************************************************************/
 /* DMR Public Methods */
 DMR DMR_Method_Create(void* chain, unsigned short port, char* friendlyName, char* serialNumber, char* UDN, char* protocolInfo, ILibThreadPool threadPool, int open2thirdparty)
@@ -1613,6 +1880,7 @@ DMR DMR_Method_Create(void* chain, unsigned short port, char* friendlyName, char
     state = (DMR_InternalState)MALLOC(sizeof(struct _internalState));
     if(state == NULL)
     {
+        FREE(dmr);
         return NULL;
     }
     state->DMR_microStackChain = chain;
@@ -1622,7 +1890,31 @@ DMR DMR_Method_Create(void* chain, unsigned short port, char* friendlyName, char
     /* Let the chain destroy the object. */
     dmr->ILib3 = DMRDestroyFromChain;
     ILibAddToChain(chain, dmr);
-    
+
+#if defined( ENABLED_AIRPLAY )
+    state->EnabledAirplay = 1;
+    if (state->EnabledAirplay == 1) {
+        state->Airplay_microStack = AirplayCreate(chain, port, friendlyName, "74:E5:0B:10:74:72", "");
+        if (state->Airplay_microStack == NULL) { // 发现服务创建失败
+            FREE(dmr);
+            FREE(state);
+            return NULL;
+        }
+        AirplaySetTag(state->Airplay_microStack, (void *)dmr);
+        AirplayCallbackGetPositionInfo              = (AirplayHandlerGetPositionInfo            )&DMR_AVTransport_GetPositionInfo;
+        AirplayCallbackPause                        = (AirplayHandlerPause                      )&DMR_AVTransport_Pause;
+        AirplayCallbackPlay                         = (AirplayHandlerPlay                       )&DMR_AVTransport_Play;
+        AirplayCallbackSeek                         = (AirplayHandlerSeek                       )&DMR_AVTransport_Seek;
+        AirplayCallbackSetAVTransportURI            = (AirplayHandlerSetAVTransportURI          )&DMR_AVTransport_SetAVTransportURI;
+        AirplayCallbackStop                         = (AirplayHandlerStop                       )&DMR_AVTransport_Stop;
+        AirplayCallbackGetMute                      = (AirplayHandlerGetMute                    )&DMR_RenderingControl_GetMute;
+        AirplayCallbackGetVolume                    = (AirplayHandlerGetVolume                  )&DMR_RenderingControl_GetVolume;
+        AirplayCallbackSetMute                      = (AirplayHandlerSetMute                    )&DMR_RenderingControl_SetMute;
+        AirplayCallbackSetVolume                    = (AirplayHandlerSetVolume                  )&DMR_RenderingControl_SetVolume;
+        AirplayCallbackGetPlayStatus                = (AirplayGetPlayStatus                     )&DMR_GetStatus;
+    }
+#endif
+
     /* Set the default values for the DMR_InternalState. */
     state->FriendlyName = String_Create(friendlyName);
     state->SerialNumber = String_Create(serialNumber);
@@ -2219,6 +2511,11 @@ void FireGenaLastChangeEvent(DMR instance)
         }
         if(TESTBIT(state->LastChangeMask, EVENT_TRANSPORTSTATE) == TRUE)
         {
+#if defined( ENABLED_AIRPLAY )
+            if (state->EnabledAirplay == 1) { // Airplay播放状态事件通知
+                AirplaySetState_LastChange(state->Airplay_microStack, state->TransportState);
+            }
+#endif
             strcat(AVTransportData, "<TransportState val=\"");
             if(state->TransportState == DMR_PS_Stopped)
             {
@@ -3089,6 +3386,239 @@ char* UPnPErrorMessageLookupRCS(int code)
     }
 }
 
+#if defined( ENABLED_AIRPLAY )
+void airplay_callback_from_thread_pool(ILibThreadPool thread_pool, void * methods)
+{
+    DMR instance = NULL;
+    ContextMethodCall method = (ContextMethodCall)methods;
+    if (method == NULL) {
+        return;
+    }
+
+    instance = method->dmr;
+
+    switch (method->method) {
+    case DMR_ECS_GETAVPROTOCOLINFO:
+        // 无论如何都返回没有实现
+        AirplayResponse_Error((const AirplaySessionToken)method->session, 405, "Method Not Allowed");
+        break;
+    case DMR_ECS_SETAVTRANSPORTURI:
+        {
+            if (instance->Event_SetAVTransportURI != NULL && method->parameterCount == 2) {
+                int result;
+                char * uri = (char *)method->parameters[0];
+                char * metadata = (char *)method->parameters[1];
+                result = instance->Event_SetAVTransportURI(instance, method->session, uri, metadata);
+                String_Destroy(uri);
+                String_Destroy(metadata);
+                AirplayResponse_SetAVTransportURI(method->session);
+            } else if(instance->Event_SetAVTransportURI == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_STOP:
+        {
+            if (instance->Event_Stop != NULL && method->parameterCount == 0) {
+                int result = instance->Event_Stop(instance, method->session);
+                AirplayResponse_Stop(method->session);
+            } else if(instance->Event_Stop == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_PLAY:
+        {
+            if (instance->Event_Play != NULL && method->parameterCount == 1) {
+                int result;
+                char * play_speed = (char *)method->parameters[0];
+                result = instance->Event_Play(instance, method->session, play_speed);
+                String_Destroy(play_speed);
+                AirplayResponse_Play(method->session);
+            } else if(instance->Event_Play == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_PAUSE:
+        {
+            if (instance->Event_Pause != NULL && method->parameterCount == 0) {
+                int result = instance->Event_Pause(instance, method->session);
+                AirplayResponse_Pause(method->session);
+            } else if(instance->Event_Pause == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_SEEKTRACK:
+        {
+            if (instance->Event_SeekTrack != NULL && method->parameterCount == 1) {
+                int result;
+                unsigned int track = (unsigned int)(unsigned long)method->parameters[0];
+                result = instance->Event_SeekTrack(instance, method->session, track);
+                AirplayResponse_Seek(method->session);
+            } else if(instance->Event_SeekTrack == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_SEEKTRACKTIME:
+        {
+            if (instance->Event_SeekTrackPosition != NULL && method->parameterCount == 1) {
+                int result;
+                long position = (long)method->parameters[0];
+                result = instance->Event_SeekTrackPosition(instance, method->session, position);
+                AirplayResponse_Seek(method->session);
+            } else if(instance->Event_SeekTrackPosition == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_SEEKMEDIATIME:
+        {
+            if (instance->Event_SeekMediaPosition != NULL && method->parameterCount == 1) {
+                int result;
+                long position = (long)method->parameters[0];
+                result = instance->Event_SeekMediaPosition(instance, method->session, position);
+                AirplayResponse_Seek(method->session);
+            } else if(instance->Event_SeekMediaPosition == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_NEXT:
+        {
+            if (instance->Event_Next != NULL && method->parameterCount == 0) {
+                int result = instance->Event_Next(instance, method->session);
+                AirplayResponse_Next(method->session);
+            } else if(instance->Event_Next == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_PREVIOUS:
+        {
+            if (instance->Event_Previous != NULL && method->parameterCount == 0) {
+                int result = instance->Event_Previous(instance, method->session);
+                AirplayResponse_Previous(method->session);
+            } else if(instance->Event_Previous == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_SETPLAYMODE:
+        {
+            if (instance->Event_SetPlayMode != NULL && method->parameterCount == 1) {
+                int result;
+                DMR_MediaPlayMode mode = (DMR_MediaPlayMode)method->parameters[0];
+                result = instance->Event_SetPlayMode(instance, method->session, mode);
+                AirplayResponse_SetPlayMode(method->session);
+            } else if(instance->Event_SetPlayMode == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_SELECTPRESET:
+        {
+            if (instance->Event_SelectPreset != NULL && method->parameterCount == 1) {
+                int result;
+                char* preset = (char*)method->parameters[0];
+                result = instance->Event_SelectPreset(instance, method->session, preset);
+                String_Destroy(preset);
+                AirplayResponse_SelectPreset(method->session);
+            } else if(instance->Event_SelectPreset == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_SETBRIGHTNESS:
+        {
+            if (instance->Event_SetBrightness != NULL && method->parameterCount == 1) {
+                int result;
+                unsigned char val = (unsigned char)method->parameters[0];
+                result = instance->Event_SetBrightness(instance, method->session, val);
+                AirplayResponse_SetBrightness(method->session);
+            } else if(instance->Event_SetBrightness == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_SETCONTRAST:
+        {
+            if (instance->Event_SetContrast != NULL && method->parameterCount == 1) {
+                int result;
+                unsigned char val = (unsigned char)method->parameters[0];
+                result = instance->Event_SetContrast(instance, method->session, val);
+                AirplayResponse_SetContrast(method->session);
+            } else if(instance->Event_SetContrast == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_SETVOLUME:
+        {
+            if (instance->Event_SetVolume != NULL && method->parameterCount == 1) {
+                int result;
+                unsigned char val = (unsigned char)method->parameters[0];
+                result = instance->Event_SetVolume(instance, method->session, val);
+                AirplayResponse_SetVolume(method->session);
+            } else if(instance->Event_SetVolume == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    case DMR_ECS_SETMUTE:
+        {
+            if (instance->Event_SetMute != NULL && method->parameterCount == 1) {
+                int result;
+                BOOL val = (BOOL)method->parameters[0];
+                result = instance->Event_SetMute(instance, method->session, val);
+                AirplayResponse_SetMute(method->session);
+            } else if(instance->Event_SetMute == NULL) {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Action Not Implemented");
+            } else {
+                AirplayResponse_Error((const AirplaySessionToken)method->session, 501, "Action Failed: Program Error");
+            }
+        }
+        break;
+    default:
+        ILibWebServer_Release((struct ILibWebServer_Session *)method->session);
+        FREE(method);
+        return;
+    }
+    ILibWebServer_Release((struct ILibWebServer_Session *)method->session);
+    FREE(method);
+}
+#endif
+
 void CallbackFromThreadPool(ILibThreadPool threadPool, void* oMethod)
 {
     DMR instance = NULL;
@@ -3566,6 +4096,86 @@ void CallbackFromThreadPool(ILibThreadPool threadPool, void* oMethod)
 
 #if defined(WIN32) && !defined(_WIN32_WCE)
 #pragma warning(disable: 4047)
+#endif
+
+#if defined( ENABLED_AIRPLAY )
+DMR_Error airplay_call_method_through_thread_pool(DMR instance, ContextMethodCall method)
+{
+    DMR_InternalState state;
+    BOOL contextSwitch = FALSE;
+    DMR_Error err = CheckThis(instance);
+    if(err != DMR_ERROR_OK)
+    {
+        return err;
+    }
+    state = (DMR_InternalState)instance->internal_state;
+    contextSwitch = TESTBIT(state->EventsOnThreadBitMask, method->method);
+    switch(method->method)
+    {
+    case DMR_ECS_GETAVPROTOCOLINFO:
+        break;
+    case DMR_ECS_SETAVTRANSPORTURI:
+        if(instance->Event_SetAVTransportURI != NULL && method->parameterCount == 2)
+        {
+            method->parameters[0] = (METHOD_PARAM)(void *)String_Create((const char*)method->parameters[0]);
+        }
+        break;
+    case DMR_ECS_STOP:
+        break;
+    case DMR_ECS_PLAY:
+        if(instance->Event_Play != NULL && method->parameterCount == 1)
+        {
+            method->parameters[0] = (METHOD_PARAM)(void *)String_Create((const char*)method->parameters[0]);
+        }
+        break;
+    case DMR_ECS_PAUSE:
+        break;
+    case DMR_ECS_SEEKTRACK:
+        break;
+    case DMR_ECS_SEEKTRACKTIME:
+        break;
+    case DMR_ECS_SEEKMEDIATIME:
+        break;
+    case DMR_ECS_NEXT:
+        break;
+    case DMR_ECS_PREVIOUS:
+        break;
+    case DMR_ECS_SETPLAYMODE:
+        break;
+    case DMR_ECS_SELECTPRESET:
+        if(instance->Event_SelectPreset != NULL && method->parameterCount == 1)
+        {
+            method->parameters[0] = (void*)String_Create((const char*)method->parameters[0]);
+        }
+        break;
+#if defined(INCLUDE_FEATURE_DISPLAY)
+    case DMR_ECS_SETBRIGHTNESS:
+        break;
+    case DMR_ECS_SETCONTRAST:
+        break;
+#endif /* INCLUDE_FEATURE_DISPLAY */
+#if defined(INCLUDE_FEATURE_VOLUME)
+    case DMR_ECS_SETVOLUME:
+        break;
+    case DMR_ECS_SETMUTE:
+        break;
+#endif /* INCLUDE_FEATURE_VOLUME */
+    default:
+        return DMR_ERROR_INVALIDARGUMENT;
+    }
+
+    ILibWebServer_AddRef((struct ILibWebServer_Session*)method->session);
+    if(contextSwitch == TRUE)
+    {
+        ILibThreadPool_QueueUserWorkItem(instance->ThreadPool, (void*)method, &airplay_callback_from_thread_pool);
+    }
+    else
+    {
+        airplay_callback_from_thread_pool(NULL, (void*)method);
+    }
+
+    return DMR_ERROR_OK;
+}
 #endif
 
 DMR_Error CallMethodThroughThreadPool(DMR instance, ContextMethodCall method)

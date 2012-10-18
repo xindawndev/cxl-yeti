@@ -1,0 +1,37 @@
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 2012
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "Yeti", "Yeti\Yeti.vcxproj", "{12AFF2E5-6D95-4809-9728-9551677C078A}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YetiTest", "YetiTest\YetiTest.vcxproj", "{4D9420BD-7B2D-48CD-8051-D0FC210A4A25}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "YetiDlna", "YetiDlna\YetiDlna.vcxproj", "{65CE6E75-2C58-4991-882B-D2CFE2329F4C}"
+EndProject
+Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "FlyDog", "FlyDog\FlyDog.vcxproj", "{6EE4EB11-C479-4C6C-AE5B-42C7E4106077}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Win32 = Debug|Win32
+		Release|Win32 = Release|Win32
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{12AFF2E5-6D95-4809-9728-9551677C078A}.Debug|Win32.ActiveCfg = Debug|Win32
+		{12AFF2E5-6D95-4809-9728-9551677C078A}.Debug|Win32.Build.0 = Debug|Win32
+		{12AFF2E5-6D95-4809-9728-9551677C078A}.Release|Win32.ActiveCfg = Release|Win32
+		{12AFF2E5-6D95-4809-9728-9551677C078A}.Release|Win32.Build.0 = Release|Win32
+		{4D9420BD-7B2D-48CD-8051-D0FC210A4A25}.Debug|Win32.ActiveCfg = Debug|Win32
+		{4D9420BD-7B2D-48CD-8051-D0FC210A4A25}.Debug|Win32.Build.0 = Debug|Win32
+		{4D9420BD-7B2D-48CD-8051-D0FC210A4A25}.Release|Win32.ActiveCfg = Release|Win32
+		{4D9420BD-7B2D-48CD-8051-D0FC210A4A25}.Release|Win32.Build.0 = Release|Win32
+		{65CE6E75-2C58-4991-882B-D2CFE2329F4C}.Debug|Win32.ActiveCfg = Debug|Win32
+		{65CE6E75-2C58-4991-882B-D2CFE2329F4C}.Debug|Win32.Build.0 = Debug|Win32
+		{65CE6E75-2C58-4991-882B-D2CFE2329F4C}.Release|Win32.ActiveCfg = Release|Win32
+		{65CE6E75-2C58-4991-882B-D2CFE2329F4C}.Release|Win32.Build.0 = Release|Win32
+		{6EE4EB11-C479-4C6C-AE5B-42C7E4106077}.Debug|Win32.ActiveCfg = Debug|Win32
+		{6EE4EB11-C479-4C6C-AE5B-42C7E4106077}.Debug|Win32.Build.0 = Debug|Win32
+		{6EE4EB11-C479-4C6C-AE5B-42C7E4106077}.Release|Win32.ActiveCfg = Release|Win32
+		{6EE4EB11-C479-4C6C-AE5B-42C7E4106077}.Release|Win32.Build.0 = Release|Win32
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+EndGlobal

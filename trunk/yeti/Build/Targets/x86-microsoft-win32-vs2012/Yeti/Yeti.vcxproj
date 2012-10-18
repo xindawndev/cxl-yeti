@@ -1,0 +1,238 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{12AFF2E5-6D95-4809-9728-9551677C078A}</ProjectGuid>
+    <RootNamespace>Yeti</RootNamespace>
+    <Keyword>Win32Proj</Keyword>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+    <WholeProgramOptimization>false</WholeProgramOptimization>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>StaticLibrary</ConfigurationType>
+    <PlatformToolset>v110</PlatformToolset>
+    <CharacterSet>MultiByte</CharacterSet>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="ExtensionSettings">
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <ImportGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="PropertySheets">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+    <Import Project="$(VCTargetsPath)Microsoft.CPP.UpgradeFromVC71.props" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup>
+    <_ProjectFileVersion>11.0.50727.1</_ProjectFileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <OutDir>$(SolutionDir)$(Configuration)\</OutDir>
+    <IntDir>$(Configuration)\</IntDir>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <Optimization>Disabled</Optimization>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\..\..\Source\Core;..\..\..\..\Source\System\Win32;..\..\..\..\ThirdParty\zlib-1.2.3;..\..\..\..\ThirdParty\nedmalloc;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;_DEBUG;_LIB;NPT_CONFIG_ENABLE_LOGGING;YETI_DEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <MinimalRebuild>true</MinimalRebuild>
+      <ExceptionHandling />
+      <BasicRuntimeChecks>EnableFastChecks</BasicRuntimeChecks>
+      <RuntimeLibrary>MultiThreadedDebug</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>EditAndContinue</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+      <SuppressStartupBanner>false</SuppressStartupBanner>
+    </Lib>
+    <PostBuildEvent>
+      <Command>mkdir "$(ProjectDir)..\..\..\..\Targets\x86-microsoft-win32-vs2008\$(Configuration)"
+xcopy /Y "$(TargetPath)" "$(ProjectDir)\..\..\..\..\Targets\x86-microsoft-win32-vs2008\$(Configuration)"
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <Optimization>Full</Optimization>
+      <OmitFramePointers>true</OmitFramePointers>
+      <WholeProgramOptimization>false</WholeProgramOptimization>
+      <AdditionalIncludeDirectories>..\..\..\..\Source\Core;..\..\..\..\Source\System\Win32;..\..\..\..\ThirdParty\zlib-1.2.3;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <PreprocessorDefinitions>WIN32;NDEBUG;_LIB;NPT_CONFIG_ENABLE_LOGGING;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <StringPooling>true</StringPooling>
+      <ExceptionHandling />
+      <RuntimeLibrary>MultiThreaded</RuntimeLibrary>
+      <BufferSecurityCheck>true</BufferSecurityCheck>
+      <FunctionLevelLinking>true</FunctionLevelLinking>
+      <FloatingPointModel>Fast</FloatingPointModel>
+      <PrecompiledHeader />
+      <WarningLevel>Level3</WarningLevel>
+      <DebugInformationFormat>ProgramDatabase</DebugInformationFormat>
+    </ClCompile>
+    <Lib>
+      <AdditionalDependencies>ws2_32.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <OutputFile>$(OutDir)$(ProjectName).lib</OutputFile>
+    </Lib>
+    <PostBuildEvent>
+      <Command>mkdir "$(ProjectDir)..\..\..\..\Targets\x86-microsoft-win32-vs2008\$(Configuration)"
+xcopy /Y "$(TargetPath)" "$(ProjectDir)\..\..\..\..\Targets\x86-microsoft-win32-vs2008\$(Configuration)"
+</Command>
+    </PostBuildEvent>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\Source\Core\Yeti.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiBase64.cpp" />
+    <ClCompile Include="..\..\..\..\Source\System\Bsd\YetiBsdResolver.cpp" />
+    <ClCompile Include="..\..\..\..\Source\System\Bsd\YetiBsdSocket.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiBufferedStream.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiCommon.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiCrypto.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiDataBuffer.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiDebug.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiDigest.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiDynamicLibraries.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiFile.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiHash.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiHttp.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiHttpParser.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiJobManager.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiList.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiLogging.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiNetwork.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiQueue.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiResults.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiRingBuffer.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiSocket.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiStateMachine.cpp" />
+    <ClCompile Include="..\..\..\..\Source\System\StdC\YetiStdcEnvironment.cpp" />
+    <ClCompile Include="..\..\..\..\Source\System\StdC\YetiStdcFile.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiStreams.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiString.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiThreads.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiTime.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiUri.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiUtil.cpp" />
+    <ClCompile Include="..\..\..\..\Source\System\Win32\YetiWin32Console.cpp" />
+    <ClCompile Include="..\..\..\..\Source\System\Win32\YetiWin32Debug.cpp" />
+    <ClCompile Include="..\..\..\..\Source\System\Win32\YetiWin32DynamicLibraries.cpp" />
+    <ClCompile Include="..\..\..\..\Source\System\Win32\YetiWin32Network.cpp" />
+    <ClCompile Include="..\..\..\..\Source\System\Win32\YetiWin32Queue.cpp" />
+    <ClCompile Include="..\..\..\..\Source\System\Win32\YetiWin32SerialPort.cpp" />
+    <ClCompile Include="..\..\..\..\Source\System\Win32\YetiWin32System.cpp" />
+    <ClCompile Include="..\..\..\..\Source\System\Win32\YetiWin32Thread.cpp" />
+    <ClCompile Include="..\..\..\..\Source\System\Win32\YetiWin32Time.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiXml.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiZip.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiAllocObj.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiNedAlloc.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\YetiNedPooling.cpp" />
+    <ClCompile Include="..\..\..\..\ThirdParty\zlib-1.2.3\adler32.c" />
+    <ClCompile Include="..\..\..\..\ThirdParty\zlib-1.2.3\compress.c" />
+    <ClCompile Include="..\..\..\..\ThirdParty\zlib-1.2.3\crc32.c" />
+    <ClCompile Include="..\..\..\..\ThirdParty\zlib-1.2.3\deflate.c" />
+    <ClCompile Include="..\..\..\..\ThirdParty\zlib-1.2.3\infback.c" />
+    <ClCompile Include="..\..\..\..\ThirdParty\zlib-1.2.3\inffast.c" />
+    <ClCompile Include="..\..\..\..\ThirdParty\zlib-1.2.3\inflate.c" />
+    <ClCompile Include="..\..\..\..\ThirdParty\zlib-1.2.3\inftrees.c" />
+    <ClCompile Include="..\..\..\..\ThirdParty\zlib-1.2.3\trees.c" />
+    <ClCompile Include="..\..\..\..\ThirdParty\zlib-1.2.3\zutil.c" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\Source\Core\Yeti.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiArray.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiAutoreleasePool.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiBase64.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiBufferedStream.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiCommon.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiConfig.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiConsole.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiConstants.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiCrypto.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiDataBuffer.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiDebug.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiDefs.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiDigest.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiDynamicCast.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiDynamicLibraries.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiFile.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiHash.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiHttp.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiHttpParser.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiInterfaces.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiJob.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiJobManager.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiList.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiLogging.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiMap.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiNetwork.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiNoncopyable.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiObjectFactory.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiQueue.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiReferences.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiResults.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiRingBuffer.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiSerialPort.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiSingleton.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiSocket.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiStack.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiStateMachine.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiStreams.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiString.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiSystem.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiThreads.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiTime.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiTypes.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiUri.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiUtil.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiVersion.h" />
+    <ClInclude Include="..\..\..\..\Source\System\Win32\YetiWin32Network.h" />
+    <ClInclude Include="..\..\..\..\Source\System\Win32\YetiWin32Thread.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiXml.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiZip.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiAllocCfg.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiAllocObj.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiNedAlloc.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\YetiNedPooling.h" />
+    <ClInclude Include="..\..\..\..\ThirdParty\zlib-1.2.3\crc32.h" />
+    <ClInclude Include="..\..\..\..\ThirdParty\zlib-1.2.3\deflate.h" />
+    <ClInclude Include="..\..\..\..\ThirdParty\zlib-1.2.3\inffast.h" />
+    <ClInclude Include="..\..\..\..\ThirdParty\zlib-1.2.3\inffixed.h" />
+    <ClInclude Include="..\..\..\..\ThirdParty\zlib-1.2.3\inflate.h" />
+    <ClInclude Include="..\..\..\..\ThirdParty\zlib-1.2.3\inftrees.h" />
+    <ClInclude Include="..\..\..\..\ThirdParty\zlib-1.2.3\trees.h" />
+    <ClInclude Include="..\..\..\..\ThirdParty\zlib-1.2.3\zconf.h" />
+    <ClInclude Include="..\..\..\..\ThirdParty\zlib-1.2.3\zconf.in.h" />
+    <ClInclude Include="..\..\..\..\ThirdParty\zlib-1.2.3\zlib.h" />
+    <ClInclude Include="..\..\..\..\ThirdParty\zlib-1.2.3\zutil.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Include="..\..\..\..\ThirdParty\zlib-1.2.3\README" />
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

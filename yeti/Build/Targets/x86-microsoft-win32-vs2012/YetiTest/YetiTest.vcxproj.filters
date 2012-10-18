@@ -1,0 +1,135 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup>
+    <Filter Include="TestMain">
+      <UniqueIdentifier>{4FC737F1-C7A5-4376-A066-2A32D752A2FF}</UniqueIdentifier>
+      <Extensions>cpp;c;cc;cxx;def;odl;idl;hpj;bat;asm;asmx</Extensions>
+    </Filter>
+    <Filter Include="common">
+      <UniqueIdentifier>{93995380-89BD-4b04-88EB-625FBE52EBFB}</UniqueIdentifier>
+      <Extensions>h;hpp;hxx;hm;inl;inc;xsd</Extensions>
+    </Filter>
+    <Filter Include="testprojs">
+      <UniqueIdentifier>{67DA6AB6-F800-4c08-8B7A-83BB121AAD01}</UniqueIdentifier>
+      <Extensions>rc;ico;cur;bmp;dlg;rc2;rct;bin;rgs;gif;jpg;jpeg;jpe;resx;tiff;tif;png;wav</Extensions>
+    </Filter>
+    <Filter Include="testprojs\YetiArrayTest">
+      <UniqueIdentifier>{9533bfab-dd27-4ab1-9d1c-1a760b35e923}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiCommonTest">
+      <UniqueIdentifier>{2dbaee6d-772d-4907-aa2d-09c31bada6c3}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiHashTest">
+      <UniqueIdentifier>{edd53909-57be-4afa-b7e0-6681682bbc40}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiListTest">
+      <UniqueIdentifier>{88a77a81-d557-476d-9e64-e9a3d6333517}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiStackTest">
+      <UniqueIdentifier>{430ea923-63c2-4949-8c50-b8bfa0653017}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiMapTest">
+      <UniqueIdentifier>{1c5f2c83-aee1-4a55-b77d-2dfafc5c4ff5}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiSocketTest">
+      <UniqueIdentifier>{59e50d80-a760-4d14-98ca-6bb1949ae12c}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiStringTest">
+      <UniqueIdentifier>{789f48ee-75b0-4354-918f-16780b6a13a7}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiStateMachineTest">
+      <UniqueIdentifier>{3d919cc3-0aa8-420f-b0ad-1972c74a11c2}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiBase64Test">
+      <UniqueIdentifier>{f3fd25ee-3f2a-446e-aa18-48993a57c934}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiDigestTest">
+      <UniqueIdentifier>{0d74dac5-df1d-4ad5-95cd-460d67a7ea0f}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiHttpParserTest">
+      <UniqueIdentifier>{c81ab2a0-8aff-408b-b133-2e791976c94d}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiThreadTest">
+      <UniqueIdentifier>{2b6e65a4-20c1-4d89-971b-65c8e9c58d98}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiUdpTest">
+      <UniqueIdentifier>{82837996-66ad-446c-85da-e2c426a38902}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiEchoTest">
+      <UniqueIdentifier>{8396892f-6eb3-4f60-b0a1-e226a1c9ac1b}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetiPingTest">
+      <UniqueIdentifier>{a21c2963-ce83-402a-b8af-dcace9558e49}</UniqueIdentifier>
+    </Filter>
+    <Filter Include="testprojs\YetZipTest">
+      <UniqueIdentifier>{dd444a96-4132-46a9-b2df-4bc9b7cb3017}</UniqueIdentifier>
+    </Filter>
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\AppMain.cpp">
+      <Filter>TestMain</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\Common.cpp">
+      <Filter>common</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiArrayTest.cpp">
+      <Filter>testprojs\YetiArrayTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiCommonTest.cpp">
+      <Filter>testprojs\YetiCommonTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiHashTest.cpp">
+      <Filter>testprojs\YetiHashTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiListTest.cpp">
+      <Filter>testprojs\YetiListTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiStackTest.cpp">
+      <Filter>testprojs\YetiStackTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiMapTest.cpp">
+      <Filter>testprojs\YetiMapTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiSocketTest.cpp">
+      <Filter>testprojs\YetiSocketTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiStringTest.cpp">
+      <Filter>testprojs\YetiStringTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiStateMachineTest.cpp">
+      <Filter>testprojs\YetiStateMachineTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiBase64Test.cpp">
+      <Filter>testprojs\YetiBase64Test</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiDigestTest.cpp">
+      <Filter>testprojs\YetiDigestTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiHttpParserTest.cpp">
+      <Filter>testprojs\YetiHttpParserTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiThreadTest.cpp">
+      <Filter>testprojs\YetiThreadTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiUdpTest.cpp">
+      <Filter>testprojs\YetiUdpTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiEchoTest.cpp">
+      <Filter>testprojs\YetiEchoTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiPingTest.cpp">
+      <Filter>testprojs\YetiPingTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiZipTest.cpp">
+      <Filter>testprojs\YetZipTest</Filter>
+    </ClCompile>
+    <ClCompile Include="..\..\..\..\Source\Tests\YetiTest\YetiZipTestData.cpp">
+      <Filter>testprojs\YetZipTest</Filter>
+    </ClCompile>
+  </ItemGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\Source\Tests\YetiTest\Common.h">
+      <Filter>common</Filter>
+    </ClInclude>
+  </ItemGroup>
+</Project>

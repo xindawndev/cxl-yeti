@@ -422,15 +422,9 @@ MapErrorCode(int error)
 +---------------------------------------------------------------------*/
 #if defined(NPT_CONFIG_HAVE_GETADDRINFO)
 static NPT_Result
-MapGetAddrInfoErrorCode(int error_code)
+MapGetAddrInfoErrorCode(int /*error_code*/)
 {
-    switch (error_code) {
-        case EAI_AGAIN:
-            return NPT_ERROR_TIMEOUT;
-            
-        default: 
-            return NPT_ERROR_HOST_UNKNOWN;
-    }
+    return NPT_ERROR_HOST_UNKNOWN;
 }
 #endif
 
@@ -610,6 +604,7 @@ public:
     NPT_Result SetBlockingMode(bool blocking);
     NPT_Result WaitUntilReadable();
     NPT_Result WaitUntilWriteable();
+    NPT_Result WaitForCondition(bool readable, bool writeable, bool async_connect, NPT_Timeout timeout);
 
     // members
     SocketFd          m_SocketFd;
@@ -626,7 +621,6 @@ private:
     // methods
     friend class NPT_BsdTcpServerSocket;
     friend class NPT_BsdTcpClientSocket;
-    NPT_Result WaitForCondition(bool readable, bool writeable, bool async_connect, NPT_Timeout timeout);
 };
 
 typedef NPT_Reference<NPT_BsdSocketFd> NPT_BsdSocketFdReference;
@@ -927,6 +921,15 @@ NPT_BsdSocketInputStream::GetAvailable(NPT_LargeSize& available)
         return NPT_ERROR_SOCKET_CONTROL_FAILED;
     } else {
         available = ready;
+        if (available == 0) {
+            // check if the socket is disconnected
+            NPT_Result result = m_SocketFdReference->WaitForCondition(true, false, false, 0);
+            if (result == NPT_ERROR_WOULD_BLOCK) {
+                return NPT_SUCCESS;
+            } else {
+                available = 1; // pretend that there's data available
+            }
+        }
         return NPT_SUCCESS;
     }
 }
@@ -1136,9 +1139,10 @@ NPT_BsdSocket::Bind(const NPT_SocketAddress& address, bool reuse_address)
                (SocketOption)&option_ra,
                sizeof(option_ra));
 #endif
-
+    
     // set socket options
     if (reuse_address) {
+        NPT_LOG_FINE("setting SO_REUSEADDR option on socket");
         int option = 1;
         // on macosx/linux, we need to use SO_REUSEPORT instead of SO_REUSEADDR
 #if defined(SO_REUSEPORT)

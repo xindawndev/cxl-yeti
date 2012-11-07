@@ -191,12 +191,6 @@ public enum class DeviceSignature
 	WMP
 };
 
-public enum {
-    PLT_XBOX,
-    PLT_PS3,
-    PLT_WMP
-};
-
 /*----------------------------------------------------------------------
 |   HttpRequestContext
 +---------------------------------------------------------------------*/

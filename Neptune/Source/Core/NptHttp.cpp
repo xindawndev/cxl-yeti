@@ -1596,7 +1596,7 @@ NPT_HttpClient::ConnectionCanceller::UntrackConnection(Connection* connection)
         m_Clients.Erase(connection);
     }
     
-    return NPT_ERROR_NO_SUCH_ITEM;
+    return NPT_ERROR_NO_SUCH_ITEM;  
 }
 
 /*----------------------------------------------------------------------
@@ -1877,11 +1877,12 @@ NPT_HttpClient::SendRequestOnce(NPT_HttpRequest&        request,
 					          response,
 					          &cref);
 		if (NPT_FAILED(result)) {
-		    if (reconnect &&
+            NPT_LOG_FINE_1("failed to parse the response (%d)", result);
+		    if (reconnect /*&&
                 (result == NPT_ERROR_EOS                || 
                  result == NPT_ERROR_CONNECTION_ABORTED ||
                  result == NPT_ERROR_CONNECTION_RESET   ||
-                 result == NPT_ERROR_READ_FAILED)) {
+                 result == NPT_ERROR_READ_FAILED) GBG: don't look for specific error codes */) {
                 NPT_LOG_FINE("error is not fatal, retrying");
                 if (!body_stream.IsNull()) {
                     // go back to the start of the body so that we can resend

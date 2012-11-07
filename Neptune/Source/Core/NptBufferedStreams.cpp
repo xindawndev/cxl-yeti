@@ -301,9 +301,7 @@ NPT_BufferedInputStream::Read(void*     buffer,
             NPT_CopyMemory(buffer, 
                            m_Buffer.data + m_Buffer.offset,
                            buffered);
-            //buffer = (void*)((NPT_Byte*)buffer+buffered);
             m_Buffer.offset += buffered;
-            //bytes_to_read -= buffered;
             total_read += buffered;
             goto done;
         }

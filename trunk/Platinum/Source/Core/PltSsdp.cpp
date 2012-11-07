@@ -255,7 +255,7 @@ PLT_SsdpAnnounceInterfaceIterator::operator()(NPT_NetworkInterface*& net_if) con
         url = NPT_HttpUrl("239.255.255.250", 1900, "*");    
         NPT_CHECK_SEVERE(multicast_socket.SetInterface(addr));
         socket = &multicast_socket;
-        multicast_socket.SetTimeToLive(4);
+        multicast_socket.SetTimeToLive(PLT_Constants::GetInstance().GetAnnounceMulticastTimeToLive());
     }
     
     NPT_HttpRequest req(url, "NOTIFY", NPT_HTTP_PROTOCOL_1_1);
@@ -341,6 +341,15 @@ PLT_SsdpListenTask::GetInputStream(NPT_InputStreamReference& stream)
         stream = m_Datagram;
         return NPT_SUCCESS;
     }
+}
+
+/*----------------------------------------------------------------------
+|    PLT_SsdpListenTask::GetInfo
++---------------------------------------------------------------------*/
+void 
+PLT_SsdpListenTask::DoAbort()
+{
+    PLT_HttpServerSocketTask::DoAbort();
 }
 
 /*----------------------------------------------------------------------

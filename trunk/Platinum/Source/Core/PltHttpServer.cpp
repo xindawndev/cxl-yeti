@@ -51,14 +51,15 @@ NPT_SET_LOCAL_LOGGER("platinum.core.http.server")
 PLT_HttpServer::PLT_HttpServer(NPT_IpAddress address,
                                NPT_IpPort    port,
                                bool          allow_random_port_on_bind_failure,   /* = false */
-                               NPT_Cardinal  max_clients,                         /* = 0 */
+                               NPT_Cardinal  max_clients,                         /* = 50 */
                                bool          reuse_address) :                     /* = false */
     m_TaskManager(new PLT_TaskManager(max_clients)),
     m_Address(address),
     m_Port(port),
     m_AllowRandomPortOnBindFailure(allow_random_port_on_bind_failure),
     m_ReuseAddress(reuse_address),
-    m_HttpListenTask(NULL)
+    m_HttpListenTask(NULL),
+    m_Aborted(false)
 {
 }
 
@@ -78,6 +79,9 @@ NPT_Result
 PLT_HttpServer::Start()
 {
     NPT_Result res = NPT_FAILURE;
+    
+    // we can't restart an aborted server
+    if (m_Aborted) return NPT_ERROR_INVALID_STATE;
     
     // if we're given a port for our http server, try it
     if (m_Port) {
@@ -104,6 +108,12 @@ PLT_HttpServer::Start()
 
     // keep track of port server has successfully bound
     m_Port = m_BoundPort;
+
+    // Tell server to try to listen to more incoming sockets
+    // (this could fail silently)
+    if (m_TaskManager->GetMaxTasks() > 20) {
+        m_Socket.Listen(m_TaskManager->GetMaxTasks());
+    }
     
     // start a task to listen for incoming connections
     // and keep it around so we can abort the server
@@ -124,6 +134,8 @@ PLT_HttpServer::Start()
 NPT_Result
 PLT_HttpServer::Stop()
 {
+    m_Aborted = true;
+    
     if (m_HttpListenTask) {
         m_HttpListenTask->Kill();
         m_HttpListenTask = NULL;

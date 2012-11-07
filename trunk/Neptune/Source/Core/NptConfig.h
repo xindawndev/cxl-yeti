@@ -151,7 +151,7 @@
 #if defined(__APPLE__)
 #define NPT_CONFIG_HAVE_GETADDRINFO
 #define NPT_CONFIG_HAVE_AUTORELEASE_POOL
-//#define NPT_CONFIG_HAVE_SYSTEM_LOG_CONFIG
+#define NPT_CONFIG_HAVE_SYSTEM_LOG_CONFIG
 #endif
 
 /*----------------------------------------------------------------------

@@ -1750,8 +1750,8 @@ NPT_XmlParser::Parse(NPT_InputStream& stream,
         Reset();
     }
     
-    // use a  buffer on the stack
-    char buffer[256];
+    // use a buffer on the stack
+    char buffer[1024];
 
     // read a buffer and parse it until the end of the stream
     NPT_Size max_bytes_to_read = size;

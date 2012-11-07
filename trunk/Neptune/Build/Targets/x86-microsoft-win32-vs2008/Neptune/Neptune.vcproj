@@ -168,10 +168,6 @@
 			UniqueIdentifier="{4FC737F1-C7A5-4376-A066-2A32D752A2FF}"
 			>
 			<File
-				RelativePath="..\..\..\..\Source\Core\Neptune.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\..\Source\Core\NptBase64.cpp"
 				>
 			</File>
@@ -196,23 +192,11 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Source\Core\NptCrypto.cpp"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\..\Source\Core\NptDataBuffer.cpp"
 				>
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\NptDebug.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\Source\Core\NptDigest.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\Source\Core\NptDynamicLibraries.cpp"
 				>
 			</File>
 			<File
@@ -285,10 +269,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\NptStrings.cpp"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\Source\Core\NptSystem.cpp"
 				>
 			</File>
 			<File
@@ -374,10 +354,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Source\Core\NptAutoreleasePool.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\..\Source\Core\NptBase64.h"
 				>
 			</File>
@@ -402,10 +378,6 @@
 				>
 			</File>
 			<File
-				RelativePath="..\..\..\..\Source\Core\NptCrypto.h"
-				>
-			</File>
-			<File
 				RelativePath="..\..\..\..\Source\Core\NptDataBuffer.h"
 				>
 			</File>
@@ -415,18 +387,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\NptDefs.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\Source\Core\NptDigest.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\Source\Core\NptDynamicCast.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\Source\Core\NptDynamicLibraries.h"
 				>
 			</File>
 			<File
@@ -519,14 +479,6 @@
 			</File>
 			<File
 				RelativePath="..\..\..\..\Source\Core\NptTls.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\Source\Core\NptTlsDefaultTrustAnchorsBase.h"
-				>
-			</File>
-			<File
-				RelativePath="..\..\..\..\Source\Core\NptTlsDefaultTrustAnchorsExtended.h"
 				>
 			</File>
 			<File

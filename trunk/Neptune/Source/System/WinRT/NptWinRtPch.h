@@ -14,3 +14,4 @@
 #include <ppltasks.h>
 
 #include "Neptune.h"
+NPT_String Str2NPT_Str(Platform::String^ str);

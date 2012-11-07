@@ -501,6 +501,7 @@ class NPT_WinRtThread : public NPT_ThreadInterface
     NPT_Result  Start(); 
     NPT_Result  Wait(NPT_Timeout timeout = NPT_TIMEOUT_INFINITE);
 	NPT_Result  SetPriority(int priority);
+    NPT_Result  GetPriority(int& priority);
 
  private:
     // methods
@@ -652,6 +653,15 @@ NPT_WinRtThread::SetPriority(int priority)
 {
 	if (m_ThreadHandle == 0) return NPT_ERROR_INVALID_STATE;
 	return NPT_WinRtThread::SetThreadPriority(m_ThreadHandle, priority);
+}
+
+/*----------------------------------------------------------------------
+|   NPT_WinRtThread::GetPriority
++---------------------------------------------------------------------*/
+NPT_Result
+NPT_WinRtThread::GetPriority(int& priority)
+{
+    return NPT_SUCCESS;
 }
 
 /*----------------------------------------------------------------------

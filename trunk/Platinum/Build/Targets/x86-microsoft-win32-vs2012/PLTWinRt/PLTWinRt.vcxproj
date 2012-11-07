@@ -1,0 +1,300 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project DefaultTargets="Build" ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <ItemGroup Label="ProjectConfigurations">
+    <ProjectConfiguration Include="Debug|ARM">
+      <Configuration>Debug</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|Win32">
+      <Configuration>Debug</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Debug|x64">
+      <Configuration>Debug</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|ARM">
+      <Configuration>Release</Configuration>
+      <Platform>ARM</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|Win32">
+      <Configuration>Release</Configuration>
+      <Platform>Win32</Platform>
+    </ProjectConfiguration>
+    <ProjectConfiguration Include="Release|x64">
+      <Configuration>Release</Configuration>
+      <Platform>x64</Platform>
+    </ProjectConfiguration>
+  </ItemGroup>
+  <PropertyGroup Label="Globals">
+    <ProjectGuid>{b2cfc0e6-c6e3-4078-9b0a-66627176556e}</ProjectGuid>
+    <Keyword>Win32Proj</Keyword>
+    <ProjectName>PLTWinRt</ProjectName>
+    <RootNamespace>PLTWinRt</RootNamespace>
+    <DefaultLanguage>en-US</DefaultLanguage>
+    <MinimumVisualStudioVersion>11.0</MinimumVisualStudioVersion>
+    <AppContainerApplication>true</AppContainerApplication>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.Default.props" />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>true</UseDebugLibraries>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'" Label="Configuration">
+    <ConfigurationType>DynamicLibrary</ConfigurationType>
+    <UseDebugLibraries>false</UseDebugLibraries>
+    <WholeProgramOptimization>true</WholeProgramOptimization>
+    <PlatformToolset>v110</PlatformToolset>
+  </PropertyGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.props" />
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <ImportGroup Label="PropertySheets" Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <Import Project="$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props" Condition="exists('$(UserRootDir)\Microsoft.Cpp.$(Platform).user.props')" Label="LocalAppDataPlatform" />
+  </ImportGroup>
+  <PropertyGroup Label="UserMacros" />
+  <PropertyGroup />
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <GenerateManifest>false</GenerateManifest>
+  </PropertyGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>NotUsing</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;_CRT_SECURE_NO_WARNINGS;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+      <AdditionalIncludeDirectories>..\..\..\..\..\Neptune\Source\Core;..\..\..\..\Source\Platinum;..\..\..\..\Source\Core;..\..\..\..\Source\Extras;..\..\..\..\Source\Devices\MediaServer;..\..\..\..\Source\Devices\MediaRenderer;..\..\..\..\Source\Devices\MediaConnect;$(ProjectDir);$(GeneratedFilesDir);$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemDefinitionGroup Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
+    <ClCompile>
+      <PrecompiledHeader>Use</PrecompiledHeader>
+      <PreprocessorDefinitions>_WINRT_DLL;NDEBUG;%(PreprocessorDefinitions)</PreprocessorDefinitions>
+      <PrecompiledHeaderFile>pch.h</PrecompiledHeaderFile>
+      <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
+      <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
+      <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
+    </ClCompile>
+    <Link>
+      <SubSystem>Console</SubSystem>
+      <AdditionalDependencies>runtimeobject.lib;%(AdditionalDependencies)</AdditionalDependencies>
+      <IgnoreAllDefaultLibraries>false</IgnoreAllDefaultLibraries>
+    </Link>
+  </ItemDefinitionGroup>
+  <ItemGroup>
+    <ClInclude Include="..\..\..\..\Source\Core\PltAction.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltArgument.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltConstants.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltCtrlPoint.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltCtrlPointTask.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltDatagramStream.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltDeviceData.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltDeviceHost.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltEvent.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltHttp.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltHttpClientTask.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltHttpServer.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltHttpServerTask.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltMimeType.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltProtocolInfo.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltService.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltSsdp.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltStateVariable.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltTaskManager.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltThreadTask.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltUPnP.h" />
+    <ClInclude Include="..\..\..\..\Source\Core\PltUtilities.h" />
+    <ClInclude Include="..\..\..\..\Source\Devices\MediaConnect\PltMediaConnect.h" />
+    <ClInclude Include="..\..\..\..\Source\Devices\MediaConnect\PltXbox360.h" />
+    <ClInclude Include="..\..\..\..\Source\Devices\MediaRenderer\PltMediaController.h" />
+    <ClInclude Include="..\..\..\..\Source\Devices\MediaRenderer\PltMediaRenderer.h" />
+    <ClInclude Include="..\..\..\..\Source\Devices\MediaServer\PltDidl.h" />
+    <ClInclude Include="..\..\..\..\Source\Devices\MediaServer\PltFileMediaServer.h" />
+    <ClInclude Include="..\..\..\..\Source\Devices\MediaServer\PltMediaBrowser.h" />
+    <ClInclude Include="..\..\..\..\Source\Devices\MediaServer\PltMediaCache.h" />
+    <ClInclude Include="..\..\..\..\Source\Devices\MediaServer\PltMediaItem.h" />
+    <ClInclude Include="..\..\..\..\Source\Devices\MediaServer\PltMediaServer.h" />
+    <ClInclude Include="..\..\..\..\Source\Devices\MediaServer\PltSyncMediaBrowser.h" />
+    <ClInclude Include="..\..\..\..\Source\Platinum\Platinum.h" />
+    <ClInclude Include="..\..\..\..\Source\Platinum\PltVersion.h" />
+    <ClInclude Include="pch.h" />
+    <ClInclude Include="PLTWinRt.h" />
+  </ItemGroup>
+  <ItemGroup>
+    <ClCompile Include="..\..\..\..\Source\Core\PltAction.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltArgument.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltConstants.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltCtrlPoint.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltCtrlPointTask.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltDatagramStream.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltDeviceData.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltDeviceHost.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltEvent.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltHttp.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltHttpClientTask.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltHttpServer.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltHttpServerTask.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltIconsData.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltMimeType.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltProtocolInfo.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltService.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltSsdp.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltStateVariable.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltTaskManager.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltThreadTask.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Core\PltUPnP.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaConnect\PltMediaConnect.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaConnect\PltXbox360.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaConnect\X_MS_MediaReceiverRegistrarSCPD.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaRenderer\AVTransportSCPD.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaRenderer\PltMediaController.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaRenderer\PltMediaRenderer.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaRenderer\RdrConnectionManagerSCPD.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaRenderer\RenderingControlSCPD.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaServer\ConnectionManagerSCPD.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaServer\ContentDirectorySCPD.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaServer\ContentDirectorywSearchSCPD.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaServer\PltDidl.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaServer\PltFileMediaServer.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaServer\PltMediaBrowser.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaServer\PltMediaCache.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaServer\PltMediaItem.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaServer\PltMediaServer.cpp" />
+    <ClCompile Include="..\..\..\..\Source\Devices\MediaServer\PltSyncMediaBrowser.cpp" />
+    <ClCompile Include="pch.cpp">
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|Win32'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|ARM'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|ARM'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Debug|x64'">Create</PrecompiledHeader>
+      <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">Create</PrecompiledHeader>
+    </ClCompile>
+    <ClCompile Include="PLTWinRt.cpp" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\..\..\..\..\Neptune\Build\Targets\x86-microsoft-winrt-vs2012\Neptune\Neptune.vcxproj">
+      <Project>{4d304d49-41f5-48c2-bc88-898af70f421c}</Project>
+    </ProjectReference>
+  </ItemGroup>
+  <Import Project="$(VCTargetsPath)\Microsoft.Cpp.targets" />
+  <ImportGroup Label="ExtensionTargets">
+  </ImportGroup>
+</Project>

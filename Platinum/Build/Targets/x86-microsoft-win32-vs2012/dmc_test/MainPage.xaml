@@ -1,0 +1,52 @@
+﻿<Page
+    x:Class="dmc_test.MainPage"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:dmc_test"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <Grid Background="{StaticResource SliderTrackDecreaseBackgroundThemeBrush}" HorizontalAlignment="Right" Width="1366">
+        <Button Content="StartDmc" HorizontalAlignment="Left" Margin="950,25,0,0" VerticalAlignment="Top" Click="StartDmcBtnClicked"/>
+        <TextBlock Name="ShowInfo" HorizontalAlignment="Left" Margin="292,501,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Height="30" Width="686"/>
+        <MediaElement Name="MediaPlayer" HorizontalAlignment="Left" Height="362" Margin="292,74,0,0" VerticalAlignment="Top" Width="750"/>
+        <TextBox Name="MediaUrl" HorizontalAlignment="Left" Margin="285,29,0,0" TextWrapping="Wrap" Text="http://192.168.45.211/ipad/oy.mp4" VerticalAlignment="Top" Width="651"/>
+        <!-- Stops media playback.-->
+        <Button Click="StopMedia" 
+                Grid.Column="0" Content="停止" Margin="688,458,0,272" />
+        <!-- Pauses media playback. -->
+        <Button Click="PauseMedia" Content="暂停" Margin="599,458,0,272" />
+        <!-- Begins media playback. -->
+        <Button Click="PlayMedia" Content="播放" Margin="516,458,0,272" />
+        <Slider Name="ProcessBar" HorizontalAlignment="Left" Margin="285,418,0,0" VerticalAlignment="Top" Width="685" Background="#29D13434" BorderBrush="#FF17806C" ValueChanged="ProcessBar_ValueChanged" Height="32">
+            <Slider.Foreground>
+                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                    <GradientStop Color="Black"/>
+                    <GradientStop Color="White" Offset="1"/>
+                </LinearGradientBrush>
+            </Slider.Foreground>
+        </Slider>
+        <Slider Name="VolumeBar" HorizontalAlignment="Left" Margin="928.299,379.194,0,0" VerticalAlignment="Top" Width="100" Height="30" ValueChanged="Slider_ValueChanged_1" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto">
+            <Slider.RenderTransform>
+                <CompositeTransform Rotation="-90"/>
+            </Slider.RenderTransform>
+        </Slider>
+        <Popup x:Name="DmsListPopup" IsLightDismissEnabled="True">
+            <Popup.ChildTransitions>
+                <TransitionCollection>
+                    <PaneThemeTransition />
+                </TransitionCollection>
+            </Popup.ChildTransitions>
+        </Popup>
+        <Popup Margin="1014,0,-1014,0">
+            <Grid Background="#FFE5E5E5" Height="766" Width="300" HorizontalAlignment="Right"/>
+        </Popup>
+        <TextBox Name="VarA" HorizontalAlignment="Left" Margin="284,591,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBox Name="VarB" HorizontalAlignment="Left" Margin="406,590,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
+        <TextBlock Name="Result" HorizontalAlignment="Left" Margin="517,587,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="38" Width="99"/>
+        <Button Content="Button" HorizontalAlignment="Left" Margin="633,585,0,0" VerticalAlignment="Top" Click="AddCalc"/>
+        <TextBlock Name="ShowPrimes" HorizontalAlignment="Left" Margin="284,639,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="25" Width="218"/>
+
+    </Grid>
+</Page>

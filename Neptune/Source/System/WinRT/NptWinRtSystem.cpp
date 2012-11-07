@@ -17,8 +17,11 @@
 #include "NptResults.h"
 #include "NptDebug.h"
 
+using namespace Platform;
+using namespace Windows::Networking;
+using namespace Windows::Networking::Connectivity;
+using namespace Windows::Foundation::Collections;
 using namespace Windows::Security::Cryptography;
-
 /*----------------------------------------------------------------------
 |   NPT_WinRtSystemInitializer
 +---------------------------------------------------------------------*/
@@ -46,6 +49,38 @@ NPT_System::GetProcessId(NPT_UInt32& id)
 	id = GetCurrentProcessId();
     return NPT_SUCCESS;
 }
+
+/*----------------------------------------------------------------------
+|   NPT_System::GetMachineName
++---------------------------------------------------------------------*/
+NPT_Result
+NPT_System::GetMachineName(NPT_String& name)
+{
+    Platform::String^ domain_name = L"";
+    IVectorView<HostName^>^ hostnames = NetworkInformation::GetHostNames();
+    for (unsigned int i = 0; i < hostnames->Size; ++i) {
+        HostName^ hostname = hostnames->GetAt(i);
+        switch (hostname->Type) {
+        case HostNameType::DomainName:
+            {
+                domain_name = hostname->DisplayName;
+                size_t sz = 2 * wcslen(domain_name->Data()) + 1;
+                char * tmp = new char[sz];
+                wcstombs_s(&sz, tmp , sz, domain_name->Data(), sz);
+                name = tmp;
+                delete []tmp;
+                return NPT_SUCCESS;
+            }
+        case HostNameType::Bluetooth:
+        case HostNameType::Ipv4:
+        case HostNameType::Ipv6:
+        default:
+            continue;
+        }
+    }
+    return NPT_FAILURE;
+}
+
 
 /*----------------------------------------------------------------------
 |   NPT_System::GetCurrentTimeStamp

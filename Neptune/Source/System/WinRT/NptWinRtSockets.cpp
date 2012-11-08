@@ -28,151 +28,8 @@ NPT_SET_LOCAL_LOGGER("neptune.sockets.winrt")
 /*----------------------------------------------------------------------
 |   constants
 +---------------------------------------------------------------------*/
-const DWORD NPT_WINRT_SOCKET_DEFAULT_READ_TIMEOUT  = INFINITE;//30000;
-const DWORD NPT_WINRT_SOCKET_DEFAULT_WRITE_TIMEOUT = INFINITE;//30000;
-
-template < typename T>
-class NPT_WinRtSocket : public NPT_SocketInterface
-{
-public:
-    NPT_WinRtSocket(T sock, NPT_Flags flags)
-        : m_Socket(sock) {
-            RefreshInfo();
-    }
-    virtual ~NPT_WinRtSocket() {
-        //delete m_Info;
-    }
-
-    NPT_Result RefreshInfo() {
-        return NPT_SUCCESS;
-    }
-
-    NPT_Result Bind(const NPT_SocketAddress& address, bool reuse_address = true) {
-        return NPT_SUCCESS;
-    }
-
-    NPT_Result Connect(const NPT_SocketAddress& address, NPT_Timeout timeout) {
-        // this is unsupported unless overridden in a derived class
-        return NPT_ERROR_NOT_SUPPORTED;
-    }
-
-    NPT_Result WaitForConnection(NPT_Timeout timeout) {
-        // this is unsupported unless overridden in a derived class
-        return NPT_ERROR_NOT_SUPPORTED;
-    }
-
-    NPT_Result GetInputStream(NPT_InputStreamReference& stream) {
-        return NPT_SUCCESS;
-    }
-
-    NPT_Result GetOutputStream(NPT_OutputStreamReference& stream) {
-        return NPT_SUCCESS;
-    }
-
-    NPT_Result GetInfo(NPT_SocketInfo& info) {
-        // return the cached info
-        info = m_Info;
-        return NPT_SUCCESS;
-    }
-
-    NPT_Result SetReadTimeout(NPT_Timeout timeout) {
-        return NPT_SUCCESS;
-    }
-
-    NPT_Result SetWriteTimeout(NPT_Timeout timeout) {
-        return NPT_SUCCESS;
-    }
-
-    NPT_Result Cancel(bool shutdown) {
-        return NPT_SUCCESS;
-    }
-
-private:
-    T               m_Socket;
-    NPT_SocketInfo  m_Info;
-};
-
-/*----------------------------------------------------------------------
-|   NPT_WinRtTcpClientSocket
-+---------------------------------------------------------------------*/
-class NPT_WinRtTcpClientSocket : public NPT_SocketInterface
-{
-public:
-    // constructors and destructor
-    NPT_WinRtTcpClientSocket();
-    virtual ~NPT_WinRtTcpClientSocket();
-
-    // NPT_SocketInterface methods
-    NPT_Result Bind(const NPT_SocketAddress& address, bool reuse_address = true);
-    NPT_Result Connect(const NPT_SocketAddress& address, NPT_Timeout timeout);
-    NPT_Result WaitForConnection(NPT_Timeout timeout);
-    NPT_Result GetInputStream(NPT_InputStreamReference& stream);
-    NPT_Result GetOutputStream(NPT_OutputStreamReference& stream);
-    NPT_Result GetInfo(NPT_SocketInfo& info);
-    NPT_Result SetReadTimeout(NPT_Timeout timeout);
-    NPT_Result SetWriteTimeout(NPT_Timeout timeout);
-    NPT_Result Cancel(bool shutdown);
-
-protected:
-    StreamSocket^ m_Socket;
-    HostName^     m_RemoteHostName;
-    HANDLE        m_WaitEvent;
-    NPT_Timeout   m_ReadTimeout;
-    NPT_Timeout   m_WriteTimeout;
-};
-
-/*----------------------------------------------------------------------
-|   NPT_WinRtSocketInputStream
-+---------------------------------------------------------------------*/
-class NPT_WinRtSocketInputStream : public NPT_InputStream
-{
-public:
-    // constructors and destructor
-    NPT_WinRtSocketInputStream(StreamSocket^ socket, NPT_Timeout timeout);
-    virtual ~NPT_WinRtSocketInputStream();
-
-    // NPT_InputStream methods
-    NPT_Result Read(void*     buffer, 
-        NPT_Size  bytes_to_read, 
-        NPT_Size* bytes_read);
-    NPT_Result Seek(NPT_Position offset);
-    NPT_Result Tell(NPT_Position& where);
-    NPT_Result GetSize(NPT_LargeSize& size);
-    NPT_Result GetAvailable(NPT_LargeSize& available);
-
-private:
-    StreamSocket^ m_Socket;
-    IInputStream^ m_InputStream;
-    DataReader^   m_Reader;
-    HANDLE        m_WaitEvent;
-    NPT_Timeout   m_Timeout; 
-};
-
-/*----------------------------------------------------------------------
-|   NPT_WinRtSocketOutputStream
-+---------------------------------------------------------------------*/
-class NPT_WinRtSocketOutputStream : public NPT_OutputStream
-{
-public:
-    // constructors and destructor
-    NPT_WinRtSocketOutputStream(StreamSocket^ socket, NPT_Timeout timeout);
-    virtual ~NPT_WinRtSocketOutputStream();
-
-    // NPT_OutputStream methods
-    NPT_Result Write(const void* buffer, 
-        NPT_Size    bytes_to_write, 
-        NPT_Size*   bytes_written);
-    NPT_Result Seek(NPT_Position offset);
-    NPT_Result Tell(NPT_Position& where);
-    NPT_Result Flush();
-
-private:
-    StreamSocket^  m_Socket;
-    IOutputStream^ m_OutputStream;
-    DataWriter^    m_Writer;
-    HANDLE         m_WaitEvent;
-    NPT_Timeout    m_Timeout;
-};
+const DWORD NPT_WINRT_SOCKET_DEFAULT_READ_TIMEOUT  = 30000;
+const DWORD NPT_WINRT_SOCKET_DEFAULT_WRITE_TIMEOUT = 30000;
 
 /*----------------------------------------------------------------------
 |   StringFromUTF8
@@ -352,6 +209,33 @@ static NPT_Result
 }
 
 /*----------------------------------------------------------------------
+|   NPT_WinRtSocketInputStream
++---------------------------------------------------------------------*/
+class NPT_WinRtSocketInputStream : public NPT_InputStream
+{
+public:
+    // constructors and destructor
+    NPT_WinRtSocketInputStream(StreamSocket^ socket, NPT_Timeout timeout);
+    virtual ~NPT_WinRtSocketInputStream();
+
+    // NPT_InputStream methods
+    NPT_Result Read(void*     buffer, 
+        NPT_Size  bytes_to_read, 
+        NPT_Size* bytes_read);
+    NPT_Result Seek(NPT_Position offset);
+    NPT_Result Tell(NPT_Position& where);
+    NPT_Result GetSize(NPT_LargeSize& size);
+    NPT_Result GetAvailable(NPT_LargeSize& available);
+
+private:
+    StreamSocket^ m_Socket;
+    IInputStream^ m_InputStream;
+    DataReader^   m_Reader;
+    HANDLE        m_WaitEvent;
+    NPT_Timeout   m_Timeout; 
+};
+
+/*----------------------------------------------------------------------
 |   NPT_WinRtSocketInputStream::NPT_WinRtSocketInputStream
 +---------------------------------------------------------------------*/
 NPT_WinRtSocketInputStream::NPT_WinRtSocketInputStream(StreamSocket^ socket, 
@@ -448,6 +332,32 @@ NPT_Result
 }
 
 /*----------------------------------------------------------------------
+|   NPT_WinRtSocketOutputStream
++---------------------------------------------------------------------*/
+class NPT_WinRtSocketOutputStream : public NPT_OutputStream
+{
+public:
+    // constructors and destructor
+    NPT_WinRtSocketOutputStream(StreamSocket^ socket, NPT_Timeout timeout);
+    virtual ~NPT_WinRtSocketOutputStream();
+
+    // NPT_OutputStream methods
+    NPT_Result Write(const void* buffer, 
+        NPT_Size    bytes_to_write, 
+        NPT_Size*   bytes_written);
+    NPT_Result Seek(NPT_Position offset);
+    NPT_Result Tell(NPT_Position& where);
+    NPT_Result Flush();
+
+private:
+    StreamSocket^  m_Socket;
+    IOutputStream^ m_OutputStream;
+    DataWriter^    m_Writer;
+    HANDLE         m_WaitEvent;
+    NPT_Timeout    m_Timeout;
+};
+
+/*----------------------------------------------------------------------
 |   NPT_WinRtSocketOutputStream::NPT_WinRtSocketOutputStream
 +---------------------------------------------------------------------*/
 NPT_WinRtSocketOutputStream::NPT_WinRtSocketOutputStream(StreamSocket^ socket,
@@ -518,6 +428,120 @@ NPT_Result
 {
     return NPT_SUCCESS;
 }
+
+class NPT_WinRtTcpSocket : public NPT_SocketInterface
+{
+public:
+    NPT_WinRtTcpSocket(StreamSocket^ sock, NPT_Flags flags)
+        : m_TcpSocket(sock) {
+            RefreshInfo();
+    }
+    virtual ~NPT_WinRtTcpSocket() {
+        delete m_TcpSocket;
+    }
+
+    NPT_Result RefreshInfo() {
+        NPT_String localaddr  = Str2NPT_Str(m_TcpSocket->Information->LocalAddress->RawName);
+        NPT_String localport  = Str2NPT_Str(m_TcpSocket->Information->LocalPort);
+        NPT_String remoteaddr = Str2NPT_Str(m_TcpSocket->Information->RemoteAddress->RawName);
+        NPT_String remoteport = Str2NPT_Str(m_TcpSocket->Information->RemotePort);
+
+        NPT_IpAddress addr;
+        NPT_UInt32 port;
+
+        addr.Parse(localaddr.GetChars());
+        localport.ToInteger32(port);
+
+        m_Info.local_address.SetIpAddress(addr);
+        m_Info.local_address.SetPort(port);
+
+        addr.Parse(remoteaddr.GetChars());
+        remoteport.ToInteger32(port);
+
+        m_Info.remote_address.SetIpAddress(addr);
+        m_Info.remote_address.SetPort(port);
+        return NPT_SUCCESS;
+    }
+
+    NPT_Result Bind(const NPT_SocketAddress& address, bool reuse_address = true) {
+        return NPT_SUCCESS;
+    }
+
+    NPT_Result Connect(const NPT_SocketAddress& address, NPT_Timeout timeout) {
+        // this is unsupported unless overridden in a derived class
+        return NPT_ERROR_NOT_SUPPORTED;
+    }
+
+    NPT_Result WaitForConnection(NPT_Timeout timeout) {
+        // this is unsupported unless overridden in a derived class
+        return NPT_ERROR_NOT_SUPPORTED;
+    }
+
+    NPT_Result GetInputStream(NPT_InputStreamReference& stream) {
+        stream = new NPT_WinRtSocketInputStream(m_TcpSocket, m_ReadTimeout);
+        return NPT_SUCCESS;
+    }
+
+    NPT_Result GetOutputStream(NPT_OutputStreamReference& stream) {
+        stream = new NPT_WinRtSocketOutputStream(m_TcpSocket, m_WriteTimeout);
+        return NPT_SUCCESS;
+    }
+
+    NPT_Result GetInfo(NPT_SocketInfo& info) {
+        info = m_Info;
+        return NPT_SUCCESS;
+    }
+
+    NPT_Result SetReadTimeout(NPT_Timeout timeout) {
+        m_ReadTimeout = timeout;
+        return NPT_SUCCESS;
+    }
+
+    NPT_Result SetWriteTimeout(NPT_Timeout timeout) {
+        m_WriteTimeout = timeout;
+        return NPT_SUCCESS;
+    }
+
+    NPT_Result Cancel(bool shutdown) {
+        return NPT_SUCCESS;
+    }
+
+private:
+    StreamSocket^   m_TcpSocket;
+    NPT_SocketInfo  m_Info;
+    HANDLE          m_WaitEvent;
+    NPT_Timeout     m_ReadTimeout;
+    NPT_Timeout     m_WriteTimeout;
+};
+
+/*----------------------------------------------------------------------
+|   NPT_WinRtTcpClientSocket
++---------------------------------------------------------------------*/
+class NPT_WinRtTcpClientSocket : public NPT_SocketInterface
+{
+public:
+    // constructors and destructor
+    NPT_WinRtTcpClientSocket();
+    virtual ~NPT_WinRtTcpClientSocket();
+
+    // NPT_SocketInterface methods
+    NPT_Result Bind(const NPT_SocketAddress& address, bool reuse_address = true);
+    NPT_Result Connect(const NPT_SocketAddress& address, NPT_Timeout timeout);
+    NPT_Result WaitForConnection(NPT_Timeout timeout);
+    NPT_Result GetInputStream(NPT_InputStreamReference& stream);
+    NPT_Result GetOutputStream(NPT_OutputStreamReference& stream);
+    NPT_Result GetInfo(NPT_SocketInfo& info);
+    NPT_Result SetReadTimeout(NPT_Timeout timeout);
+    NPT_Result SetWriteTimeout(NPT_Timeout timeout);
+    NPT_Result Cancel(bool shutdown);
+
+protected:
+    StreamSocket^ m_Socket;
+    HostName^     m_RemoteHostName;
+    HANDLE        m_WaitEvent;
+    NPT_Timeout   m_ReadTimeout;
+    NPT_Timeout   m_WriteTimeout;
+};
 
 /*----------------------------------------------------------------------
 |   NPT_WinRtTcpClientSocket::NPT_WinRtTcpClientSocket
@@ -637,6 +661,25 @@ NPT_Result
     NPT_WinRtTcpClientSocket::Cancel(bool shutdown)
 {
     return NPT_SUCCESS;
+}
+
+/*----------------------------------------------------------------------
+|   NPT_TcpClientSocket::NPT_TcpClientSocket
++---------------------------------------------------------------------*/
+NPT_TcpClientSocket::NPT_TcpClientSocket(NPT_Flags flags) :
+    NPT_Socket(NULL)
+{
+    m_SocketDelegate = new NPT_WinRtTcpClientSocket();
+}
+
+/*----------------------------------------------------------------------
+|   NPT_TcpClientSocket::NPT_TcpClientSocket
++---------------------------------------------------------------------*/
+NPT_TcpClientSocket::~NPT_TcpClientSocket()
+{
+    delete m_SocketDelegate;
+
+    m_SocketDelegate = NULL;
 }
 
 /*----------------------------------------------------------------------
@@ -928,8 +971,9 @@ NPT_UdpSocket::~NPT_UdpSocket()
 /*----------------------------------------------------------------------
 |   NPT_WinRtUdpMulticastSocket
 +---------------------------------------------------------------------*/
-class NPT_WinRtUdpMulticastSocket : public    NPT_UdpMulticastSocketInterface,
-    protected NPT_WinRtUdpSocket
+class NPT_WinRtUdpMulticastSocket 
+    : public NPT_UdpMulticastSocketInterface
+    , protected NPT_WinRtUdpSocket
 {
 public:
     // methods
@@ -1024,25 +1068,6 @@ NPT_UdpMulticastSocket::~NPT_UdpMulticastSocket()
     m_SocketDelegate             = NULL;
     m_UdpSocketDelegate          = NULL;
     m_UdpMulticastSocketDelegate = NULL;
-}
-
-/*----------------------------------------------------------------------
-|   NPT_TcpClientSocket::NPT_TcpClientSocket
-+---------------------------------------------------------------------*/
-NPT_TcpClientSocket::NPT_TcpClientSocket(NPT_Flags flags) :
-    NPT_Socket(NULL)
-{
-    m_SocketDelegate = new NPT_WinRtTcpClientSocket();
-}
-
-/*----------------------------------------------------------------------
-|   NPT_TcpClientSocket::NPT_TcpClientSocket
-+---------------------------------------------------------------------*/
-NPT_TcpClientSocket::~NPT_TcpClientSocket()
-{
-    delete m_SocketDelegate;
-
-    m_SocketDelegate = NULL;
 }
 
 class NPT_WinRtTcpServerSocket
@@ -1179,7 +1204,7 @@ NPT_Result NPT_WinRtTcpServerSocket::WaitForNewClient(NPT_Socket*& client,
         // cancel now
         WaitForSingleObjectEx(m_WaitEvent, INFINITE, FALSE);
     }
-    client = dynamic_cast<NPT_Socket *>(new NPT_WinRtSocket<StreamSocket^>(m_ClientSocket, flags));
+    client = (NPT_Socket *)(new NPT_WinRtTcpSocket(m_ClientSocket, flags));
     return result;
 }
 

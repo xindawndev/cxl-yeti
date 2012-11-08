@@ -71,9 +71,6 @@ NPT_System::GetMachineName(NPT_String& name)
                 delete []tmp;
                 return NPT_SUCCESS;
             }
-        case HostNameType::Bluetooth:
-        case HostNameType::Ipv4:
-        case HostNameType::Ipv6:
         default:
             continue;
         }

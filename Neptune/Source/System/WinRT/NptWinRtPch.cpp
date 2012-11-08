@@ -24,3 +24,25 @@ NPT_String Str2NPT_Str(Platform::String^ str)
     delete []tmp;
     return ret_str;
 }
+
+LPWSTR A2WHelper(LPWSTR lpw, LPCSTR lpa, int nChars, UINT acp)
+{
+    int ret;
+
+    if (lpw == NULL || lpa == NULL) return NULL;
+
+    lpw[0] = '\0';
+    ret = MultiByteToWideChar(acp, 0, lpa, -1, lpw, nChars);
+    if (ret == 0) {
+        return NULL;
+    }        
+    return lpw;
+}
+
+Platform::String^ NPT_Str2Str(NPT_String str)
+{
+    NPT_WIN32_USE_CHAR_CONVERSION;
+    Platform::String^ ret_str = ref new Platform::String(NPT_WIN32_A2W(str.GetChars()));
+    return ret_str;
+}
+

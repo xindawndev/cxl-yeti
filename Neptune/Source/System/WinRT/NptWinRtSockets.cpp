@@ -769,11 +769,18 @@ NPT_Result NPT_WinRtUdpSocket::Bind(const NPT_SocketAddress& address, bool reuse
     NPT_String port = NPT_String::FromIntegerU(address.GetPort());
     IAsyncAction^ bind_action;
     if (port.IsEmpty()) return NPT_ERROR_INVALID_PARAMETERS;
-    if (address.GetIpAddress().m_HostName.IsEmpty()) {
-        bind_action = m_Socket->BindServiceNameAsync(StringFromUTF8(port.GetChars()));
-    } else {
-        HostName^ hostname = ref new HostName(StringFromUTF8(address.GetIpAddress().m_HostName.GetChars()));
-        bind_action = m_Socket->BindEndpointAsync(hostname, StringFromUTF8(port.GetChars()));
+    try {
+        if (address.GetIpAddress().m_HostName.IsEmpty()) {
+            bind_action = m_Socket->BindServiceNameAsync(StringFromUTF8(port.GetChars()));
+        } else {
+            HostName^ hostname = ref new HostName(StringFromUTF8(address.GetIpAddress().m_HostName.GetChars()));
+            bind_action = m_Socket->BindEndpointAsync(hostname, StringFromUTF8(port.GetChars()));
+        }
+    } catch(Exception^ e) {
+        if (e->HResult == 0x8000000e) { // 0x8000000e 意外的时间调用了此方法，忽略
+            return NPT_SUCCESS;
+        }
+        return NPT_ERROR_BIND_FAILED;
     }
     return WaitForAsyncAction(bind_action, m_WaitEvent);
 }
@@ -1134,8 +1141,7 @@ NPT_Result NPT_WinRtTcpServerSocket::Bind(const NPT_SocketAddress& address, bool
             bind_action = m_ServerSocketListener->BindEndpointAsync(hostname, StringFromUTF8(port.GetChars()));
         }
     } catch(Exception^ e) {
-        OutputDebugStringW(e->Message->Data());
-        if (e->HResult == 0x8000000e) {
+        if (e->HResult == 0x8000000e) { // 0x8000000e 意外的时间调用了此方法，忽略
             return NPT_SUCCESS;
         }
         return NPT_ERROR_BIND_FAILED;

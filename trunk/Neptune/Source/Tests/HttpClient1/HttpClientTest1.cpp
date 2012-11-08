@@ -94,7 +94,9 @@ ShowResponse(NPT_HttpResponse* response, ShowMode mode)
                     NPT_File standard_out(NPT_FILE_STANDARD_OUTPUT);
                     standard_out.Open(NPT_FILE_OPEN_MODE_WRITE);
                     standard_out.GetOutputStream(output);
-                    output->Write(body.GetData(), body.GetDataSize());
+
+                    // 暂时不支持
+                    // output->Write(body.GetData(), body.GetDataSize());
                 }
                 break;
             }

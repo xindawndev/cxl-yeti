@@ -32,6 +32,7 @@ NPT_Result
 NPT_NetworkInterface::GetNetworkInterfaces(NPT_List<NPT_NetworkInterface*>& interfaces)
 {// ÉÐÎ´Íê³É
    IVectorView<HostName^>^ hostnames = NetworkInformation::GetHostNames();
+   NPT_NetworkInterface * iface;
    for (unsigned int i = 0; i < hostnames->Size; ++i) {
        Platform::String^ dbg_str = L"";
        HostName^ hostname = hostnames->GetAt(i);
@@ -50,22 +51,40 @@ NPT_NetworkInterface::GetNetworkInterfaces(NPT_List<NPT_NetworkInterface*>& inte
            dbg_str += "DomainName";
            break;
        case HostNameType::Ipv4:
-           {
-               dbg_str += "Ipv4";
-               NPT_NetworkInterface * ifs = new NPT_NetworkInterface(Str2NPT_Str(hostname->RawName), NPT_NETWORK_INTERFACE_FLAG_MULTICAST);
-               interfaces.Add(ifs);
-           }
-           break;
        case HostNameType::Ipv6:
-           dbg_str += "Ipv6";
+           {
+               if (hostname->Type == HostNameType::Ipv4) {
+                   dbg_str += "Ipv4";
+               } else {
+                   dbg_str += "Ipv6";
+               }
+           }
+           {
+               char iface_name[5];
+               iface_name[0] = 'i';
+               iface_name[1] = 'f';
+               iface_name[2] = '0'+(i/10);
+               iface_name[3] = '0'+(i%10);
+               iface_name[4] = '\0';
+               iface = new NPT_NetworkInterface(iface_name, NPT_NETWORK_INTERFACE_FLAG_MULTICAST);
+               NPT_IpAddress primary_address;
+               primary_address.Parse(Str2NPT_Str(hostname->RawName).GetChars());
+               NPT_NetworkInterfaceAddress iface_address(
+                   primary_address,
+                   NPT_IpAddress::Any,
+                   NPT_IpAddress::Any,
+                   NPT_IpAddress::Any);
+               iface->AddAddress(iface_address);
+               interfaces.Add(iface);
+           }
            break;
        default:
            dbg_str += "Unknown Type";
        }
 
        OutputDebugStringW(dbg_str->Data());
+       OutputDebugStringW(L"\r\n");
    }
-
     return NPT_SUCCESS;
 }
 

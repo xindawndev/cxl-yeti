@@ -10,6 +10,7 @@
 /*----------------------------------------------------------------------
 |   includes
 +---------------------------------------------------------------------*/
+#include "NptWinRtPch.h"
 #include "NptConfig.h"
 #include "NptUtils.h"
 #include "NptFile.h"
@@ -17,6 +18,11 @@
 #include "NptInterfaces.h"
 #include "NptStrings.h"
 #include "NptDebug.h"
+
+using namespace Platform;
+using namespace Windows::Storage;
+using namespace concurrency;
+
 
 /*----------------------------------------------------------------------
 |   NPT_WinRtFile
@@ -180,7 +186,17 @@ NPT_File::CreateDir(const char* path)
 NPT_Result
 NPT_File::RemoveFile(const char* path)
 {
-    return NPT_ERROR_NOT_IMPLEMENTED;
+    StorageFile^ filehandle; // To be fixed
+    if (filehandle != nullptr) { 
+        String^ filename = NPT_Str2Str(NPT_String(path));
+        create_task(filehandle->DeleteAsync()).then([filename](task<void> task) {
+            try {
+                task.get();
+            } catch(COMException^ ex) {
+            }
+        });
+    }
+    return NPT_SUCCESS;
 }
 
 /*----------------------------------------------------------------------

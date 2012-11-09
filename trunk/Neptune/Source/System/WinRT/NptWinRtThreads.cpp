@@ -248,8 +248,10 @@ NPT_WinRtSharedVariable::WaitUntilEquals(int value, NPT_Timeout timeout)
             DWORD error = GetLastError();
             if (error == ERROR_TIMEOUT) {
                 result = NPT_ERROR_TIMEOUT;
+                break;
             } else {
                 result = NPT_FAILURE;
+                break;
             }
         }
     }

@@ -755,6 +755,7 @@ NPT_WinRtUdpSocket::NPT_WinRtUdpSocket(NPT_Flags flags)
             }
         });
     });
+    m_Writer = ref new DataWriter(m_Socket->OutputStream);
 }
 
 NPT_WinRtUdpSocket::~NPT_WinRtUdpSocket()
@@ -839,24 +840,56 @@ NPT_Result NPT_WinRtUdpSocket::Send(const NPT_DataBuffer&    packet,
     if (address) {
         try {
             HostName^ remoteHostName = ref new HostName(StringFromUTF8(address->GetIpAddress().m_HostName.GetChars()));
-            String^ remote_service = ref new String();
             NPT_String port = NPT_String::FromIntegerU(address->GetPort());
-            IAsyncAction^ connection = m_Socket->ConnectAsync(remoteHostName, StringFromUTF8(port.GetChars()));
+            IAsyncOperation<IOutputStream^>^ stream_operation = m_Socket->GetOutputStreamAsync(remoteHostName, StringFromUTF8(port.GetChars()));
 
-            result = WaitForAsyncAction(connection, m_WaitEvent);
-            // wait for the connection to be established
+            NPT_LOG_FINEST("waiting for async operation...");
+            ResetEvent(m_WaitEvent);
+
+            IOutputStream^ out_stream;
+            stream_operation->Completed = ref new AsyncOperationCompletedHandler<IOutputStream^> 
+                ([&](IAsyncOperation<IOutputStream^>^ operation_, AsyncStatus status) {
+                    switch (status) {
+                    case AsyncStatus::Canceled:
+                        result = NPT_ERROR_TIMEOUT;
+                        break;
+
+                    case AsyncStatus::Completed:
+                        out_stream = operation_->GetResults();
+                        result = NPT_SUCCESS;
+                        break;
+
+                    case AsyncStatus::Error:
+                        NPT_LOG_FINE_1("AsyncOperation error %x", operation_->ErrorCode.Value);
+                        result = TranslateHResult(operation_->ErrorCode);
+                        break;
+
+                    default:
+                        result = NPT_ERROR_INTERNAL;
+                        break;
+                    }
+                    operation_->Close();
+                    SetEvent(m_WaitEvent);
+            });
+
+            DWORD wait_result = WaitForSingleObjectEx(m_WaitEvent, m_ReadTimeout, FALSE);
+            if (wait_result != WAIT_OBJECT_0) {
+                NPT_LOG_FINE("operation timed out, canceling...");
+                stream_operation->Cancel();
+                WaitForSingleObjectEx(m_WaitEvent, INFINITE, FALSE);
+            }
+            NPT_LOG_FINEST("done waiting for async operation");
+
             if (NPT_FAILED(result)) {
                 NPT_LOG_FINE_1("connection failed (%d)", result);
                 return result;
             } else {
-                NPT_LOG_FINE("connected");
+                NPT_LOG_FINE("get outstream success");
                 Array<unsigned char>^ bytes = ref new Array<unsigned char>(packet.GetDataSize());
                 NPT_CopyMemory(bytes->Data, packet.GetData(), packet.GetDataSize());
-                if (m_Writer == nullptr) {
-                    m_Writer = ref new DataWriter(m_Socket->OutputStream);
-                }
-                m_Writer->WriteBytes(bytes);
-                auto operation = m_Writer->StoreAsync();
+                DataWriter^ writer = ref new DataWriter(out_stream);
+                writer->WriteBytes(bytes);
+                auto operation = writer->StoreAsync();
                 unsigned int return_value = 0;
                 result = WaitForAsyncOperation(operation, m_WaitEvent, return_value, m_WriteTimeout);
             }
@@ -865,12 +898,17 @@ NPT_Result NPT_WinRtUdpSocket::Send(const NPT_DataBuffer&    packet,
             return NPT_FAILURE; 
         }
     } else {
-        Array<unsigned char>^ bytes = ref new Array<unsigned char>(packet.GetDataSize());
-        NPT_CopyMemory(bytes->Data, packet.GetData(), packet.GetDataSize());
-        m_Writer->WriteBytes(bytes);
-        auto operation = m_Writer->StoreAsync();
-        unsigned int return_value = 0;
-        result = WaitForAsyncOperation(operation, m_WaitEvent, return_value, m_WriteTimeout);
+        try {
+            Array<unsigned char>^ bytes = ref new Array<unsigned char>(packet.GetDataSize());
+            NPT_CopyMemory(bytes->Data, packet.GetData(), packet.GetDataSize());
+            m_Writer->WriteBytes(bytes);
+            auto operation = m_Writer->StoreAsync();
+            unsigned int return_value = 0;
+            result = WaitForAsyncOperation(operation, m_WaitEvent, return_value, m_WriteTimeout);
+        } catch(Exception^ exception) {
+            NPT_LOG_FINE("exception caught");
+            result = NPT_FAILURE; 
+        }
     }
     return result;
 }
@@ -902,11 +940,11 @@ NPT_Result NPT_WinRtUdpSocket::Receive(NPT_DataBuffer&    packet,
                 unsigned int bytes_available = m_Args->GetDataReader()->UnconsumedBufferLength;
                 Array<unsigned char>^ bytes = ref new Array<unsigned char>(bytes_available);
                 m_Args->GetDataReader()->ReadBytes(bytes);
-                if (bytes_available <= packet.GetDataSize()) {
+                if (bytes_available <= packet.GetBufferSize()) {
                     NPT_CopyMemory(packet.UseData(), bytes->Data, bytes_available);
                     packet.SetDataSize(bytes_available);
                 } else {
-                    NPT_CopyMemory(packet.UseData(), bytes->Data, packet.GetDataSize());
+                    NPT_CopyMemory(packet.UseData(), bytes->Data, packet.GetBufferSize());
                     packet.SetDataSize(packet.GetDataSize());
                 }
                 //address->SetIpAddress(NPT_IpAddress(m_Args->RemoteAddress->RawName));
@@ -930,12 +968,12 @@ NPT_Result NPT_WinRtUdpSocket::Receive(NPT_DataBuffer&    packet,
             unsigned int bytes_available = m_Args->GetDataReader()->UnconsumedBufferLength;
             Array<unsigned char>^ bytes = ref new Array<unsigned char>(bytes_available);
             m_Args->GetDataReader()->ReadBytes(bytes);
-            if (bytes_available <= packet.GetDataSize()) {
+            if (bytes_available <= packet.GetBufferSize()) {
                 NPT_CopyMemory(packet.UseData(), bytes->Data, bytes_available);
                 packet.SetDataSize(bytes_available);
             } else {
-                NPT_CopyMemory(packet.UseData(), bytes->Data, packet.GetDataSize());
-                packet.SetDataSize(packet.GetDataSize());
+                NPT_CopyMemory(packet.UseData(), bytes->Data, packet.GetBufferSize());
+                packet.SetDataSize(packet.GetBufferSize());
             }
             return NPT_SUCCESS;
         } catch (Exception^ e) {

@@ -116,7 +116,7 @@
       <PrecompiledHeaderOutputFile>$(IntDir)pch.pch</PrecompiledHeaderOutputFile>
       <AdditionalUsingDirectories>$(WindowsSDK_WindowsMetadata);$(AdditionalUsingDirectories)</AdditionalUsingDirectories>
       <AdditionalOptions>/bigobj %(AdditionalOptions)</AdditionalOptions>
-      <AdditionalIncludeDirectories>..\..\..\..\..\Neptune\Source\Core;..\..\..\..\Source\Platinum;..\..\..\..\Source\Core;..\..\..\..\Source\Extras;..\..\..\..\Source\Devices\MediaServer;..\..\..\..\Source\Devices\MediaRenderer;..\..\..\..\Source\Devices\MediaConnect;$(ProjectDir);$(GeneratedFilesDir);$(IntDir);%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
+      <AdditionalIncludeDirectories>..\..\..\..\..\Neptune\Source\Core;..\..\..\..\Source\Platinum;..\..\..\..\Source\Core;..\..\..\..\Source\Extras;..\..\..\..\Source\Devices\MediaServer;..\..\..\..\Source\Devices\MediaRenderer;..\..\..\..\Source\Devices\MediaConnect;$(ProjectDir);$(GeneratedFilesDir);$(IntDir);..\..\..\..\..\Neptune\Source\System\WinRT;%(AdditionalIncludeDirectories)</AdditionalIncludeDirectories>
     </ClCompile>
     <Link>
       <SubSystem>Console</SubSystem>

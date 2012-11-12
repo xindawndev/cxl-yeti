@@ -2,6 +2,7 @@
 #include "pch.h"
 #include "PLTWinRt.h"
 #include "PltUPnP.h"
+#include "NptWinRtPch.h"
 #include <ppltasks.h>
 
 using namespace PLTWinRt;
@@ -22,7 +23,7 @@ using namespace Windows::Networking::Sockets;
 /*----------------------------------------------------------------------
 |   PLT_MicroMediaController::PLT_MicroMediaController
 +---------------------------------------------------------------------*/
-PLT_MicroMediaController::PLT_MicroMediaController(PLT_CtrlPointReference& ctrlPoint) :
+PLT_MicroMediaController::PLT_MicroMediaController(PLT_CtrlPointReference& ctrlPoint, MediaController^ mc) :
     PLT_SyncMediaBrowser(ctrlPoint),
     PLT_MediaController(ctrlPoint)
 {
@@ -32,6 +33,8 @@ PLT_MicroMediaController::PLT_MicroMediaController(PLT_CtrlPointReference& ctrlP
     m_CurBrowseDirectoryStack.Push("0");
 
     PLT_MediaController::SetDelegate(this);
+
+    m_media_controller_ = mc;
 }
 
 /*----------------------------------------------------------------------
@@ -162,6 +165,7 @@ bool
         if (!action.IsNull()) PLT_SyncMediaBrowser::m_CtrlPoint->InvokeAction(action, 0);
     }
 
+    m_media_controller_->onDeviceAdd(NPT_Str2Str(device->GetUUID()), NPT_Str2Str(device->GetFriendlyName()), false);
     return true; 
 }
 
@@ -178,6 +182,7 @@ bool
     if (NPT_SUCCEEDED(device->FindServiceByType("urn:schemas-upnp-org:service:AVTransport:*", service))) {
         NPT_AutoLock lock(m_MediaRenderers);
         m_MediaRenderers.Put(uuid, device);
+        m_media_controller_->onDeviceAdd(NPT_Str2Str(device->GetUUID()), NPT_Str2Str(device->GetFriendlyName()), true);
     }
 
     return true;
@@ -189,6 +194,8 @@ bool
 void
     PLT_MicroMediaController::OnMRRemoved(PLT_DeviceDataReference& device)
 {
+    m_media_controller_->onDeviceDel(NPT_Str2Str(device->GetUUID()), NPT_Str2Str(device->GetFriendlyName()), false);
+
     NPT_String uuid = device->GetUUID();
 
     {
@@ -233,6 +240,17 @@ void
         printf("No renderer selected, select one with setmr\n");
     } else {
         renderer = m_CurMediaRenderer;
+    }
+}
+
+void PLT_MicroMediaController::FindMediaRendererByUUID(Platform::String^ uuid, PLT_DeviceDataReference& renderer)
+{
+    NPT_AutoLock lock(m_MediaRenderers);
+    if (m_MediaRenderers.HasKey(Str2NPT_Str(uuid))) {
+        renderer = m_MediaRenderers[Str2NPT_Str(uuid)];
+    } else {
+        // Not found
+        renderer = NULL;
     }
 }
 
@@ -742,13 +760,13 @@ void
 
 MediaController::MediaController()
     : m_ctrlPoint_(new PLT_CtrlPoint())
-    , m_meida_controller_(m_ctrlPoint_)
+    , m_meida_controller_(m_ctrlPoint_, this)
 {
     NPT_LogManager::GetDefault().Configure("plist:.level=INFO;.handlers=ConsoleHandler;.ConsoleHandler.colors=off;.ConsoleHandler.filter=63");
     m_upnp_.AddCtrlPoint(m_ctrlPoint_);
 }
 
-void MediaController::Run()
+void MediaController::Start()
 {
     m_upnp_.Start();
 }
@@ -757,3 +775,69 @@ void MediaController::Stop()
 {
     m_upnp_.Stop();
 }
+
+void MediaController::DmrGetDeviceCaps(Platform::String^ device_id)
+{}
+
+void MediaController::DmrPlay(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        m_meida_controller_.Play(device, 0, "1", NULL);
+    } else {
+        onPlay(device_id, -1);
+    }
+}
+
+void MediaController::DmrSeek(Platform::String^ device_id, uint64 new_pos)
+{}
+
+void MediaController::DmrStop(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        m_meida_controller_.Stop(device, 0, NULL);
+    } else {
+        onStop(device_id, -1);
+    }
+}
+
+void MediaController::DmrPause(Platform::String^ device_id)
+{}
+
+void MediaController::DmrNext(Platform::String^ device_id)
+{}
+
+void MediaController::DmrPrev(Platform::String^ device_id)
+{}
+
+void MediaController::DmrSetUrl(Platform::String^ device_id, Platform::String^ url)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        m_meida_controller_.SetAVTransportURI(device, 0, "", "", NULL);
+    } else {
+        onSetUri(device_id, -1);
+    }
+}
+
+void MediaController::DmrSetVolume(Platform::String^ device_id, uint16 volume)
+{}
+
+void MediaController::DmrSetMute(Platform::String^ device_id, bool is_mute)
+{}
+
+void MediaController::DmrSetPlayMode(Platform::String^ device_id, bool is_mute)
+{}
+
+void MediaController::DmrGetMediaInfo(Platform::String^ device_id)
+{}
+
+void MediaController::DmrGetPosition(Platform::String^ device_id)
+{}
+
+void MediaController::DmrGetTransportInfo(Platform::String^ device_id)
+{}

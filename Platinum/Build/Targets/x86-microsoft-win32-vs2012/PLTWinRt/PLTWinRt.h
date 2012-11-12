@@ -9,8 +9,8 @@
 #include <collection.h>
 
 namespace PLTWinRt {
-    public delegate void OnDeviceAdd(Platform::String^ device_id, Platform::String^ divice_name);
-    public delegate void OnDeviceDel(Platform::String^ device_id, Platform::String^ divice_name);
+    public delegate void OnDeviceAdd(Platform::String^ device_id, Platform::String^ divice_name, bool is_dmr);
+    public delegate void OnDeviceDel(Platform::String^ device_id, Platform::String^ divice_name, bool is_dmr);
     public delegate void OnGetDevCap(Platform::String^ device_id, int ec, Platform::String^ play_media, Platform::String^ rec_media, Platform::String^ rec_qua_meida);
     public delegate void OnPlay(Platform::String^ device_id, int ec);
     public delegate void OnSeek(Platform::String^ device_id, int ec);
@@ -26,6 +26,7 @@ namespace PLTWinRt {
     public delegate void OnGetPosition(Platform::String^ device_id, int ec);
     public delegate void OnGetTransportInfo(Platform::String^ device_id, int ec);
 
+    ref class MediaController;
     /*----------------------------------------------------------------------
     |   definitions
     +---------------------------------------------------------------------*/
@@ -60,7 +61,7 @@ namespace PLTWinRt {
         , public PLT_MediaControllerDelegate
     {
     public:
-        PLT_MicroMediaController(PLT_CtrlPointReference& ctrlPoint);
+        PLT_MicroMediaController(PLT_CtrlPointReference& ctrlPoint, MediaController^ mc);
         virtual ~PLT_MicroMediaController();
 
         void ProcessCommandLoop();
@@ -82,6 +83,8 @@ namespace PLTWinRt {
         void        GetCurMediaServer(PLT_DeviceDataReference& server);
         void        GetCurMediaRenderer(PLT_DeviceDataReference& renderer);
 
+        void        FindMediaRendererByUUID(Platform::String^ uuid, PLT_DeviceDataReference& renderer);
+
         PLT_DeviceDataReference ChooseDevice(const NPT_Lock<PLT_DeviceMap>& deviceList);
 
         // Command Handlers
@@ -102,6 +105,9 @@ namespace PLTWinRt {
         void    HandleCmd_stop();
         void    HandleCmd_mute();
         void    HandleCmd_unmute();
+
+    private:
+        friend ref class MediaController;
 
     private:
         /* The tables of known devices on the network.  These are updated via the
@@ -143,19 +149,37 @@ namespace PLTWinRt {
         * the network 
         */
         NPT_SharedVariable m_CallbackResponseSemaphore;
+
+        MediaController^ m_media_controller_;
     };
 
     public ref class MediaController sealed
     {
     public:
         MediaController();
-        void Run();
+
+        void Start();
         void Stop();
-        //void GetDeviceCaps(Platform::String^ device_id);
+
+        void DmrGetDeviceCaps(Platform::String^ device_id);
+        void DmrPlay(Platform::String^ device_id);
+        void DmrSeek(Platform::String^ device_id, uint64 new_pos);
+        void DmrStop(Platform::String^ device_id);
+        void DmrPause(Platform::String^ device_id);
+        void DmrNext(Platform::String^ device_id);
+        void DmrPrev(Platform::String^ device_id);
+        void DmrSetUrl(Platform::String^ device_id, Platform::String^ url);
+        void DmrSetVolume(Platform::String^ device_id, uint16 volume);
+        void DmrSetMute(Platform::String^ device_id, bool is_mute);
+        void DmrSetPlayMode(Platform::String^ device_id, bool is_mute);
+        void DmrGetMediaInfo(Platform::String^ device_id);
+        void DmrGetPosition(Platform::String^ device_id);
+        void DmrGetTransportInfo(Platform::String^ device_id);
 
     public: // Events
         event OnDeviceAdd^          onDeviceAdd;
         event OnDeviceDel^          onDeviceDel;
+
         event OnGetDevCap^          onGetDevCap;
         event OnPlay^               onPlay;
         event OnSeek^               onSeek;
@@ -170,6 +194,9 @@ namespace PLTWinRt {
         event OnGetMediaInfo^       onGetMediaInfo;
         event OnGetPosition^        onGetPosition;
         event OnGetTransportInfo^   onGetTransportInfo;
+
+    private:
+        friend class PLT_MicroMediaController;
 
     private:
         PLT_UPnP                 m_upnp_;

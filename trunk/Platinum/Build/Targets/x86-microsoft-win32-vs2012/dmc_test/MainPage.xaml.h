@@ -6,6 +6,7 @@
 #pragma once
 
 #include "MainPage.g.h"
+#include "DeviceData.h"
 
 namespace dmc_test
 {
@@ -25,6 +26,11 @@ namespace dmc_test
 
 	protected:
 		virtual void OnNavigatedTo(Windows::UI::Xaml::Navigation::NavigationEventArgs^ e) override;
+
+    private:
+        void On_DeviceAdd(Platform::String^ device_id, Platform::String^ divice_name, bool is_dmr);
+        void On_DeviceDel(Platform::String^ device_id, Platform::String^ divice_name, bool is_dmr);
+
     private:
         void StartDmcBtnClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
         void PlayMedia(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
@@ -32,8 +38,14 @@ namespace dmc_test
         void PauseMedia(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
         void ProcessBar_ValueChanged(Platform::Object^ sender, Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs^ e);
         void Slider_ValueChanged_1(Platform::Object^ sender, Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs^ e);
-        void AddCalc(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
-        void PrimeCheck(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
-        PLTWinRt::MediaController^ dmc;
+        void DmrItemListView_SelectionChanged(Platform::Object^ sender, Windows::UI::Xaml::Controls::SelectionChangedEventArgs^ e);
+
+        void PageLoadedHandler(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+    private:
+        Platform::String^           m_current_dmr_;
+        Platform::String^           m_current_dms_;
+        Devices^                    m_dmrs_;
+        Devices^                    m_dmss_;
+        PLTWinRt::MediaController^  m_controller_;
     };
 }

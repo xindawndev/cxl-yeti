@@ -5,48 +5,85 @@
     xmlns:local="using:dmc_test"
     xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
-    mc:Ignorable="d">
+    mc:Ignorable="d"
+    Loaded="PageLoadedHandler">
+    <Grid Name="Grid1">
+    	<Grid.Background>
+    		<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+    			<GradientStop Color="Black"/>
+    			<GradientStop Color="White" Offset="1"/>
+    		</LinearGradientBrush>
+    	</Grid.Background>
+        <Grid.RowDefinitions>
+            <RowDefinition Height="80" />
+            <RowDefinition Height="*" />
+        </Grid.RowDefinitions>
+        <TextBlock x:Name="TitleText" Text="Win8多屏测试播放器" VerticalAlignment="Center" HorizontalAlignment="Center"  FontSize="32" Margin="0,0,0,0"/>
+        <Grid Name="Grid2" Grid.Row="1">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="1*" />
+                <ColumnDefinition Width="3*" />
+                <ColumnDefinition Width="1*" />
+            </Grid.ColumnDefinitions>
 
-    <Grid Background="{StaticResource SliderTrackDecreaseBackgroundThemeBrush}" HorizontalAlignment="Right" Width="1366">
-        <Button Content="StartDmc" HorizontalAlignment="Left" Margin="950,25,0,0" VerticalAlignment="Top" Click="StartDmcBtnClicked"/>
-        <TextBlock Name="ShowInfo" HorizontalAlignment="Left" Margin="292,501,0,0" TextWrapping="Wrap" Text="" VerticalAlignment="Top" Height="30" Width="686"/>
-        <MediaElement Name="MediaPlayer" HorizontalAlignment="Left" Height="362" Margin="292,74,0,0" VerticalAlignment="Top" Width="750"/>
-        <TextBox Name="MediaUrl" HorizontalAlignment="Left" Margin="285,29,0,0" TextWrapping="Wrap" Text="http://192.168.45.211/ipad/oy.mp4" VerticalAlignment="Top" Width="651"/>
-        <!-- Stops media playback.-->
-        <Button Click="StopMedia" 
-                Grid.Column="0" Content="停止" Margin="688,458,0,272" />
-        <!-- Pauses media playback. -->
-        <Button Click="PauseMedia" Content="暂停" Margin="599,458,0,272" />
-        <!-- Begins media playback. -->
-        <Button Click="PlayMedia" Content="播放" Margin="516,458,0,272" />
-        <Slider Name="ProcessBar" HorizontalAlignment="Left" Margin="285,418,0,0" VerticalAlignment="Top" Width="685" Background="#29D13434" BorderBrush="#FF17806C" ValueChanged="ProcessBar_ValueChanged" Height="32">
-            <Slider.Foreground>
-                <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
-                    <GradientStop Color="Black"/>
-                    <GradientStop Color="White" Offset="1"/>
-                </LinearGradientBrush>
-            </Slider.Foreground>
-        </Slider>
-        <Slider Name="VolumeBar" HorizontalAlignment="Left" Margin="928.299,379.194,0,0" VerticalAlignment="Top" Width="100" Height="30" ValueChanged="Slider_ValueChanged_1" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto">
-            <Slider.RenderTransform>
-                <CompositeTransform Rotation="-90"/>
-            </Slider.RenderTransform>
-        </Slider>
-        <Popup x:Name="DmsListPopup" IsLightDismissEnabled="True">
-            <Popup.ChildTransitions>
-                <TransitionCollection>
-                    <PaneThemeTransition />
-                </TransitionCollection>
-            </Popup.ChildTransitions>
-        </Popup>
-        <Popup Margin="1014,0,-1014,0">
-            <Grid Background="#FFE5E5E5" Height="766" Width="300" HorizontalAlignment="Right"/>
-        </Popup>
-        <TextBox Name="VarA" HorizontalAlignment="Left" Margin="284,591,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <TextBox Name="VarB" HorizontalAlignment="Left" Margin="406,590,0,0" TextWrapping="Wrap" VerticalAlignment="Top"/>
-        <TextBlock Name="Result" HorizontalAlignment="Left" Margin="517,587,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="38" Width="99"/>
-        <Button Content="Button" HorizontalAlignment="Left" Margin="633,585,0,0" VerticalAlignment="Top" Click="AddCalc"/>
-        <TextBlock Name="ShowPrimes" HorizontalAlignment="Left" Margin="284,639,0,0" TextWrapping="Wrap" VerticalAlignment="Top" Height="25" Width="218"/>
-
+            <ListView x:Name="DmsItemListView"></ListView>
+            <Grid Name="Grid3" Grid.Column="1" >
+                <Grid.RowDefinitions>
+                    <RowDefinition Height="77*" />
+                    <RowDefinition Height="377*" />
+                    <RowDefinition Height="81*" />
+                    <RowDefinition Height="77*" />
+                    <RowDefinition Height="76*" />
+                </Grid.RowDefinitions>
+                <Grid Name="Grid31">
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="*" />
+                        <ColumnDefinition Width="20" />
+                    </Grid.ColumnDefinitions>
+                    <TextBox Name="MediaUrl" HorizontalAlignment="Left" TextWrapping="Wrap" Text="http://192.168.45.211/ipad/23m.mp4" Width="703" Margin="0,28,0,15"/>
+                    <Button Content="StartDmc" HorizontalAlignment="Right" Click="StartDmcBtnClicked" Grid.ColumnSpan="2" Margin="0,25,0,15" Width="112" Height="37"/>
+                </Grid>
+                <MediaElement Name="MediaPlayer" Margin="0,12,0,3" Grid.Row="1" Grid.RowSpan="2"/>
+                <Grid Name="Grid33" Grid.Row="2" HorizontalAlignment="Right" Width="820" Margin="0,67,0,10" Grid.RowSpan="2">
+                	<Grid.ColumnDefinitions>
+                		<ColumnDefinition Width="629*"/>
+                		<ColumnDefinition Width="191*"/>
+                	</Grid.ColumnDefinitions>
+                    <Slider Name="ProcessBar" HorizontalAlignment="Left" Margin="0,0,0,0" VerticalAlignment="Top" Width="810" Background="#29D13434" BorderBrush="#FF17806C" ValueChanged="ProcessBar_ValueChanged" Height="32" Grid.ColumnSpan="2">
+                        <Slider.Foreground>
+                            <LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
+                                <GradientStop Color="Black"/>
+                                <GradientStop Color="White" Offset="1"/>
+                            </LinearGradientBrush>
+                        </Slider.Foreground>
+                    </Slider>
+                    <Slider Name="VolumeBar" Margin="0,-50.298,-35.761,0" VerticalAlignment="Top" Width="100" Height="30" ValueChanged="Slider_ValueChanged_1" RenderTransformOrigin="0.5,0.5" UseLayoutRounding="False" d:LayoutRounding="Auto" HorizontalAlignment="Right" Grid.Column="1">
+                        <Slider.RenderTransform>
+                            <CompositeTransform Rotation="-90"/>
+                        </Slider.RenderTransform>
+                    </Slider>
+                </Grid>
+                <Grid Name="Grid34" Grid.Row="3" Margin="0,0,0,10">
+                    <Grid.RowDefinitions>
+                        <RowDefinition Height="*" />
+                        <RowDefinition Height="120" />
+                    </Grid.RowDefinitions>
+                    <Button Click="PlayMedia" Content="播放" Margin="238,20,0,62" Grid.RowSpan="2" BorderBrush="#FF7EB036" Foreground="Black" Width="71" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
+                	<Button Click="StopMedia" Content="停止" Margin="436,20,0,62" Grid.RowSpan="2" Foreground="Black" BorderBrush="#FF7EB036" Width="71" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
+                	<Button Click="PauseMedia" Content="暂停" Margin="334,20,0,62" Width="71" Height="38" Grid.RowSpan="2" Foreground="Black" BorderBrush="#FF7EB036" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
+                </Grid>
+                <TextBlock Name="ShowInfo" Width="820" Height="66" Margin="0,0,0,10" HorizontalAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Grid.Row="4" Foreground="#FF2CD312"/>
+            </Grid>
+            <ListView x:Name="DmrItemListView" ItemsSource="{Binding Items}" SelectionChanged="DmrItemListView_SelectionChanged" HorizontalAlignment="Center" Grid.Column="2">
+                <ListView.ItemTemplate>
+                    <DataTemplate>
+                        <StackPanel>
+                            <TextBlock Text="{Binding DeviceName}" FontSize="24" Margin="5,0,0,0" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding DeviceId}" FontSize="16" Margin="15,0,0,0" />
+                        </StackPanel>
+                    </DataTemplate>
+                </ListView.ItemTemplate>
+            </ListView>
+        </Grid>
     </Grid>
 </Page>

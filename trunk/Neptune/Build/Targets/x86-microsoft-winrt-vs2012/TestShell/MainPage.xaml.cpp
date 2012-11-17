@@ -47,11 +47,11 @@ extern int HttpServerTest1_main(int argc, char **argv);
 void TestShell::MainPage::GoButton_Click(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
     char *argv[] = {"test","http://www.baidu.com"};
-    HttpServerTest1_main(sizeof(argv) / strlen(argv[0]), argv);
-    HttpClientTest2_main(sizeof(argv) / strlen(argv[0]), argv);
-    HttpClientTest1_main(sizeof(argv) / strlen(argv[0]), argv);
+    //ThreadsTest1_main(0, NULL);
+    //HttpClientTest1_main(sizeof(argv) / strlen(argv[0]), argv);
+    //HttpServerTest1_main(sizeof(argv) / strlen(argv[0]), argv);
+    //HttpClientTest2_main(sizeof(argv) / strlen(argv[0]), argv);
+    //SocketTest1_main(0, NULL);
     UdpTest1_main(sizeof(argv) / strlen(argv[0]), argv);
-    SocketTest1_main(0, NULL);
-	ThreadsTest1_main(0, NULL);
-    TimeTest1_main(0, NULL);
+    //TimeTest1_main(0, NULL);
 }

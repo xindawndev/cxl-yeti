@@ -12,6 +12,7 @@ using namespace Platform;
 using namespace Windows::Foundation;
 using namespace Windows::Foundation::Collections;
 using namespace Windows::UI::Xaml;
+using namespace Windows::UI::Core;
 using namespace Windows::UI::Xaml::Controls;
 using namespace Windows::UI::Xaml::Controls::Primitives;
 using namespace Windows::UI::Xaml::Data;
@@ -25,10 +26,17 @@ using namespace PLTWinRt;
 MainPage::MainPage()
 {
 	InitializeComponent();
+    m_dmrs_ = ref new Devices();
+    m_dmss_ = ref new Devices();
+
     MediaPlayer->CurrentStateChanged += ref new Windows::UI::Xaml::RoutedEventHandler(this, &MainPage::OnPlayStateChange);
     MediaPlayer->BufferingProgressChanged += ref new Windows::UI::Xaml::RoutedEventHandler(this, &MainPage::OnBufferingProgressChanged);
     MediaPlayer->SeekCompleted += ref new Windows::UI::Xaml::RoutedEventHandler(this, &MainPage::OnSeekCompleted);
     MediaPlayer->VolumeChanged += ref new Windows::UI::Xaml::RoutedEventHandler(this, &MainPage::OnVolumeChanged);
+
+    m_controller_ = ref new MediaController();
+    m_controller_->onDeviceAdd += ref new OnDeviceAdd(this, &MainPage::On_DeviceAdd);
+    m_controller_->onDeviceDel += ref new OnDeviceDel(this, &MainPage::On_DeviceDel);
 }
 
 void MainPage::OnPlayStateChange(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
@@ -75,6 +83,46 @@ void MainPage::OnVolumeChanged(Platform::Object^ sender, Windows::UI::Xaml::Rout
     ShowInfo->Text = "OnVolumeChanged: " + MediaPlayer->Volume.ToString();
 }
 
+void MainPage::On_DeviceAdd(Platform::String^ device_id, Platform::String^ divice_name, bool is_dmr)
+{
+    DeviceInfo^ di = ref new DeviceInfo();
+    di->DeviceId = device_id;
+    di->DeviceName = divice_name;
+    if (is_dmr) {
+        this->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, device_id, divice_name] () {
+            ShowInfo->Text += "Add DMR: " + device_id + " Name: " + divice_name + "\r\n";
+        }));
+        m_current_dmr_ = device_id;
+        m_dmrs_->Items->Append(di);
+        this->DataContext = m_dmrs_;
+    } else {
+        m_dmss_->Items->Append(di);
+    }
+}
+
+void MainPage::On_DeviceDel(Platform::String^ device_id, Platform::String^ divice_name, bool is_dmr)
+{
+    if (is_dmr) {
+        this->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, device_id, divice_name] () {
+            ShowInfo->Text += "Remove DMR: " + device_id + " Name: " + divice_name + "\r\n";
+        }));
+
+        for (int i = 0; i < (int)m_dmss_->Items->Size; ++i) {
+
+            if (m_dmrs_->Items->GetAt(i)->DeviceId == device_id && 
+                m_dmrs_->Items->GetAt(i)->DeviceName == divice_name)
+                m_dmrs_->Items->RemoveAt(i);
+        }
+        this->DataContext = m_dmrs_;
+    } else {
+        for (int i = 0; i < (int)m_dmss_->Items->Size; ++i) {
+            if (m_dmss_->Items->GetAt(i)->DeviceId == device_id && 
+                m_dmss_->Items->GetAt(i)->DeviceName == divice_name)
+                m_dmss_->Items->RemoveAt(i);
+        }
+    }
+}
+
 /// <summary>
 /// Invoked when this page is about to be displayed in a Frame.
 /// </summary>
@@ -85,7 +133,7 @@ void MainPage::OnNavigatedTo(NavigationEventArgs^ e)
 	(void) e;	// Unused parameter
 }
 
-void dmc_test::MainPage::StartDmcBtnClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+void MainPage::StartDmcBtnClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
     Platform::String^ play_str = MediaUrl->Text;
     if (play_str->IsEmpty()) {
@@ -93,45 +141,44 @@ void dmc_test::MainPage::StartDmcBtnClicked(Platform::Object^ sender, Windows::U
         return;
     }
 
+    m_controller_->DmrSetUrl(m_current_dmr_, play_str);
     Windows::Foundation::Uri^ url = ref new Windows::Foundation::Uri(play_str);
     MediaPlayer->Source = url;
-    MediaPlayer->Play();
     VolumeBar->Value = MediaPlayer->Volume;
-    ShowInfo->Text = "播放成功！URL = " + play_str;
-
-    dmc = ref new MediaController();
-    dmc->Run();
 }
 
-void dmc_test::MainPage::PlayMedia(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+void MainPage::PlayMedia(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
     if (MediaPlayer->CurrentState == Windows::UI::Xaml::Media::MediaElementState::Stopped
         || MediaPlayer->CurrentState == Windows::UI::Xaml::Media::MediaElementState::Paused) {
             MediaPlayer->Play();
     }
+    m_controller_->DmrPlay(m_current_dmr_);
 }
 
-void dmc_test::MainPage::StopMedia(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+void MainPage::StopMedia(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
     if (MediaPlayer->CurrentState == Windows::UI::Xaml::Media::MediaElementState::Playing
         || MediaPlayer->CurrentState == Windows::UI::Xaml::Media::MediaElementState::Paused) {
             MediaPlayer->Stop();
     }
+    m_controller_->DmrStop(m_current_dmr_);
 }
 
-void dmc_test::MainPage::PauseMedia(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+void MainPage::PauseMedia(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
     if (MediaPlayer->CanPause) {
         if (MediaPlayer->CurrentState == Windows::UI::Xaml::Media::MediaElementState::Playing
             || MediaPlayer->CurrentState == Windows::UI::Xaml::Media::MediaElementState::Stopped) {
                 MediaPlayer->Pause();
         }
+        m_controller_->DmrPause(m_current_dmr_);
     } else {
         ShowInfo->Text = "不支持拖动操作！";
     }
 }
 
-void dmc_test::MainPage::ProcessBar_ValueChanged(Platform::Object^ sender, Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs^ e)
+void MainPage::ProcessBar_ValueChanged(Platform::Object^ sender, Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs^ e)
 {
     Windows::UI::Xaml::Controls::Slider^ slider = safe_cast<Windows::UI::Xaml::Controls::Slider^>(sender);
     if (!MediaPlayer->CanSeek) {
@@ -140,20 +187,24 @@ void dmc_test::MainPage::ProcessBar_ValueChanged(Platform::Object^ sender, Windo
     Windows::Foundation::TimeSpan curpos;
     curpos.Duration = (slider->Value / 100.0) * MediaPlayer->NaturalDuration.TimeSpan.Duration;
     MediaPlayer->Position = curpos;
+    m_controller_->DmrSeek(m_current_dmr_, curpos.Duration / 10000000.0);
 }
 
-void dmc_test::MainPage::Slider_ValueChanged_1(Platform::Object^ sender, Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs^ e)
+void MainPage::Slider_ValueChanged_1(Platform::Object^ sender, Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs^ e)
 {
     Windows::UI::Xaml::Controls::Slider^ slider = safe_cast<Windows::UI::Xaml::Controls::Slider^>(sender);
     MediaPlayer->Volume = slider->Value / 100.0;
+    m_controller_->DmrSetVolume(m_current_dmr_, (unsigned short)slider->Value);
 }
 
-void dmc_test::MainPage::AddCalc(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+void MainPage::DmrItemListView_SelectionChanged(Platform::Object^ sender,
+                                             Windows::UI::Xaml::Controls::SelectionChangedEventArgs^ e)
 {
-    Platform::String^ var_a = VarA->Text;
-    Platform::String^ var_b = VarB->Text;
+    DeviceInfo^ devinfo = safe_cast<DeviceInfo^>(DmrItemListView->SelectedItem);
+    m_current_dmr_ = devinfo->DeviceId;
 }
 
-void dmc_test::MainPage::PrimeCheck(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+void MainPage::PageLoadedHandler(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
+    m_controller_->Start();
 }

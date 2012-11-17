@@ -9,22 +9,52 @@
 #include <collection.h>
 
 namespace PLTWinRt {
+
+    public enum class ErrorCode : int
+    {
+        EC_UNKNOWN = -2,
+        EC_FAILURE = -1,
+        EC_SUCCESS,
+        EC_INVALID_PARAMETERS,
+        EC_PERMISSION_DENIED,
+        EC_OUT_OF_MEMORY,
+        EC_NO_SUCH_NAME,
+        EC_NO_SUCH_PROPERTY,
+        EC_NO_SUCH_ITEM,
+        EC_NO_SUCH_CLASS,
+        EC_OVERFLOW,
+        EC_INTERNAL,
+        EC_INVALID_STATE,
+        EC_INVALID_FORMAT,
+        EC_INVALID_SYNTAX,
+        EC_NOT_IMPLEMENTED,
+        EC_NOT_SUPPORTED,
+        EC_TIMEOUT,
+        EC_WOULD_BLOCK,
+        EC_TERMINATED,
+        EC_OUT_OF_RANGE,
+        EC_OUT_OF_RESOURCES,
+        EC_NOT_ENOUGH_SPACE,
+        EC_INTERRUPTED,
+        EC_CANCELLED
+    };
+
     public delegate void OnDeviceAdd(Platform::String^ device_id, Platform::String^ divice_name, bool is_dmr);
     public delegate void OnDeviceDel(Platform::String^ device_id, Platform::String^ divice_name, bool is_dmr);
-    public delegate void OnGetDevCap(Platform::String^ device_id, int ec, Platform::String^ play_media, Platform::String^ rec_media, Platform::String^ rec_qua_meida);
-    public delegate void OnPlay(Platform::String^ device_id, int ec);
-    public delegate void OnSeek(Platform::String^ device_id, int ec);
-    public delegate void OnStop(Platform::String^ device_id, int ec);
-    public delegate void OnPause(Platform::String^ device_id, int ec);
-    public delegate void OnNext(Platform::String^ device_id, int ec);
-    public delegate void OnPrev(Platform::String^ device_id, int ec);
-    public delegate void OnSetUri(Platform::String^ device_id, int ec);
-    public delegate void OnSetVol(Platform::String^ device_id, int ec);
-    public delegate void OnSetMute(Platform::String^ device_id, int ec);
-    public delegate void OnSetPlayMode(Platform::String^ device_id, int ec);
-    public delegate void OnGetMediaInfo(Platform::String^ device_id, int ec);
-    public delegate void OnGetPosition(Platform::String^ device_id, int ec);
-    public delegate void OnGetTransportInfo(Platform::String^ device_id, int ec);
+    public delegate void OnGetDevCap(Platform::String^ device_id, ErrorCode ec, Platform::String^ play_media, Platform::String^ rec_media, Platform::String^ rec_qua_meida);
+    public delegate void OnPlay(Platform::String^ device_id, ErrorCode ec);
+    public delegate void OnSeek(Platform::String^ device_id, ErrorCode ec);
+    public delegate void OnStop(Platform::String^ device_id, ErrorCode ec);
+    public delegate void OnPause(Platform::String^ device_id, ErrorCode ec);
+    public delegate void OnNext(Platform::String^ device_id, ErrorCode ec);
+    public delegate void OnPrev(Platform::String^ device_id, ErrorCode ec);
+    public delegate void OnSetUri(Platform::String^ device_id, ErrorCode ec);
+    public delegate void OnSetVol(Platform::String^ device_id, ErrorCode ec);
+    public delegate void OnSetMute(Platform::String^ device_id, ErrorCode ec);
+    public delegate void OnSetPlayMode(Platform::String^ device_id, ErrorCode ec);
+    public delegate void OnGetMediaInfo(Platform::String^ device_id, ErrorCode ec);
+    public delegate void OnGetPosition(Platform::String^ device_id, ErrorCode ec);
+    public delegate void OnGetTransportInfo(Platform::String^ device_id, ErrorCode ec);
 
     ref class MediaController;
     /*----------------------------------------------------------------------
@@ -72,8 +102,130 @@ namespace PLTWinRt {
         // PLT_MediaControllerDelegate methods
         bool OnMRAdded(PLT_DeviceDataReference& device);
         void OnMRRemoved(PLT_DeviceDataReference& device);
-        void OnMRStateVariablesChanged(PLT_Service* /* service */, 
-            NPT_List<PLT_StateVariable*>* /* vars */) {};
+        void OnMRStateVariablesChanged(PLT_Service*  service , 
+            NPT_List<PLT_StateVariable*>*  vars );
+
+        // AVTransport
+        void OnGetCurrentTransportActionsResult(
+            NPT_Result                res , 
+            PLT_DeviceDataReference&  device ,
+            PLT_StringList*           actions , 
+            void*                     userdata );
+
+        void OnGetDeviceCapabilitiesResult(
+            NPT_Result                res , 
+            PLT_DeviceDataReference&  device ,
+            PLT_DeviceCapabilities*   capabilities ,
+            void*                     userdata );
+
+        void OnGetMediaInfoResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            PLT_MediaInfo*            info ,
+            void*                     userdata );
+
+        void OnGetPositionInfoResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            PLT_PositionInfo*         info ,
+            void*                     userdata );
+
+        void OnGetTransportInfoResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            PLT_TransportInfo*        info ,
+            void*                     userdata );
+
+        void OnGetTransportSettingsResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            PLT_TransportSettings*    settings ,
+            void*                     userdata );
+
+        void OnNextResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            void*                     userdata );
+
+        void OnPauseResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            void*                     userdata );
+
+        void OnPlayResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            void*                     userdata );
+
+        void OnPreviousResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            void*                     userdata );
+
+        void OnSeekResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            void*                     userdata );
+
+        void OnSetAVTransportURIResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            void*                     userdata );
+
+        void OnSetPlayModeResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            void*                     userdata );
+
+        void OnStopResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            void*                     userdata );
+
+        // ConnectionManager
+        void OnGetCurrentConnectionIDsResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            PLT_StringList*           ids ,
+            void*                     userdata );
+
+        void OnGetCurrentConnectionInfoResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            PLT_ConnectionInfo*       info ,
+            void*                     userdata );
+
+        void OnGetProtocolInfoResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            PLT_StringList*           sources ,
+            PLT_StringList*           sinks ,
+            void*                     userdata );
+
+        // RenderingControl
+        void OnSetMuteResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            void*                     userdata );
+
+        void OnGetMuteResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            const char*               channel ,
+            bool                      mute ,
+            void*                     userdata );
+
+        void OnSetVolumeResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            void*                     userdata );
+
+        void OnGetVolumeResult(
+            NPT_Result                res ,
+            PLT_DeviceDataReference&  device ,
+            const char*               channel ,
+            NPT_UInt32                volume ,
+            void*                     userdata );
 
     private:
         const char* ChooseIDFromTable(PLT_StringMap& table);
@@ -158,8 +310,8 @@ namespace PLTWinRt {
     public:
         MediaController();
 
-        void Start();
-        void Stop();
+        ErrorCode Start();
+        ErrorCode Stop();
 
         void DmrGetDeviceCaps(Platform::String^ device_id);
         void DmrPlay(Platform::String^ device_id);
@@ -171,7 +323,7 @@ namespace PLTWinRt {
         void DmrSetUrl(Platform::String^ device_id, Platform::String^ url);
         void DmrSetVolume(Platform::String^ device_id, uint16 volume);
         void DmrSetMute(Platform::String^ device_id, bool is_mute);
-        void DmrSetPlayMode(Platform::String^ device_id, bool is_mute);
+        void DmrSetPlayMode(Platform::String^ device_id, Platform::String^ new_mode);
         void DmrGetMediaInfo(Platform::String^ device_id);
         void DmrGetPosition(Platform::String^ device_id);
         void DmrGetTransportInfo(Platform::String^ device_id);

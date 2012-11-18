@@ -141,7 +141,7 @@ void MainPage::StartDmcBtnClicked(Platform::Object^ sender, Windows::UI::Xaml::R
         return;
     }
 
-    m_controller_->DmrSetUrl(m_current_dmr_, play_str);
+    m_controller_->DmrSetAVTransportURI(m_current_dmr_, play_str, nullptr);
     Windows::Foundation::Uri^ url = ref new Windows::Foundation::Uri(play_str);
     MediaPlayer->Source = url;
     VolumeBar->Value = MediaPlayer->Volume;
@@ -187,14 +187,14 @@ void MainPage::ProcessBar_ValueChanged(Platform::Object^ sender, Windows::UI::Xa
     Windows::Foundation::TimeSpan curpos;
     curpos.Duration = (slider->Value / 100.0) * MediaPlayer->NaturalDuration.TimeSpan.Duration;
     MediaPlayer->Position = curpos;
-    m_controller_->DmrSeek(m_current_dmr_, curpos.Duration / 10000000.0);
+    m_controller_->DmrSeek(m_current_dmr_,  (uint64)(curpos.Duration / 10000000.0));
 }
 
 void MainPage::Slider_ValueChanged_1(Platform::Object^ sender, Windows::UI::Xaml::Controls::Primitives::RangeBaseValueChangedEventArgs^ e)
 {
     Windows::UI::Xaml::Controls::Slider^ slider = safe_cast<Windows::UI::Xaml::Controls::Slider^>(sender);
     MediaPlayer->Volume = slider->Value / 100.0;
-    m_controller_->DmrSetVolume(m_current_dmr_, (unsigned short)slider->Value);
+    m_controller_->DmrSetVolume(m_current_dmr_, (int32)slider->Value);
 }
 
 void MainPage::DmrItemListView_SelectionChanged(Platform::Object^ sender,

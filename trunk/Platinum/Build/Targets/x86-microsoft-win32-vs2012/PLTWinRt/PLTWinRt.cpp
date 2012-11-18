@@ -322,7 +322,7 @@ void PLT_MicroMediaController::OnNextResult(
     PLT_DeviceDataReference&  device ,
     void*                     userdata )
 {
-    m_media_controller_->onNext(NPT_Str2Str(device->GetUUID()), switch_ec(res));
+    m_media_controller_->onDmrNext(switch_ec(res), NPT_Str2Str(device->GetUUID()));
 }
 
 void PLT_MicroMediaController::OnPauseResult(
@@ -330,7 +330,7 @@ void PLT_MicroMediaController::OnPauseResult(
     PLT_DeviceDataReference&  device ,
     void*                     userdata )
 {
-    m_media_controller_->onPause(NPT_Str2Str(device->GetUUID()), switch_ec(res));
+    m_media_controller_->onDmrPause(switch_ec(res), NPT_Str2Str(device->GetUUID()));
 }
 
 void PLT_MicroMediaController::OnPlayResult(
@@ -338,7 +338,7 @@ void PLT_MicroMediaController::OnPlayResult(
     PLT_DeviceDataReference&  device ,
     void*                     userdata )
 {
-    m_media_controller_->onPlay(NPT_Str2Str(device->GetUUID()), switch_ec(res));
+    m_media_controller_->onDmrPlay(switch_ec(res), NPT_Str2Str(device->GetUUID()));
 }
 
 void PLT_MicroMediaController::OnPreviousResult(
@@ -346,7 +346,7 @@ void PLT_MicroMediaController::OnPreviousResult(
     PLT_DeviceDataReference&  device ,
     void*                     userdata )
 {
-    m_media_controller_->onPrev(NPT_Str2Str(device->GetUUID()), switch_ec(res));
+    m_media_controller_->onDmrPrevious(switch_ec(res), NPT_Str2Str(device->GetUUID()));
 }
 
 void PLT_MicroMediaController::OnSeekResult(
@@ -354,7 +354,7 @@ void PLT_MicroMediaController::OnSeekResult(
     PLT_DeviceDataReference&  device ,
     void*                     userdata )
 {
-    m_media_controller_->onSeek(NPT_Str2Str(device->GetUUID()), switch_ec(res));
+    m_media_controller_->onDmrSeek(switch_ec(res), NPT_Str2Str(device->GetUUID()));
 }
 
 void PLT_MicroMediaController::OnSetAVTransportURIResult(
@@ -362,7 +362,7 @@ void PLT_MicroMediaController::OnSetAVTransportURIResult(
     PLT_DeviceDataReference&  device ,
     void*                     userdata )
 {
-    m_media_controller_->onSetUri(NPT_Str2Str(device->GetUUID()), switch_ec(res));
+    m_media_controller_->onDmrSetAVTransportURI(switch_ec(res), NPT_Str2Str(device->GetUUID()));
 }
 
 void PLT_MicroMediaController::OnSetPlayModeResult(
@@ -370,7 +370,7 @@ void PLT_MicroMediaController::OnSetPlayModeResult(
     PLT_DeviceDataReference&  device ,
     void*                     userdata )
 {
-    m_media_controller_->onSetPlayMode(NPT_Str2Str(device->GetUUID()), switch_ec(res));
+    m_media_controller_->onDmrSetPlayMode(switch_ec(res), NPT_Str2Str(device->GetUUID()));
 }
 
 void PLT_MicroMediaController::OnStopResult(
@@ -378,7 +378,7 @@ void PLT_MicroMediaController::OnStopResult(
     PLT_DeviceDataReference&  device ,
     void*                     userdata )
 {
-    m_media_controller_->onStop(NPT_Str2Str(device->GetUUID()), switch_ec(res));
+    m_media_controller_->onDmrStop(switch_ec(res), NPT_Str2Str(device->GetUUID()));
 }
 
 // ConnectionManager
@@ -409,7 +409,9 @@ void PLT_MicroMediaController::OnSetMuteResult(
     NPT_Result                res ,
     PLT_DeviceDataReference&  device ,
     void*                     userdata )
-{}
+{
+    m_media_controller_->onDmrSetMute(switch_ec(res), NPT_Str2Str(device->GetUUID()));
+}
 
 void PLT_MicroMediaController::OnGetMuteResult(
     NPT_Result                res ,
@@ -417,14 +419,16 @@ void PLT_MicroMediaController::OnGetMuteResult(
     const char*               channel ,
     bool                      mute ,
     void*                     userdata )
-{}
+{
+    m_media_controller_->onDmrGetMute(switch_ec(res), NPT_Str2Str(device->GetUUID()), mute);
+}
 
 void PLT_MicroMediaController::OnSetVolumeResult(
     NPT_Result                res ,
     PLT_DeviceDataReference&  device ,
     void*                     userdata )
 {
-    m_media_controller_->onSetVol(NPT_Str2Str(device->GetUUID()), switch_ec(res));
+    m_media_controller_->onDmrSetVolume(switch_ec(res), NPT_Str2Str(device->GetUUID()));
 }
 
 void PLT_MicroMediaController::OnGetVolumeResult(
@@ -433,7 +437,9 @@ void PLT_MicroMediaController::OnGetVolumeResult(
     const char*               channel ,
     NPT_UInt32                volume ,
     void*                     userdata )
-{}
+{
+    m_media_controller_->onDmrGetVolume(switch_ec(res), NPT_Str2Str(device->GetUUID()), volume);
+}
 
 /*----------------------------------------------------------------------
 |   PLT_MicroMediaController::ChooseIDGetCurMediaServerFromTable
@@ -998,159 +1004,32 @@ ErrorCode MediaController::Stop()
     return switch_ec(m_upnp_.Stop());
 }
 
-void MediaController::DmrGetDeviceCaps(Platform::String^ device_id)
+// AVTransport
+void MediaController::DmrGetCurrentTransportActions(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.GetCurrentTransportActions(device, 0, NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrGetCurrentTransportActions(switch_ec(ec), device_id, nullptr);
+        }
+    } else {
+        onDmrGetCurrentTransportActions(ErrorCode::EC_NO_SUCH_ITEM, device_id, nullptr);
+    }
+}
+
+void MediaController::DmrGetDeviceCapabilities(Platform::String^ device_id)
 {
     PLT_DeviceDataReference device;
     m_meida_controller_.FindMediaRendererByUUID(device_id, device);
     if (!device.IsNull()) {
         NPT_Result ec = m_meida_controller_.GetDeviceCapabilities(device, 0, NULL);
         if (ec != NPT_SUCCESS) {
-            onGetDevCap(device_id, switch_ec(ec), nullptr, nullptr, nullptr);
+            onDmrGetDeviceCapabilities(switch_ec(ec), device_id, nullptr, nullptr, nullptr);
         }
     } else {
-        onGetDevCap(device_id, ErrorCode::EC_NO_SUCH_ITEM, nullptr, nullptr, nullptr);
-    }
-}
-
-void MediaController::DmrPlay(Platform::String^ device_id)
-{
-    PLT_DeviceDataReference device;
-    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
-    if (!device.IsNull()) {
-        NPT_Result ec = m_meida_controller_.Play(device, 0, "1", NULL);
-        if (ec != NPT_SUCCESS) {
-            onPlay(device_id, switch_ec(ec));
-        }
-    } else {
-        onPlay(device_id, ErrorCode::EC_NO_SUCH_ITEM);
-    }
-}
-
-void MediaController::DmrSeek(Platform::String^ device_id, uint64 new_pos)
-{
-    PLT_DeviceDataReference device;
-    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
-    if (!device.IsNull()) {
-        NPT_String pos;
-        pos = NPT_String::Format("%.2d:%.2d:%.2d", (int)(new_pos) / 3600, ((int)(new_pos) % 3600)/60, ((int)(new_pos) % 3600)%60);
-        NPT_Result ec = m_meida_controller_.Seek(device, 0, "REL_TIME", pos, NULL);
-        if (ec != NPT_SUCCESS) {
-            onSeek(device_id, switch_ec(ec));
-        }
-    } else {
-        onSeek(device_id, ErrorCode::EC_NO_SUCH_ITEM);
-    }
-}
-
-void MediaController::DmrStop(Platform::String^ device_id)
-{
-    PLT_DeviceDataReference device;
-    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
-    if (!device.IsNull()) {
-        NPT_Result ec = m_meida_controller_.Stop(device, 0, NULL);
-        if (ec != NPT_SUCCESS) {
-            onStop(device_id, switch_ec(ec));
-        }
-    } else {
-        onStop(device_id, ErrorCode::EC_NO_SUCH_ITEM);
-    }
-}
-
-void MediaController::DmrPause(Platform::String^ device_id)
-{
-    PLT_DeviceDataReference device;
-    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
-    if (!device.IsNull()) {
-        NPT_Result ec = m_meida_controller_.Pause(device, 0, NULL);
-        if (ec != NPT_SUCCESS) {
-            onPause(device_id, switch_ec(ec));
-        }
-    } else {
-        onPause(device_id, ErrorCode::EC_NO_SUCH_ITEM);
-    }
-}
-
-void MediaController::DmrNext(Platform::String^ device_id)
-{
-    PLT_DeviceDataReference device;
-    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
-    if (!device.IsNull()) {
-        NPT_Result ec = m_meida_controller_.Next(device, 0, NULL);
-        if (ec != NPT_SUCCESS) {
-            onNext(device_id, switch_ec(ec));
-        }
-    } else {
-        onNext(device_id, ErrorCode::EC_NO_SUCH_ITEM);
-    }
-}
-
-void MediaController::DmrPrev(Platform::String^ device_id)
-{
-    PLT_DeviceDataReference device;
-    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
-    if (!device.IsNull()) {
-        NPT_Result ec = m_meida_controller_.Previous(device, 0, NULL);
-        if (ec != NPT_SUCCESS) {
-            onPrev(device_id, switch_ec(ec));
-        }
-    } else {
-        onPrev(device_id, ErrorCode::EC_NO_SUCH_ITEM);
-    }
-}
-
-void MediaController::DmrSetUrl(Platform::String^ device_id, Platform::String^ url)
-{
-    PLT_DeviceDataReference device;
-    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
-    if (!device.IsNull()) {
-        NPT_Result ec = m_meida_controller_.SetAVTransportURI(device, 0, Str2NPT_Str(url), "", NULL);
-        if (ec != NPT_SUCCESS) {
-            onSetUri(device_id, switch_ec(ec));
-        }
-    } else {
-        onSetUri(device_id, ErrorCode::EC_NO_SUCH_ITEM);
-    }
-}
-
-void MediaController::DmrSetVolume(Platform::String^ device_id, uint16 volume)
-{
-    PLT_DeviceDataReference device;
-    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
-    if (!device.IsNull()) {
-        NPT_Result ec = m_meida_controller_.SetVolume(device, 0, "Master", volume, NULL);
-        if (ec != NPT_SUCCESS) {
-            onSetVol(device_id, switch_ec(ec));
-        }
-    } else {
-        onSetVol(device_id, ErrorCode::EC_NO_SUCH_ITEM);
-    }
-}
-
-void MediaController::DmrSetMute(Platform::String^ device_id, bool is_mute)
-{
-    PLT_DeviceDataReference device;
-    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
-    if (!device.IsNull()) {
-        NPT_Result ec = m_meida_controller_.SetMute(device, 0, "Master", is_mute, NULL);
-        if (ec != NPT_SUCCESS) {
-            onSetMute(device_id, switch_ec(ec));
-        }
-    } else {
-        onSetMute(device_id, ErrorCode::EC_NO_SUCH_ITEM);
-    }
-}
-
-void MediaController::DmrSetPlayMode(Platform::String^ device_id, Platform::String^ new_mode)
-{
-    PLT_DeviceDataReference device;
-    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
-    if (!device.IsNull()) {
-        NPT_Result ec = m_meida_controller_.SetPlayMode(device, 0, Str2NPT_Str(new_mode), NULL);
-        if (ec != NPT_SUCCESS) {
-            onSetPlayMode(device_id, switch_ec(ec));
-        }
-    } else {
-        onSetPlayMode(device_id, ErrorCode::EC_NO_SUCH_ITEM);
+        onDmrGetDeviceCapabilities(ErrorCode::EC_NO_SUCH_ITEM, device_id, nullptr, nullptr, nullptr);
     }
 }
 
@@ -1161,24 +1040,24 @@ void MediaController::DmrGetMediaInfo(Platform::String^ device_id)
     if (!device.IsNull()) {
         NPT_Result ec = m_meida_controller_.GetMediaInfo(device, 0, NULL);
         if (ec != NPT_SUCCESS) {
-            onGetMediaInfo(device_id, switch_ec(ec));
+            onDmrGetMediaInfo(switch_ec(ec), device_id, nullptr);
         }
     } else {
-        onGetMediaInfo(device_id, ErrorCode::EC_NO_SUCH_ITEM);
+        onDmrGetMediaInfo(ErrorCode::EC_NO_SUCH_ITEM, device_id, nullptr);
     }
 }
 
-void MediaController::DmrGetPosition(Platform::String^ device_id)
+void MediaController::DmrGetPositionInfo(Platform::String^ device_id)
 {
     PLT_DeviceDataReference device;
     m_meida_controller_.FindMediaRendererByUUID(device_id, device);
     if (!device.IsNull()) {
         NPT_Result ec = m_meida_controller_.GetPositionInfo(device, 0, NULL);
         if (ec != NPT_SUCCESS) {
-            onGetPosition(device_id, switch_ec(ec));
+            onDmrGetPositionInfo(switch_ec(ec), device_id, nullptr);
         }
     } else {
-        onGetPosition(device_id, ErrorCode::EC_NO_SUCH_ITEM);
+        onDmrGetPositionInfo(ErrorCode::EC_NO_SUCH_ITEM, device_id, nullptr);
     }
 }
 
@@ -1189,9 +1068,246 @@ void MediaController::DmrGetTransportInfo(Platform::String^ device_id)
     if (!device.IsNull()) {
         NPT_Result ec = m_meida_controller_.GetTransportInfo(device, 0, NULL);
         if (ec != NPT_SUCCESS) {
-            onGetTransportInfo(device_id, switch_ec(ec));
+            onDmrGetTransportInfo(switch_ec(ec), device_id, nullptr);
         }
     } else {
-        onGetTransportInfo(device_id, ErrorCode::EC_NO_SUCH_ITEM);
+        onDmrGetTransportInfo(ErrorCode::EC_NO_SUCH_ITEM, device_id, nullptr);
+    }
+}
+
+void MediaController::DmrGetTransportSettings(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.GetTransportSettings(device, 0, NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrGetTransportSettings(switch_ec(ec), device_id, nullptr);
+        }
+    } else {
+        onDmrGetTransportSettings(ErrorCode::EC_NO_SUCH_ITEM, device_id, nullptr);
+    }
+}
+
+void MediaController::DmrNext(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.Next(device, 0, NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrNext(switch_ec(ec), device_id);
+        }
+    } else {
+        onDmrNext(ErrorCode::EC_NO_SUCH_ITEM, device_id);
+    }
+}
+
+void MediaController::DmrPause(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.Pause(device, 0, NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrPause(switch_ec(ec), device_id);
+        }
+    } else {
+        onDmrPause(ErrorCode::EC_NO_SUCH_ITEM, device_id);
+    }
+}
+
+void MediaController::DmrPlay(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.Play(device, 0, "1", NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrPlay(switch_ec(ec), device_id);
+        }
+    } else {
+        onDmrPlay(ErrorCode::EC_NO_SUCH_ITEM, device_id);
+    }
+}
+
+void MediaController::DmrPrevious(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.Previous(device, 0, NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrPrevious(switch_ec(ec), device_id);
+        }
+    } else {
+        onDmrPrevious(ErrorCode::EC_NO_SUCH_ITEM, device_id);
+    }
+}
+
+void MediaController::DmrSeek(Platform::String^ device_id, uint64 target)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_String pos;
+        pos = NPT_String::Format("%.2d:%.2d:%.2d", (int)(target) / 3600, ((int)(target) % 3600)/60, ((int)(target) % 3600)%60);
+        NPT_Result ec = m_meida_controller_.Seek(device, 0, "REL_TIME", pos, NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrSeek(switch_ec(ec), device_id);
+        }
+    } else {
+        onDmrSeek(ErrorCode::EC_NO_SUCH_ITEM, device_id);
+    }
+}
+
+bool MediaController::DmrCanSetNextAVTransportURI(Platform::String^ device_id)
+{
+    return false;
+}
+
+void MediaController::DmrSetAVTransportURI(Platform::String^ device_id, Platform::String^ uri, Platform::String^ metadata)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.SetAVTransportURI(device, 0, Str2NPT_Str(uri), Str2NPT_Str(metadata), NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrSetAVTransportURI(switch_ec(ec), device_id);
+        }
+    } else {
+        onDmrSetAVTransportURI(ErrorCode::EC_NO_SUCH_ITEM, device_id);
+    }
+}
+
+void MediaController::DmrSetNextAVTransportURI(Platform::String^ device_id, Platform::String^next_uri, Platform::String^ next_metadata)
+{
+}
+
+void MediaController::DmrSetPlayMode(Platform::String^ device_id, Platform::String^ new_play_mode)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.SetPlayMode(device, 0, Str2NPT_Str(new_play_mode), NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrSetPlayMode(switch_ec(ec), device_id);
+        }
+    } else {
+        onDmrSetPlayMode(ErrorCode::EC_NO_SUCH_ITEM, device_id);
+    }
+}
+
+void MediaController::DmrStop(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.Stop(device, 0, NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrStop(switch_ec(ec), device_id);
+        }
+    } else {
+        onDmrStop(ErrorCode::EC_NO_SUCH_ITEM, device_id);
+    }
+}
+
+// ConnectionManager
+void MediaController::DmrGetCurrentConnectionIDs(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.GetCurrentConnectionIDs(device, NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrGetCurrentConnectionIDs(switch_ec(ec), device_id, nullptr);
+        }
+    } else {
+        onDmrGetCurrentConnectionIDs(ErrorCode::EC_NO_SUCH_ITEM, device_id, nullptr);
+    }
+}
+
+void MediaController::DmrGetCurrentConnectionInfo(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.GetCurrentConnectionInfo(device, 0, NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrGetCurrentConnectionInfo(switch_ec(ec), device_id, nullptr);
+        }
+    } else {
+        onDmrGetCurrentConnectionInfo(ErrorCode::EC_NO_SUCH_ITEM, device_id, nullptr);
+    }
+}
+
+void MediaController::DmrGetProtocolInfo(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.GetProtocolInfo(device, NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrGetProtocolInfo(switch_ec(ec), device_id, nullptr, nullptr);
+        }
+    } else {
+        onDmrGetProtocolInfo(ErrorCode::EC_NO_SUCH_ITEM, device_id, nullptr, nullptr);
+    }
+}
+
+// RenderingControl
+void MediaController::DmrSetMute(Platform::String^ device_id, bool mute)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.SetMute(device, 0, "Master", mute, NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrSetMute(switch_ec(ec), device_id);
+        }
+    } else {
+        onDmrSetMute(ErrorCode::EC_NO_SUCH_ITEM, device_id);
+    }
+}
+
+void MediaController::DmrGetMute(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.GetMute(device, 0, "Master", NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrGetMute(switch_ec(ec), device_id, false);
+        }
+    } else {
+        onDmrGetMute(ErrorCode::EC_NO_SUCH_ITEM, device_id, false);
+    }
+}
+
+void MediaController::DmrSetVolume(Platform::String^ device_id, int32 volume)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.SetVolume(device, 0, "Master", volume, NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrSetVolume(switch_ec(ec), device_id);
+        }
+    } else {
+        onDmrSetVolume(ErrorCode::EC_NO_SUCH_ITEM, device_id);
+    }
+}
+
+void MediaController::DmrGetVolume(Platform::String^ device_id)
+{
+    PLT_DeviceDataReference device;
+    m_meida_controller_.FindMediaRendererByUUID(device_id, device);
+    if (!device.IsNull()) {
+        NPT_Result ec = m_meida_controller_.GetVolume(device, 0, "Master", NULL);
+        if (ec != NPT_SUCCESS) {
+            onDmrGetVolume(switch_ec(ec), device_id, 0);
+        }
+    } else {
+        onDmrGetVolume(ErrorCode::EC_NO_SUCH_ITEM, device_id, 0);
     }
 }

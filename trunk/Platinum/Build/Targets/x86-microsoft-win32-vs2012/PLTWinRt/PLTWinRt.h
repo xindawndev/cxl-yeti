@@ -39,22 +39,136 @@ namespace PLTWinRt {
         EC_CANCELLED
     };
 
+    public ref class DMR_MediaInfo sealed {
+    public:
+        property uint32    num_tracks;
+        property Windows::Foundation::TimeSpan media_duration;
+        property Platform::String^    cur_uri;
+        property Platform::String^    cur_metadata;
+        property Platform::String^    next_uri;
+        property Platform::String^    next_metadata;
+        property Platform::String^    play_medium;
+        property Platform::String^    rec_medium;
+        property Platform::String^    write_status;
+    };
+
+    public ref class DMR_PositionInfo sealed{
+        property uint32    track;
+        property Windows::Foundation::TimeSpan track_duration;
+        property Platform::String^    track_metadata;
+        property Platform::String^    track_uri;
+        property Windows::Foundation::TimeSpan rel_time;
+        property Windows::Foundation::TimeSpan abs_time;
+        property int32     rel_count;
+        property int32     abs_count;
+    };
+
+    public ref class DMR_TransportInfo sealed{
+        property Platform::String^ cur_transport_state;
+        property Platform::String^ cur_transport_status;
+        property Platform::String^ cur_speed;
+    };
+
+    public ref class DMR_TransportSettings sealed{
+        property Platform::String^ play_mode;
+        property Platform::String^ rec_quality_mode;
+    };
+
+    public ref class DMR_ConnectionInfo sealed{
+        property uint32 rcs_id;
+        property uint32 avtransport_id;
+        property Platform::String^ protocol_info;
+        property Platform::String^ peer_connection_mgr;
+        property uint32 peer_connection_id;
+        property Platform::String^ direction;
+        property Platform::String^ status;
+    };
+
     public delegate void OnDeviceAdd(Platform::String^ device_id, Platform::String^ divice_name, bool is_dmr);
     public delegate void OnDeviceDel(Platform::String^ device_id, Platform::String^ divice_name, bool is_dmr);
-    public delegate void OnGetDevCap(Platform::String^ device_id, ErrorCode ec, Platform::String^ play_media, Platform::String^ rec_media, Platform::String^ rec_qua_meida);
-    public delegate void OnPlay(Platform::String^ device_id, ErrorCode ec);
-    public delegate void OnSeek(Platform::String^ device_id, ErrorCode ec);
-    public delegate void OnStop(Platform::String^ device_id, ErrorCode ec);
-    public delegate void OnPause(Platform::String^ device_id, ErrorCode ec);
-    public delegate void OnNext(Platform::String^ device_id, ErrorCode ec);
-    public delegate void OnPrev(Platform::String^ device_id, ErrorCode ec);
-    public delegate void OnSetUri(Platform::String^ device_id, ErrorCode ec);
-    public delegate void OnSetVol(Platform::String^ device_id, ErrorCode ec);
-    public delegate void OnSetMute(Platform::String^ device_id, ErrorCode ec);
-    public delegate void OnSetPlayMode(Platform::String^ device_id, ErrorCode ec);
-    public delegate void OnGetMediaInfo(Platform::String^ device_id, ErrorCode ec);
-    public delegate void OnGetPosition(Platform::String^ device_id, ErrorCode ec);
-    public delegate void OnGetTransportInfo(Platform::String^ device_id, ErrorCode ec);
+
+    // AVTransport
+    public delegate void OnDmrGetCurrentTransportActions(
+        ErrorCode                ec , 
+        Platform::String^  device_id ,
+        Windows::Foundation::Collections::IVector<Platform::String^>^             actions );
+    public delegate void OnDmrGetDeviceCapabilities(
+        ErrorCode                ec , 
+        Platform::String^  device_id ,
+        Windows::Foundation::Collections::IVector<Platform::String^>^             play_media,
+        Windows::Foundation::Collections::IVector<Platform::String^>^             rec_media,
+        Windows::Foundation::Collections::IVector<Platform::String^>^             rec_quality_modes);
+    public delegate void OnDmrGetMediaInfo(
+        ErrorCode                ec ,
+        Platform::String^  device_id ,
+        DMR_MediaInfo^            info);
+    public delegate void OnDmrGetPositionInfo(
+        ErrorCode                ec ,
+        Platform::String^  device_id ,
+        DMR_PositionInfo^         info);
+    public delegate void OnDmrGetTransportInfo(
+        ErrorCode                ec ,
+        Platform::String^  device_id ,
+        DMR_TransportInfo^        info);
+    public delegate void OnDmrGetTransportSettings(
+        ErrorCode                ec ,
+        Platform::String^  device_id ,
+        DMR_TransportSettings^    settings);
+    public delegate void OnDmrNext(
+        ErrorCode                ec ,
+        Platform::String^  device_id);
+    public delegate void OnDmrPause(
+        ErrorCode                ec ,
+        Platform::String^  device_id);
+    public delegate void OnDmrPlay(
+        ErrorCode                ec ,
+        Platform::String^  device_id);
+    public delegate void OnDmrPrevious(
+        ErrorCode                ec ,
+        Platform::String^  device_id);
+    public delegate void OnDmrSeek(
+        ErrorCode                ec ,
+        Platform::String^  device_id);
+    public delegate void OnDmrSetAVTransportURI(
+        ErrorCode                ec ,
+        Platform::String^  device_id);
+    public delegate void OnDmrSetPlayMode(
+        ErrorCode                ec ,
+        Platform::String^  device_id);
+    public delegate void OnDmrStop(
+        ErrorCode                ec ,
+        Platform::String^  device_id);
+
+    // ConnectionManager
+    public delegate void OnDmrGetCurrentConnectionIDs(
+        ErrorCode                ec ,
+        Platform::String^  device_id ,
+        Windows::Foundation::Collections::IVector<Platform::String^>^             ids);
+    public delegate void OnDmrGetCurrentConnectionInfo(
+        ErrorCode                ec ,
+        Platform::String^  device_id ,
+        DMR_ConnectionInfo^       info);
+    public delegate void OnDmrGetProtocolInfo(
+        ErrorCode                 ec ,
+        Platform::String^         device_id ,
+        Windows::Foundation::Collections::IVector<Platform::String^>^             sources ,
+        Windows::Foundation::Collections::IVector<Platform::String^>^             sinks);
+
+    // RenderingControl
+    public delegate void OnDmrSetMute(
+        ErrorCode                ec ,
+        Platform::String^  device_id);
+    public delegate void OnDmrGetMute(
+        ErrorCode                ec ,
+        Platform::String^  device_id ,
+        bool                      mute);
+    public delegate void OnDmrSetVolume(
+        ErrorCode                ec ,
+        Platform::String^  device_id);
+    public delegate void OnDmrGetVolume(
+        ErrorCode                ec ,
+        Platform::String^  device_id ,
+        uint32                volume);
 
     ref class MediaController;
     /*----------------------------------------------------------------------
@@ -313,39 +427,65 @@ namespace PLTWinRt {
         ErrorCode Start();
         ErrorCode Stop();
 
-        void DmrGetDeviceCaps(Platform::String^ device_id);
-        void DmrPlay(Platform::String^ device_id);
-        void DmrSeek(Platform::String^ device_id, uint64 new_pos);
-        void DmrStop(Platform::String^ device_id);
-        void DmrPause(Platform::String^ device_id);
-        void DmrNext(Platform::String^ device_id);
-        void DmrPrev(Platform::String^ device_id);
-        void DmrSetUrl(Platform::String^ device_id, Platform::String^ url);
-        void DmrSetVolume(Platform::String^ device_id, uint16 volume);
-        void DmrSetMute(Platform::String^ device_id, bool is_mute);
-        void DmrSetPlayMode(Platform::String^ device_id, Platform::String^ new_mode);
+        // AVTransport
+        void DmrGetCurrentTransportActions(Platform::String^ device_id);
+        void DmrGetDeviceCapabilities(Platform::String^ device_id);
         void DmrGetMediaInfo(Platform::String^ device_id);
-        void DmrGetPosition(Platform::String^ device_id);
+        void DmrGetPositionInfo(Platform::String^ device_id);
         void DmrGetTransportInfo(Platform::String^ device_id);
+        void DmrGetTransportSettings(Platform::String^ device_id);
+        void DmrNext(Platform::String^ device_id);
+        void DmrPause(Platform::String^ device_id);
+        void DmrPlay(Platform::String^ device_id);
+        void DmrPrevious(Platform::String^ device_id);
+        void DmrSeek(Platform::String^ device_id, uint64 target);
+        bool DmrCanSetNextAVTransportURI(Platform::String^ device_id);
+        void DmrSetAVTransportURI(Platform::String^ device_id, Platform::String^ uri, Platform::String^ metadata);
+        void DmrSetNextAVTransportURI(Platform::String^ device_id, Platform::String^next_uri, Platform::String^ next_metadata);
+        void DmrSetPlayMode(Platform::String^ device_id, Platform::String^ new_play_mode);
+        void DmrStop(Platform::String^ device_id);
+
+        // ConnectionManager
+        void DmrGetCurrentConnectionIDs(Platform::String^ device_id);
+        void DmrGetCurrentConnectionInfo(Platform::String^ device_id);
+        void DmrGetProtocolInfo(Platform::String^ device_id);
+
+        // RenderingControl
+        void DmrSetMute(Platform::String^ device_id, bool mute);
+        void DmrGetMute(Platform::String^ device_id);
+        void DmrSetVolume(Platform::String^ device_id, int32 volume);
+        void DmrGetVolume(Platform::String^ device_id);
 
     public: // Events
         event OnDeviceAdd^          onDeviceAdd;
         event OnDeviceDel^          onDeviceDel;
 
-        event OnGetDevCap^          onGetDevCap;
-        event OnPlay^               onPlay;
-        event OnSeek^               onSeek;
-        event OnStop^               onStop;
-        event OnPause^              onPause;
-        event OnNext^               onNext;
-        event OnPrev^               onPrev;
-        event OnSetUri^             onSetUri;
-        event OnSetVol^             onSetVol;
-        event OnSetMute^            onSetMute;
-        event OnSetPlayMode^        onSetPlayMode;
-        event OnGetMediaInfo^       onGetMediaInfo;
-        event OnGetPosition^        onGetPosition;
-        event OnGetTransportInfo^   onGetTransportInfo;
+        // AVTransport
+        event OnDmrGetCurrentTransportActions^  onDmrGetCurrentTransportActions;
+        event OnDmrGetDeviceCapabilities^       onDmrGetDeviceCapabilities;
+        event OnDmrGetMediaInfo^                onDmrGetMediaInfo;
+        event OnDmrGetPositionInfo^             onDmrGetPositionInfo;
+        event OnDmrGetTransportInfo^            onDmrGetTransportInfo;
+        event OnDmrGetTransportSettings^        onDmrGetTransportSettings;
+        event OnDmrNext^                        onDmrNext;
+        event OnDmrPause^                       onDmrPause;
+        event OnDmrPlay^                        onDmrPlay;
+        event OnDmrPrevious^                    onDmrPrevious;
+        event OnDmrSeek^                        onDmrSeek;
+        event OnDmrSetAVTransportURI^           onDmrSetAVTransportURI;
+        event OnDmrSetPlayMode^                 onDmrSetPlayMode;
+        event OnDmrStop^                        onDmrStop;
+
+        // ConnectionManager
+        event OnDmrGetCurrentConnectionIDs^     onDmrGetCurrentConnectionIDs;
+        event OnDmrGetCurrentConnectionInfo^    onDmrGetCurrentConnectionInfo;
+        event OnDmrGetProtocolInfo^             onDmrGetProtocolInfo;
+
+        // RenderingControl
+        event OnDmrSetMute^                     onDmrSetMute;
+        event OnDmrGetMute^                     onDmrGetMute;
+        event OnDmrSetVolume^                   onDmrSetVolume;
+        event OnDmrGetVolume^                   onDmrGetVolume;
 
     private:
         friend class PLT_MicroMediaController;

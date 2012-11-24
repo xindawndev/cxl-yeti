@@ -722,17 +722,19 @@ protected:
     DatagramSocket^ m_Socket;
     IOutputStream^  m_OutputStream;
     DataWriter^     m_Writer;
-    DatagramSocketMessageReceivedEventArgs^ m_Args;
     HANDLE          m_WaitEvent;
     HANDLE          m_WaitDataEvent;
     CRITICAL_SECTION m_Lock;
     NPT_Timeout     m_ReadTimeout;
     NPT_Timeout     m_WriteTimeout;
+    NPT_SocketInfo  m_Info;
+    NPT_RingBuffer  m_RecvBuffer;
 };
 
 NPT_WinRtUdpSocket::NPT_WinRtUdpSocket(NPT_Flags flags)
     : m_ReadTimeout(NPT_WINRT_SOCKET_DEFAULT_READ_TIMEOUT)
     , m_WriteTimeout(NPT_WINRT_SOCKET_DEFAULT_WRITE_TIMEOUT)
+    , m_RecvBuffer(4096)
 {
     m_Socket = ref new DatagramSocket();
     m_WaitEvent = CreateEventExW(NULL, L"", 0, EVENT_ALL_ACCESS);
@@ -741,7 +743,28 @@ NPT_WinRtUdpSocket::NPT_WinRtUdpSocket(NPT_Flags flags)
     m_Socket->MessageReceived += ref new TypedEventHandler<DatagramSocket^, DatagramSocketMessageReceivedEventArgs^>([&](DatagramSocket^ socket, DatagramSocketMessageReceivedEventArgs^ args) {
         task<IOutputStream^>(socket->GetOutputStreamAsync(args->RemoteAddress, args->RemotePort)).then([this, socket, args] (IOutputStream^ stream) {
             EnterCriticalSection(&m_Lock);
-            m_Args = args;
+            NPT_String addr_str = Str2NPT_Str(args->RemoteAddress->RawName);
+            NPT_IpAddress ip;
+            ip.Parse(addr_str.UseChars());
+
+            NPT_String port_str = Str2NPT_Str(args->RemotePort);
+            NPT_UInt32 port_uint;
+            port_str.ToInteger32(port_uint);
+            m_Info.remote_address.SetIpAddress(ip);
+            m_Info.remote_address.SetPort(port_uint);
+
+            unsigned int bytes_available = args->GetDataReader()->UnconsumedBufferLength;
+            Array<unsigned char>^ bytes = ref new Array<unsigned char>(bytes_available);
+            args->GetDataReader()->ReadBytes(bytes);
+            if (bytes_available <= m_RecvBuffer.GetSpace()) {
+                m_RecvBuffer.Write(bytes->Data, bytes_available);
+            } else {
+                m_RecvBuffer.Write(bytes->Data, m_RecvBuffer.GetSpace());
+            }
+            if (m_RecvBuffer.GetAvailable() > 0) {
+                SetEvent(m_WaitDataEvent);
+            }
+
             if (m_OutputStream == nullptr) {
                 m_OutputStream = stream;
                 m_Writer = ref new DataWriter(m_OutputStream);
@@ -750,7 +773,6 @@ NPT_WinRtUdpSocket::NPT_WinRtUdpSocket(NPT_Flags flags)
         }).then([this, socket, args] (task<void> previousTask) {
             try {
                 previousTask.get();
-                SetEvent(m_WaitDataEvent);
             } catch (Exception^ exception) {
             }
         });
@@ -813,6 +835,7 @@ NPT_Result NPT_WinRtUdpSocket::GetOutputStream(NPT_OutputStreamReference& stream
 
 NPT_Result NPT_WinRtUdpSocket::GetInfo(NPT_SocketInfo& info)
 {
+    info = m_Info;
     return NPT_SUCCESS;
 }
 
@@ -930,26 +953,29 @@ NPT_Result NPT_WinRtUdpSocket::Receive(NPT_DataBuffer&    packet,
                 NPT_LOG_FINE_1("connection failed (%d)", result);
                 return result;
             } else {
-                ResetEvent(m_WaitDataEvent);
-                DWORD wait_result = WaitForSingleObjectEx(m_WaitDataEvent, m_ReadTimeout, FALSE);
-                if (wait_result != WAIT_OBJECT_0) {
-                    NPT_LOG_FINE("receive data timed out");
-                    return NPT_ERROR_TIMEOUT;
+                if (m_RecvBuffer.GetAvailable() <= 0) {
+                    ResetEvent(m_WaitDataEvent);
+                    DWORD wait_result = WaitForSingleObjectEx(m_WaitDataEvent, m_ReadTimeout, FALSE);
+                    if (wait_result != WAIT_OBJECT_0) {
+                        NPT_LOG_FINE("receive data timed out");
+                        OutputDebugString(L"receive data timed out\r\n");
+                        return NPT_ERROR_TIMEOUT;
+                    }
+                    NPT_LOG_FINEST("done waiting for receive data");
                 }
-                NPT_LOG_FINEST("done waiting for receive data");
-                unsigned int bytes_available = m_Args->GetDataReader()->UnconsumedBufferLength;
-                Array<unsigned char>^ bytes = ref new Array<unsigned char>(bytes_available);
-                m_Args->GetDataReader()->ReadBytes(bytes);
-                if (bytes_available <= packet.GetBufferSize()) {
-                    NPT_CopyMemory(packet.UseData(), bytes->Data, bytes_available);
-                    packet.SetDataSize(bytes_available);
+                NPT_Size available_size;
+                if (packet.GetBufferSize() > m_RecvBuffer.GetAvailable()) {
+                    available_size = m_RecvBuffer.GetAvailable();
                 } else {
-                    NPT_CopyMemory(packet.UseData(), bytes->Data, packet.GetBufferSize());
-                    packet.SetDataSize(packet.GetDataSize());
+                    available_size = packet.GetBufferSize();
                 }
-                //address->SetIpAddress(NPT_IpAddress(m_Args->RemoteAddress->RawName));
-                //address->SetPort(m_Args->RemotePort);
-                delete m_Args;
+                m_RecvBuffer.Read(packet.UseData(), available_size);
+                packet.SetDataSize(available_size);
+
+                if (address != NULL) {
+                    address->SetIpAddress(m_Info.remote_address.GetIpAddress());
+                    address->SetPort(m_Info.remote_address.GetPort());
+                }
                 return NPT_SUCCESS;
             }
         } catch (Exception^ e) {
@@ -958,22 +984,28 @@ NPT_Result NPT_WinRtUdpSocket::Receive(NPT_DataBuffer&    packet,
         }
     } else {
         try {
-            ResetEvent(m_WaitDataEvent);
-            DWORD wait_result = WaitForSingleObjectEx(m_WaitDataEvent, m_ReadTimeout, FALSE);
-            if (wait_result != WAIT_OBJECT_0) {
-                NPT_LOG_FINE("receive data timed out");
-                return NPT_ERROR_TIMEOUT;
+            if (m_RecvBuffer.GetAvailable() <= 0) {
+                ResetEvent(m_WaitDataEvent);
+                DWORD wait_result = WaitForSingleObjectEx(m_WaitDataEvent, m_ReadTimeout, FALSE);
+                if (wait_result != WAIT_OBJECT_0) {
+                    NPT_LOG_FINE("receive data timed out");
+                    OutputDebugString(L"receive data timed out\r\n");
+                    return NPT_ERROR_TIMEOUT;
+                }
+                NPT_LOG_FINEST("done waiting for receive data");
             }
-            NPT_LOG_FINEST("done waiting for receive data");
-            unsigned int bytes_available = m_Args->GetDataReader()->UnconsumedBufferLength;
-            Array<unsigned char>^ bytes = ref new Array<unsigned char>(bytes_available);
-            m_Args->GetDataReader()->ReadBytes(bytes);
-            if (bytes_available <= packet.GetBufferSize()) {
-                NPT_CopyMemory(packet.UseData(), bytes->Data, bytes_available);
-                packet.SetDataSize(bytes_available);
+            NPT_Size available_size;
+            if (packet.GetBufferSize() > m_RecvBuffer.GetAvailable()) {
+                available_size = m_RecvBuffer.GetAvailable();
             } else {
-                NPT_CopyMemory(packet.UseData(), bytes->Data, packet.GetBufferSize());
-                packet.SetDataSize(packet.GetBufferSize());
+                available_size = packet.GetBufferSize();
+            }
+            m_RecvBuffer.Read(packet.UseData(), available_size);
+            packet.SetDataSize(available_size);
+
+            if (address != NULL) {
+                address->SetIpAddress(m_Info.remote_address.GetIpAddress());
+                address->SetPort(m_Info.remote_address.GetPort());
             }
             return NPT_SUCCESS;
         } catch (Exception^ e) {

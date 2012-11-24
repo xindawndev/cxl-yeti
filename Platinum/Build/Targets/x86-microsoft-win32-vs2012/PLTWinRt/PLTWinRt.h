@@ -53,6 +53,7 @@ namespace PLTWinRt {
     };
 
     public ref class DMR_PositionInfo sealed{
+    public:
         property uint32    track;
         property Windows::Foundation::TimeSpan track_duration;
         property Platform::String^    track_metadata;
@@ -64,17 +65,20 @@ namespace PLTWinRt {
     };
 
     public ref class DMR_TransportInfo sealed{
+    public:
         property Platform::String^ cur_transport_state;
         property Platform::String^ cur_transport_status;
         property Platform::String^ cur_speed;
     };
 
     public ref class DMR_TransportSettings sealed{
+    public:
         property Platform::String^ play_mode;
         property Platform::String^ rec_quality_mode;
     };
 
     public ref class DMR_ConnectionInfo sealed{
+    public:
         property uint32 rcs_id;
         property uint32 avtransport_id;
         property Platform::String^ protocol_info;
@@ -212,6 +216,10 @@ namespace PLTWinRt {
 
         // PLT_MediaBrowserDelegate methods
         bool OnMSAdded(PLT_DeviceDataReference& device);
+        void OnMSRemoved(PLT_DeviceDataReference&  device);
+        void OnMSStateVariablesChanged(
+            PLT_Service*                  service, 
+            NPT_List<PLT_StateVariable*>* vars);
 
         // PLT_MediaControllerDelegate methods
         bool OnMRAdded(PLT_DeviceDataReference& device);

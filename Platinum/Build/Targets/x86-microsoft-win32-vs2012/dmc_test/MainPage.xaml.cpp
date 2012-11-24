@@ -1,4 +1,6 @@
-﻿//
+﻿Duration
+Duration
+//
 // MainPage.xaml.cpp
 // Implementation of the MainPage class.
 //
@@ -37,6 +39,18 @@ MainPage::MainPage()
     m_controller_ = ref new MediaController();
     m_controller_->onDeviceAdd += ref new OnDeviceAdd(this, &MainPage::On_DeviceAdd);
     m_controller_->onDeviceDel += ref new OnDeviceDel(this, &MainPage::On_DeviceDel);
+    m_controller_->onDmrSetAVTransportURI += ref new OnDmrSetAVTransportURI(this, &MainPage::On_Common);
+    m_controller_->onDmrPlay += ref new OnDmrPlay(this, &MainPage::On_Common);
+    m_controller_->onDmrSeek += ref new OnDmrSeek(this, &MainPage::On_Common);
+    m_controller_->onDmrPause += ref new OnDmrPause(this, &MainPage::On_Common);
+    m_controller_->onDmrStop += ref new OnDmrStop(this, &MainPage::On_Common);
+    m_controller_->onDmrSetMute += ref new OnDmrSetMute(this, &MainPage::On_Common);
+    m_controller_->onDmrSetVolume += ref new OnDmrSetVolume(this, &MainPage::On_Common);
+    m_controller_->onDmrGetPositionInfo += ref new OnDmrGetPositionInfo(this, &MainPage::On_GetPositionInfo);
+    m_controller_->onDmrGetVolume += ref new OnDmrGetVolume(this, &MainPage::On_GetVolume);
+    m_controller_->onDmrGetDeviceCapabilities += ref new OnDmrGetDeviceCapabilities(this, &MainPage::On_GetCap);
+    m_controller_->onDmrGetTransportInfo += ref new OnDmrGetTransportInfo(this, &MainPage::On_GetTrans);
+    m_controller_->onDmrGetMute += ref new OnDmrGetMute(this, &MainPage::On_GetMute);
 }
 
 void MainPage::OnPlayStateChange(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
@@ -85,18 +99,23 @@ void MainPage::OnVolumeChanged(Platform::Object^ sender, Windows::UI::Xaml::Rout
 
 void MainPage::On_DeviceAdd(Platform::String^ device_id, Platform::String^ divice_name, bool is_dmr)
 {
-    DeviceInfo^ di = ref new DeviceInfo();
-    di->DeviceId = device_id;
-    di->DeviceName = divice_name;
+
     if (is_dmr) {
         this->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, device_id, divice_name] () {
+            DeviceInfo^ di = ref new DeviceInfo();
+            di->DeviceId = device_id;
+            di->DeviceName = divice_name;
+            m_dmrs_->Items->Append(di);
             ShowInfo->Text += "Add DMR: " + device_id + " Name: " + divice_name + "\r\n";
         }));
-        m_current_dmr_ = device_id;
-        m_dmrs_->Items->Append(di);
-        this->DataContext = m_dmrs_;
     } else {
-        m_dmss_->Items->Append(di);
+        this->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, device_id, divice_name] () {
+            DeviceInfo^ di = ref new DeviceInfo();
+            di->DeviceId = device_id;
+            di->DeviceName = divice_name;
+            m_dmss_->Items->Append(di);
+            ShowInfo->Text += "Add DMS: " + device_id + " Name: " + divice_name + "\r\n";
+        }));
     }
 }
 
@@ -104,23 +123,76 @@ void MainPage::On_DeviceDel(Platform::String^ device_id, Platform::String^ divic
 {
     if (is_dmr) {
         this->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, device_id, divice_name] () {
+            for (int i = 0; i < (int)m_dmrs_->Items->Size; ++i) {
+
+                if (m_dmrs_->Items->GetAt(i)->DeviceId == device_id && 
+                    m_dmrs_->Items->GetAt(i)->DeviceName == divice_name)
+                    m_dmrs_->Items->RemoveAt(i);
+            }
             ShowInfo->Text += "Remove DMR: " + device_id + " Name: " + divice_name + "\r\n";
         }));
-
-        for (int i = 0; i < (int)m_dmss_->Items->Size; ++i) {
-
-            if (m_dmrs_->Items->GetAt(i)->DeviceId == device_id && 
-                m_dmrs_->Items->GetAt(i)->DeviceName == divice_name)
-                m_dmrs_->Items->RemoveAt(i);
-        }
-        this->DataContext = m_dmrs_;
     } else {
-        for (int i = 0; i < (int)m_dmss_->Items->Size; ++i) {
-            if (m_dmss_->Items->GetAt(i)->DeviceId == device_id && 
-                m_dmss_->Items->GetAt(i)->DeviceName == divice_name)
-                m_dmss_->Items->RemoveAt(i);
-        }
+        this->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, device_id, divice_name] () {
+            for (int i = 0; i < (int)m_dmss_->Items->Size; ++i) {
+                if (m_dmss_->Items->GetAt(i)->DeviceId == device_id && 
+                    m_dmss_->Items->GetAt(i)->DeviceName == divice_name)
+                    m_dmss_->Items->RemoveAt(i);
+            }
+            ShowInfo->Text += "Remove DMS: " + device_id + " Name: " + divice_name + "\r\n";
+        }));
     }
+}
+
+void MainPage::On_Common(PLTWinRt::ErrorCode ec, Platform::String^ device_id)
+{
+    this->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, device_id, ec] () {
+        ShowInfo->Text = "DMR: " + device_id + " Error Code: " + ec.ToString() + "\r\n";
+    }));
+}
+
+
+void MainPage::On_GetPositionInfo(PLTWinRt::ErrorCode ec, Platform::String^ device_id, PLTWinRt::DMR_PositionInfo^ pi)
+{
+    this->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, device_id, pi] () {
+        if (pi != nullptr)
+            ShowInfo->Text = "DMR: " + device_id + " Duration: " + pi->track_duration.Duration + " Position: " + pi->abs_time.Duration + "\r\n";
+    }));
+}
+
+void MainPage::On_GetVolume(PLTWinRt::ErrorCode ec, Platform::String^ device_id, unsigned int vol)
+{
+    this->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, device_id, vol] () {
+        ShowInfo->Text = "\r\nDMR: " + device_id + " Current Volume: " + vol + "\r\n";
+    }));
+}
+
+void MainPage::On_GetCap(PLTWinRt::ErrorCode ec, Platform::String^ device_id, Windows::Foundation::Collections::IVector<Platform::String^>^ pm, Windows::Foundation::Collections::IVector<Platform::String^>^ cm, Windows::Foundation::Collections::IVector<Platform::String^>^ cqm)
+{
+    this->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, device_id, pm] () {
+        if (pm != nullptr) {
+            ShowInfo->Text = "\r\nDMR: " + device_id + " Caps: ";
+            for (uint32 i = 0; i < pm->Size; ++i) {
+                ShowInfo->Text += pm->GetAt(i) + " ";
+            }
+            ShowInfo->Text += "\r\n";
+        }
+    }));
+}
+
+void MainPage::On_GetTrans(PLTWinRt::ErrorCode ec, Platform::String^ device_id, PLTWinRt::DMR_TransportInfo^ trans)
+{
+    this->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, device_id, trans] () {
+        if (trans != nullptr) {
+            ShowInfo->Text = "\r\nDMR: " + device_id + " cur_transport_state: " + trans->cur_transport_state + " cur_transport_status: " + trans->cur_transport_status + " cur_speed: " + trans->cur_speed;
+        }
+    }));
+}
+
+void MainPage::On_GetMute(PLTWinRt::ErrorCode ec, Platform::String^ device_id,bool is_mute)
+{
+    this->Dispatcher->RunAsync(CoreDispatcherPriority::Normal, ref new DispatchedHandler([this, device_id, is_mute] () {
+        ShowInfo->Text = "\r\nDMR: " + device_id + " is mute: " + is_mute + "\r\n";
+    }));
 }
 
 /// <summary>
@@ -141,7 +213,7 @@ void MainPage::StartDmcBtnClicked(Platform::Object^ sender, Windows::UI::Xaml::R
         return;
     }
 
-    m_controller_->DmrSetAVTransportURI(m_current_dmr_, play_str, nullptr);
+    //m_controller_->DmrSetAVTransportURI(m_current_dmr_, play_str, nullptr);
     Windows::Foundation::Uri^ url = ref new Windows::Foundation::Uri(play_str);
     MediaPlayer->Source = url;
     VolumeBar->Value = MediaPlayer->Volume;
@@ -185,7 +257,7 @@ void MainPage::ProcessBar_ValueChanged(Platform::Object^ sender, Windows::UI::Xa
         slider->Value = 0;
     }
     Windows::Foundation::TimeSpan curpos;
-    curpos.Duration = (slider->Value / 100.0) * MediaPlayer->NaturalDuration.TimeSpan.Duration;
+    curpos.Duration = (long long)((slider->Value / 100.0) * MediaPlayer->NaturalDuration.TimeSpan.Duration);
     MediaPlayer->Position = curpos;
     m_controller_->DmrSeek(m_current_dmr_,  (uint64)(curpos.Duration / 10000000.0));
 }
@@ -195,6 +267,7 @@ void MainPage::Slider_ValueChanged_1(Platform::Object^ sender, Windows::UI::Xaml
     Windows::UI::Xaml::Controls::Slider^ slider = safe_cast<Windows::UI::Xaml::Controls::Slider^>(sender);
     MediaPlayer->Volume = slider->Value / 100.0;
     m_controller_->DmrSetVolume(m_current_dmr_, (int32)slider->Value);
+    m_controller_->DmrSetMute(m_current_dmr_, slider->Value == 0);
 }
 
 void MainPage::DmrItemListView_SelectionChanged(Platform::Object^ sender,
@@ -202,9 +275,43 @@ void MainPage::DmrItemListView_SelectionChanged(Platform::Object^ sender,
 {
     DeviceInfo^ devinfo = safe_cast<DeviceInfo^>(DmrItemListView->SelectedItem);
     m_current_dmr_ = devinfo->DeviceId;
+    Platform::String^ play_str = MediaUrl->Text;
+    if (play_str->IsEmpty()) {
+        ShowInfo->Text = "Url为空，失败！";
+        return;
+    }
+
+    m_controller_->DmrSetAVTransportURI(m_current_dmr_, play_str, nullptr);
+    m_controller_->DmrPlay(m_current_dmr_);
 }
 
 void MainPage::PageLoadedHandler(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
 {
     m_controller_->Start();
+    this->DataContext = m_dmrs_;
+}
+
+void dmc_test::MainPage::OnGetPosClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    m_controller_->DmrGetPositionInfo(m_current_dmr_);
+}
+
+void dmc_test::MainPage::OnGetVolumeClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    m_controller_->DmrGetVolume(m_current_dmr_);
+}
+
+void dmc_test::MainPage::OnGetCapClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    m_controller_->DmrGetDeviceCapabilities(m_current_dmr_);
+}
+
+void dmc_test::MainPage::OnGetTransClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    m_controller_->DmrGetTransportInfo(m_current_dmr_);
+}
+
+void dmc_test::MainPage::OnGetMuteClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e)
+{
+    m_controller_->DmrGetMute(m_current_dmr_);
 }

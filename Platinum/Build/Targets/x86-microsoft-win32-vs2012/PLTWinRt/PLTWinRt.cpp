@@ -11,6 +11,8 @@ using namespace Concurrency;
 using namespace Windows::Foundation;
 using namespace Windows::Storage::Streams;
 using namespace Windows::Networking::Sockets;
+using namespace Platform::Collections;
+using namespace Windows::Foundation::Collections;
 
 #include "PltLeaks.h"
 
@@ -225,6 +227,34 @@ bool
     return true; 
 }
 
+void
+    PLT_MicroMediaController::OnMSRemoved(PLT_DeviceDataReference& device)
+{
+    m_media_controller_->onDeviceDel(NPT_Str2Str(device->GetUUID()), NPT_Str2Str(device->GetFriendlyName()), false);
+
+    NPT_String uuid = device->GetUUID();
+    {
+        NPT_AutoLock lock(m_MediaServers);
+        m_MediaServers.Erase(uuid);
+    }
+
+    {
+        NPT_AutoLock lock(m_CurMediaServerLock);
+
+        // if it's the currently selected one, we have to get rid of it
+        if (!m_CurMediaServer.IsNull() && m_CurMediaServer == device) {
+            m_CurMediaServer = NULL;
+        }
+    }
+}
+
+void PLT_MicroMediaController::OnMSStateVariablesChanged(
+    PLT_Service*                  service, 
+    NPT_List<PLT_StateVariable*>* vars)
+{
+
+}
+
 /*----------------------------------------------------------------------
 |   PLT_MicroMediaController::OnMRAdded
 +---------------------------------------------------------------------*/
@@ -250,7 +280,7 @@ bool
 void
     PLT_MicroMediaController::OnMRRemoved(PLT_DeviceDataReference& device)
 {
-    m_media_controller_->onDeviceDel(NPT_Str2Str(device->GetUUID()), NPT_Str2Str(device->GetFriendlyName()), false);
+    m_media_controller_->onDeviceDel(NPT_Str2Str(device->GetUUID()), NPT_Str2Str(device->GetFriendlyName()), true);
 
     NPT_String uuid = device->GetUUID();
 
@@ -281,41 +311,186 @@ void PLT_MicroMediaController::OnGetCurrentTransportActionsResult(
     PLT_DeviceDataReference&  device ,
     PLT_StringList*           actions , 
     void*                     userdata )
-{}
+{
+    if (actions == NULL) {
+        m_media_controller_->onDmrGetCurrentTransportActions(switch_ec(res), NPT_Str2Str(device->GetUUID()), nullptr);
+        return;
+    }
+
+    Vector<Platform::String^>^ acts = ref new Vector<Platform::String^>();
+    for (unsigned int i = 0; i < actions->GetItemCount(); ++i ) {
+        acts->Append(NPT_Str2Str(*(actions->GetItem(i))));
+    }
+    m_media_controller_->onDmrGetCurrentTransportActions(switch_ec(res), NPT_Str2Str(device->GetUUID()), acts);
+}
 
 void PLT_MicroMediaController::OnGetDeviceCapabilitiesResult(
     NPT_Result                res , 
     PLT_DeviceDataReference&  device ,
     PLT_DeviceCapabilities*   capabilities ,
     void*                     userdata )
-{}
+{
+    if (capabilities == NULL) {
+        m_media_controller_->onDmrGetDeviceCapabilities(switch_ec(res), NPT_Str2Str(device->GetUUID()), nullptr, nullptr, nullptr);
+        return;
+    }
+
+    Vector<Platform::String^>^ pm;
+    if (capabilities->play_media.GetItemCount() == 0) {
+        pm = nullptr;
+    } else {
+        pm =  ref new Vector<Platform::String^>();
+        for (unsigned int i = 0; i < capabilities->play_media.GetItemCount(); ++i ) {
+            pm->Append(NPT_Str2Str(*(capabilities->play_media.GetItem(i))));
+        }
+    }
+
+    Vector<Platform::String^>^ rm;
+    if (capabilities->rec_media.GetItemCount() == 0) {
+        rm = nullptr;
+    } else {
+        rm =  ref new Vector<Platform::String^>();
+        for (unsigned int i = 0; i < capabilities->rec_media.GetItemCount(); ++i ) {
+            rm->Append(NPT_Str2Str(*(capabilities->rec_media.GetItem(i))));
+        }
+    }
+
+    Vector<Platform::String^>^ rqm;
+    if (capabilities->rec_quality_modes.GetItemCount() == 0) {
+        rqm = nullptr;
+    } else {
+        rqm =  ref new Vector<Platform::String^>();
+        for (unsigned int i = 0; i < capabilities->rec_quality_modes.GetItemCount(); ++i ) {
+            rqm->Append(NPT_Str2Str(*(capabilities->rec_quality_modes.GetItem(i))));
+        }
+    }
+
+    m_media_controller_->onDmrGetDeviceCapabilities(
+        switch_ec(res),
+        NPT_Str2Str(device->GetUUID()),
+        pm,
+        rm, 
+        rqm);
+}
 
 void PLT_MicroMediaController::OnGetMediaInfoResult(
     NPT_Result                res ,
     PLT_DeviceDataReference&  device ,
     PLT_MediaInfo*            info ,
-    void*                     userdata ) {}
+    void*                     userdata )
+{
+    if (info == NULL) {
+        m_media_controller_->onDmrGetMediaInfo(
+            switch_ec(res),
+            NPT_Str2Str(device->GetUUID()),
+            nullptr);
+        return;
+    }
+
+    DMR_MediaInfo^ mediainfo = ref new DMR_MediaInfo;
+    mediainfo->num_tracks = info->num_tracks;
+    Windows::Foundation::TimeSpan durations;
+    durations.Duration =  info->media_duration.ToNanos();
+    mediainfo->media_duration = durations;
+    mediainfo->cur_uri = NPT_Str2Str(info->cur_uri);
+    mediainfo->cur_metadata = NPT_Str2Str(info->cur_metadata);
+    mediainfo->next_uri = NPT_Str2Str(info->next_uri);
+    mediainfo->next_metadata = NPT_Str2Str(info->next_metadata);
+    mediainfo->play_medium = NPT_Str2Str(info->play_medium);
+    mediainfo->rec_medium = NPT_Str2Str(info->rec_medium);
+    mediainfo->write_status = NPT_Str2Str(info->write_status);
+    m_media_controller_->onDmrGetMediaInfo(
+        switch_ec(res),
+        NPT_Str2Str(device->GetUUID()),
+        mediainfo);
+}
 
 void PLT_MicroMediaController::OnGetPositionInfoResult(
     NPT_Result                res ,
     PLT_DeviceDataReference&  device ,
     PLT_PositionInfo*         info ,
     void*                     userdata )
-{}
+{
+    if (info == NULL) {
+        m_media_controller_->onDmrGetPositionInfo(
+            switch_ec(res),
+            NPT_Str2Str(device->GetUUID()),
+            nullptr);
+        return;
+    }
+
+    DMR_PositionInfo^ posinfo = ref new DMR_PositionInfo;
+    posinfo->track = info->track;
+    Windows::Foundation::TimeSpan track_durations;
+    track_durations.Duration =  info->track_duration.ToNanos();
+    posinfo->track_duration = track_durations;
+    posinfo->track_metadata = NPT_Str2Str(info->track_metadata);
+    posinfo->track_uri = NPT_Str2Str(info->track_uri);
+
+    Windows::Foundation::TimeSpan rel_time;
+    rel_time.Duration =  info->rel_time.ToNanos();
+    posinfo->rel_time = rel_time;
+
+    Windows::Foundation::TimeSpan abs_time;
+    abs_time.Duration =  info->abs_time.ToNanos();
+    posinfo->abs_time = abs_time;
+
+    posinfo->rel_count = info->rel_count;
+    posinfo->abs_count = info->abs_count;
+    m_media_controller_->onDmrGetPositionInfo(
+        switch_ec(res),
+        NPT_Str2Str(device->GetUUID()),
+        posinfo);
+}
 
 void PLT_MicroMediaController::OnGetTransportInfoResult(
     NPT_Result                res ,
     PLT_DeviceDataReference&  device ,
     PLT_TransportInfo*        info ,
     void*                     userdata )
-{}
+{
+    if (info == NULL) {
+        m_media_controller_->onDmrGetTransportInfo(
+            switch_ec(res),
+            NPT_Str2Str(device->GetUUID()),
+            nullptr);
+        return;
+    }
+
+    DMR_TransportInfo^ transinfo = ref new DMR_TransportInfo;
+    transinfo->cur_transport_state = NPT_Str2Str(info->cur_transport_state);
+    transinfo->cur_transport_status = NPT_Str2Str(info->cur_transport_status);
+    transinfo->cur_speed = NPT_Str2Str(info->cur_speed);
+
+    m_media_controller_->onDmrGetTransportInfo(
+        switch_ec(res),
+        NPT_Str2Str(device->GetUUID()),
+        transinfo);
+}
 
 void PLT_MicroMediaController::OnGetTransportSettingsResult(
     NPT_Result                res ,
     PLT_DeviceDataReference&  device ,
     PLT_TransportSettings*    settings ,
     void*                     userdata )
-{}
+{
+    if (settings == NULL) {
+        m_media_controller_->onDmrGetTransportSettings(
+            switch_ec(res),
+            NPT_Str2Str(device->GetUUID()),
+            nullptr);
+        return;
+    }
+
+    DMR_TransportSettings^ setinfo = ref new DMR_TransportSettings;
+    setinfo->play_mode = NPT_Str2Str(settings->play_mode);
+    setinfo->rec_quality_mode = NPT_Str2Str(settings->rec_quality_mode);
+
+    m_media_controller_->onDmrGetTransportSettings(
+        switch_ec(res),
+        NPT_Str2Str(device->GetUUID()),
+        setinfo);
+}
 
 void PLT_MicroMediaController::OnNextResult(
     NPT_Result                res ,
@@ -387,14 +562,51 @@ void PLT_MicroMediaController::OnGetCurrentConnectionIDsResult(
     PLT_DeviceDataReference&  device ,
     PLT_StringList*           ids ,
     void*                     userdata )
-{}
+{
+    if (ids == NULL) {
+        m_media_controller_->onDmrGetCurrentConnectionIDs(switch_ec(res), NPT_Str2Str(device->GetUUID()), nullptr);
+        return;
+    }
+
+    Vector<Platform::String^>^ idss =  ref new Vector<Platform::String^>();
+    for (unsigned int i = 0; i < ids->GetItemCount(); ++i ) {
+        idss->Append(NPT_Str2Str(*(ids->GetItem(i))));
+    }
+
+    m_media_controller_->onDmrGetCurrentConnectionIDs(
+        switch_ec(res),
+        NPT_Str2Str(device->GetUUID()),
+        idss);
+}
 
 void PLT_MicroMediaController::OnGetCurrentConnectionInfoResult(
     NPT_Result                res ,
     PLT_DeviceDataReference&  device ,
     PLT_ConnectionInfo*       info ,
     void*                     userdata )
-{}
+{
+    if (info == NULL) {
+        m_media_controller_->onDmrGetCurrentConnectionInfo(
+            switch_ec(res),
+            NPT_Str2Str(device->GetUUID()),
+            nullptr);
+        return;
+    }
+
+    DMR_ConnectionInfo^ coninfo = ref new DMR_ConnectionInfo;
+    coninfo->rcs_id = info->rcs_id;
+    coninfo->avtransport_id = info->avtransport_id;
+    coninfo->protocol_info = NPT_Str2Str(info->protocol_info);
+    coninfo->peer_connection_mgr = NPT_Str2Str(info->peer_connection_mgr);
+    coninfo->peer_connection_id = info->peer_connection_id;
+    coninfo->direction = NPT_Str2Str(info->direction);
+    coninfo->status = NPT_Str2Str(info->status);
+
+    m_media_controller_->onDmrGetCurrentConnectionInfo(
+        switch_ec(res),
+        NPT_Str2Str(device->GetUUID()),
+        coninfo);
+}
 
 void PLT_MicroMediaController::OnGetProtocolInfoResult(
     NPT_Result                res ,
@@ -402,7 +614,32 @@ void PLT_MicroMediaController::OnGetProtocolInfoResult(
     PLT_StringList*           sources ,
     PLT_StringList*           sinks ,
     void*                     userdata )
-{}
+{
+    Vector<Platform::String^>^ src;
+    if (sources == 0) {
+        src = nullptr;
+    } else {
+        src =  ref new Vector<Platform::String^>();
+        for (unsigned int i = 0; i <sources->GetItemCount(); ++i ) {
+            src->Append(NPT_Str2Str(*(sources->GetItem(i))));
+        }
+    }
+
+    Vector<Platform::String^>^ snks;
+    if (sinks == 0) {
+        snks = nullptr;
+    } else {
+        snks =  ref new Vector<Platform::String^>();
+        for (unsigned int i = 0; i <sinks->GetItemCount(); ++i ) {
+            snks->Append(NPT_Str2Str(*(sinks->GetItem(i))));
+        }
+    }
+
+    m_media_controller_->onDmrGetProtocolInfo(
+        switch_ec(res),
+        NPT_Str2Str(device->GetUUID()),
+        src, snks);
+}
 
 // RenderingControl
 void PLT_MicroMediaController::OnSetMuteResult(

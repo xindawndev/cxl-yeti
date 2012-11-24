@@ -67,7 +67,7 @@ Send()
     NPT_DataBuffer buffer(1024);
     buffer.SetDataSize(1024);
     NPT_IpAddress address;
-    address.ResolveName("localhost");
+    address.ResolveName("127.0.0.1");
     NPT_SocketAddress socket_address(address, 9123);
     NPT_Result result = sender.Send(buffer, &socket_address);
     if (NPT_FAILED(result)) {
@@ -82,13 +82,14 @@ Send()
 int
 main(int argc, char** argv)
 {
-    if (argc >= 2) {
-        if (NPT_StringsEqual(argv[1], "send")) {
-            Receive();
-        } else {
-            Send();
-        }
-    } else {
-    }
+    //if (argc >= 2) {
+    //    if (NPT_StringsEqual(argv[1], "send")) {
+    //        Receive();
+    //    } else {
+    //        Send();
+    //    }
+    //} else {
+    //}
+    Receive();
     return 0;
 }

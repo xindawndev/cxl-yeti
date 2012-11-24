@@ -152,6 +152,7 @@ public:
         // Create request and attach service to it
         PLT_CtrlPointGetSCPDRequest* request = 
             new PLT_CtrlPointGetSCPDRequest((PLT_DeviceDataReference&)m_Device, scpd_url, "GET", NPT_HTTP_PROTOCOL_1_1);
+        //request->GetHeaders().SetHeader("PPTVProduct", "1");
         return m_Task.AddSCPDRequest(request);
     }
 

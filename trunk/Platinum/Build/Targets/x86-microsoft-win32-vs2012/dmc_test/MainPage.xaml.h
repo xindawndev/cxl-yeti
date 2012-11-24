@@ -30,6 +30,12 @@ namespace dmc_test
     private:
         void On_DeviceAdd(Platform::String^ device_id, Platform::String^ divice_name, bool is_dmr);
         void On_DeviceDel(Platform::String^ device_id, Platform::String^ divice_name, bool is_dmr);
+        void On_Common(PLTWinRt::ErrorCode ec, Platform::String^ device_id);
+        void On_GetPositionInfo(PLTWinRt::ErrorCode ec, Platform::String^ device_id, PLTWinRt::DMR_PositionInfo^ pi);
+        void On_GetVolume(PLTWinRt::ErrorCode ec, Platform::String^ device_id, unsigned int vol);
+        void On_GetCap(PLTWinRt::ErrorCode ec, Platform::String^ device_id, Windows::Foundation::Collections::IVector<Platform::String^>^ pm, Windows::Foundation::Collections::IVector<Platform::String^>^ cm, Windows::Foundation::Collections::IVector<Platform::String^>^ cqm);
+        void On_GetTrans(PLTWinRt::ErrorCode ec, Platform::String^ device_id, PLTWinRt::DMR_TransportInfo^ trans);
+        void On_GetMute(PLTWinRt::ErrorCode ec, Platform::String^ device_id,bool is_mute);
 
     private:
         void StartDmcBtnClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
@@ -47,5 +53,10 @@ namespace dmc_test
         Devices^                    m_dmrs_;
         Devices^                    m_dmss_;
         PLTWinRt::MediaController^  m_controller_;
+        void OnGetPosClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+        void OnGetVolumeClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+        void OnGetCapClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+        void OnGetTransClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
+        void OnGetMuteClicked(Platform::Object^ sender, Windows::UI::Xaml::RoutedEventArgs^ e);
     };
 }

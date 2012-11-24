@@ -7,6 +7,39 @@
     xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
     mc:Ignorable="d"
     Loaded="PageLoadedHandler">
+
+    <Page.Resources>
+
+        <!-- Collection of items displayed by this page -->
+        <CollectionViewSource
+            x:Name="itemsViewSource"
+            Source="{Binding Items}"/>
+
+        <Storyboard x:Name="PopInStoryboard">
+            <PopInThemeAnimation  Storyboard.TargetName="contentViewBorder" 
+                              FromHorizontalOffset="400"/>
+        </Storyboard>
+
+        <Style x:Key="WebViewAppBarButtonStyle" TargetType="Button" 
+           BasedOn="{StaticResource AppBarButtonStyle}">
+            <Setter Property="AutomationProperties.AutomationId" Value="WebViewAppBarButton"/>
+            <Setter Property="AutomationProperties.Name" Value="View Web Page"/>
+            <Setter Property="Content" Value="&#xE12B;"/>
+        </Style>
+
+        <!-- green -->
+        <SolidColorBrush x:Key="BlockBackgroundBrush" Color="#FF6BBD46"/>
+    </Page.Resources>
+
+    <Page.TopAppBar>
+        <AppBar Padding="10,0,10,0">
+            <Grid>
+                <Button HorizontalAlignment="Right" 
+                        Style="{StaticResource WebViewAppBarButtonStyle}"/>
+            </Grid>
+        </AppBar>
+    </Page.TopAppBar>
+    
     <Grid Name="Grid1">
     	<Grid.Background>
     		<LinearGradientBrush EndPoint="0.5,1" StartPoint="0.5,0">
@@ -68,18 +101,23 @@
                         <RowDefinition Height="*" />
                         <RowDefinition Height="120" />
                     </Grid.RowDefinitions>
-                    <Button Click="PlayMedia" Content="播放" Margin="238,20,0,62" Grid.RowSpan="2" BorderBrush="#FF7EB036" Foreground="Black" Width="71" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
-                	<Button Click="StopMedia" Content="停止" Margin="436,20,0,62" Grid.RowSpan="2" Foreground="Black" BorderBrush="#FF7EB036" Width="71" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
-                	<Button Click="PauseMedia" Content="暂停" Margin="334,20,0,62" Width="71" Height="38" Grid.RowSpan="2" Foreground="Black" BorderBrush="#FF7EB036" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
+                    <Button Click="PlayMedia" Content="Play" Margin="19,20,0,62" Grid.RowSpan="2" BorderBrush="#FF7EB036" Foreground="Black" Width="71" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
+                	<Button Click="StopMedia" Content="Stop" Margin="166,20,0,62" Grid.RowSpan="2" Foreground="Black" BorderBrush="#FF7EB036" Width="71" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
+                    <Button Click="PauseMedia" Content="Pause" Margin="91,20,0,62" Width="71" Height="38" Grid.RowSpan="2" Foreground="Black" BorderBrush="#FF7EB036" HorizontalAlignment="Left" VerticalAlignment="Stretch"/>
+                    <Button Content="GetPos" HorizontalAlignment="Left" Margin="242,20,0,0" Foreground="Black" BorderBrush="#FF7EB036" Grid.RowSpan="2" VerticalAlignment="Top" Click="OnGetPosClicked"/>
+                    <Button Content="GetVolume" HorizontalAlignment="Left" Margin="328,20,0,0" Grid.RowSpan="2" Foreground="Black" BorderBrush="#FF7EB036" VerticalAlignment="Top" Click="OnGetVolumeClicked"/>
+                    <Button Content="GetCap" HorizontalAlignment="Left" Margin="538,19,0,0" Grid.RowSpan="2" Foreground="Black" BorderBrush="#FF7EB036" VerticalAlignment="Top" Click="OnGetCapClicked"/>
+                    <Button Content="GetTransport" HorizontalAlignment="Left" Margin="624,20,0,0" Grid.RowSpan="2" Foreground="Black" BorderBrush="#FF7EB036" VerticalAlignment="Top" Click="OnGetTransClicked"/>
+                    <Button Content="GetMute" HorizontalAlignment="Left" Margin="441,20,0,0" Grid.RowSpan="2" Foreground="Black" BorderBrush="#FF7EB036" VerticalAlignment="Top" Click="OnGetMuteClicked"/>
                 </Grid>
                 <TextBlock Name="ShowInfo" Width="820" Height="66" Margin="0,0,0,10" HorizontalAlignment="Center" TextWrapping="Wrap" Text="" VerticalAlignment="Center" Grid.Row="4" Foreground="#FF2CD312"/>
             </Grid>
-            <ListView x:Name="DmrItemListView" ItemsSource="{Binding Items}" SelectionChanged="DmrItemListView_SelectionChanged" HorizontalAlignment="Center" Grid.Column="2">
+            <ListView x:Name="DmrItemListView" ItemsSource="{Binding Path=Items}" SelectionChanged="DmrItemListView_SelectionChanged" HorizontalAlignment="Center" Grid.Column="2">
                 <ListView.ItemTemplate>
                     <DataTemplate>
                         <StackPanel>
-                            <TextBlock Text="{Binding DeviceName}" FontSize="24" Margin="5,0,0,0" TextWrapping="Wrap" />
-                            <TextBlock Text="{Binding DeviceId}" FontSize="16" Margin="15,0,0,0" />
+                            <TextBlock Text="{Binding Path=DeviceName}" FontSize="16" Margin="5,0,0,0" TextWrapping="Wrap" />
+                            <TextBlock Text="{Binding Path=DeviceId}" FontSize="10" Margin="15,0,0,0" />
                         </StackPanel>
                     </DataTemplate>
                 </ListView.ItemTemplate>

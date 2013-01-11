@@ -12,17 +12,54 @@
 +---------------------------------------------------------------------*/
 #include "NptWinRtPch.h"
 
+static char *w2c(char *pcstr,const wchar_t *pwstr, size_t len)
+{
+    size_t nlength=wcslen(pwstr);
+
+    unsigned int nbytes = WideCharToMultiByte( 0,
+        0,
+        pwstr,
+        nlength,
+        NULL,
+        0,
+        NULL,
+        NULL );
+
+    if(nbytes > len)
+        nbytes=len;
+
+    WideCharToMultiByte( 0,
+        0,
+        pwstr,
+        nlength,
+        pcstr,
+        nbytes,
+        NULL,
+        NULL );
+
+    return pcstr ;
+}
+
 NPT_String Str2NPT_Str(Platform::String^ str)
 {
     NPT_String ret_str = "";
     if (str->IsEmpty()) return ret_str;
 
-    size_t sz = 2 * wcslen(str->Data()) + 1;
-    char * tmp = new char[sz];
-    wcstombs_s(&sz, tmp , sz, str->Data(), sz);
-    ret_str = tmp;
-    delete []tmp;
+    const wchar_t * wc = str->Data();
+    char *pcstr = (char *)new char[sizeof(char)*(2 * wcslen(wc)+1)];
+    memset(pcstr , 0 , 2 * wcslen(wc)+1 );
+    w2c(pcstr,wc,2 * wcslen(wc)+1) ;
+    ret_str = pcstr;
+    delete []pcstr;
     return ret_str;
+
+    //const wchar_t * wc = str->Data();
+    //size_t sz = 2 * wcslen(wc) + 2;
+    //char * tmp = new char[sz];
+    //wcstombs_s(&sz, tmp , sz, wc, wcslen(wc));
+    //ret_str = tmp;
+    //delete []tmp;
+    //return ret_str;
 }
 
 LPWSTR A2WHelper(LPWSTR lpw, LPCSTR lpa, int nChars, UINT acp)

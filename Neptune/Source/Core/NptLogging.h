@@ -64,6 +64,7 @@ public:
     const char*   m_SourceFile;
     unsigned int  m_SourceLine;
     const char*   m_SourceFunction;
+    NPT_UInt32    m_ProcessId;
     unsigned long m_ThreadId;
 };
 

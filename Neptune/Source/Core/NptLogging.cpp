@@ -36,7 +36,6 @@
 |   includes
 +---------------------------------------------------------------------*/
 #include <stdarg.h>
-
 #include "NptLogging.h"
 #include "NptList.h"
 #include "NptStreams.h"
@@ -193,7 +192,8 @@ private:
 #define NPT_LOG_FORMAT_FILTER_NO_FUNCTION_NAME  4
 #define NPT_LOG_FORMAT_FILTER_NO_LOGGER_NAME    8
 #define NPT_LOG_FORMAT_FILTER_NO_SOURCEPATH    16
-#define NPT_LOG_FORMAT_FILTER_NO_THREAD_ID     32
+#define NPT_LOG_FORMAT_FILTER_NO_PROCESS_ID    32
+#define NPT_LOG_FORMAT_FILTER_NO_THREAD_ID     64
 
 /*----------------------------------------------------------------------
 |   globals
@@ -400,6 +400,11 @@ NPT_Log::FormatRecordToStream(const NPT_LogRecord& record,
             stream.WriteString(record.m_SourceFunction);
         }
         stream.WriteFully("] ",2);
+    }
+    if ((format_filter & NPT_LOG_FORMAT_FILTER_NO_PROCESS_ID) == 0) {
+        stream.Write("(", 1, NULL);
+        stream.WriteString(NPT_String::FromIntegerU(record.m_ProcessId));
+        stream.Write(") ", 2, NULL);
     }
     if ((format_filter & NPT_LOG_FORMAT_FILTER_NO_THREAD_ID) == 0) {
         stream.Write("(", 1, NULL);
@@ -958,6 +963,7 @@ NPT_Logger::Log(int          level,
     record.m_SourceLine     = source_line;
     record.m_SourceFunction = source_function;
     NPT_System::GetCurrentTimeStamp(record.m_TimeStamp);
+    NPT_System::GetProcessId(record.m_ProcessId);
     record.m_ThreadId       = NPT_Thread::GetCurrentThreadId();
 
     /* call all handlers for this logger and parents */
@@ -1359,6 +1365,8 @@ NPT_LogTcpHandler::FormatRecord(const NPT_LogRecord& record, NPT_String& msg)
     msg += record.m_SourceFunction;
     msg += "\r\nSource-Line: ";
     msg += NPT_String::FromIntegerU(record.m_SourceLine);
+    msg += "\r\nProcess-Id: ";
+    msg += NPT_String::FromIntegerU(record.m_ProcessId);
     msg += "\r\nThread-Id: ";
     msg += NPT_String::FromIntegerU(record.m_ThreadId);
     msg += "\r\nTimeStamp: ";

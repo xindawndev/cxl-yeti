@@ -34,7 +34,7 @@ NPT_Result
 NPT_System::GetProcessId(NPT_UInt32& id)
 {
     //id = getpid();
-    id = 0;
+    id = ::GetCurrentProcessId();
     return NPT_SUCCESS;
 }
 

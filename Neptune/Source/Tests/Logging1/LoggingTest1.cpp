@@ -129,6 +129,7 @@ TestLargeBuffer(void)
 int 
 main(int, char**)
 {
+    NPT_LogManager::GetDefault().Configure("plist:.level=ALL;");
     NPT_LOG_L(MyLogger, NPT_LOG_LEVEL_WARNING, "blabla");
     NPT_LOG_L2(MyLogger, NPT_LOG_LEVEL_WARNING, "blabla %d %d", 8, 9);
 

@@ -1,13 +1,13 @@
 // Daemon.h
 
-#ifndef _UTIL_DAEMON_DAEMON_H_
-#define _UTIL_DAEMON_DAEMON_H_
+#ifndef _BASE_DAEMON_DAEMON_H_
+#define _BASE_DAEMON_DAEMON_H_
 
 #include <boost/asio/io_service.hpp>
 #include <boost/thread/thread.hpp>
 #include <boost/function.hpp>
 
-namespace util
+namespace base
 {
     namespace daemon
     {
@@ -129,11 +129,11 @@ namespace util
         };
 
     } // namespace daemon
-} // namespace util
+} // namespace base
 
 #include "daemon/detail/ModuleRegistry.h"
 
-namespace util
+namespace base
 {
     namespace daemon
     {
@@ -189,6 +189,6 @@ namespace util
         }
 
     } // namespace daemon
-} // namespace util
+} // namespace base
 
-#endif // _UTIL_DAEMON_DAEMON_H_
+#endif // _BASE_DAEMON_DAEMON_H_

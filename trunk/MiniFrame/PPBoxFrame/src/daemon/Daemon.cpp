@@ -6,7 +6,7 @@
 #include <boost/thread/mutex.hpp>
 #include <boost/thread/condition_variable.hpp>
 
-namespace util
+namespace base
 {
     namespace daemon
     {
@@ -149,4 +149,4 @@ namespace util
         }
 
     } // namespace daemon
-} // namespace util
+} // namespace base

@@ -2,7 +2,7 @@
 
 #include "daemon/Daemon.h"
 
-namespace util
+namespace base
 {
     namespace daemon
     {
@@ -70,4 +70,4 @@ namespace util
 
         } // namespace detail
     } // namespace daemon
-} // namespace util
+} // namespace base

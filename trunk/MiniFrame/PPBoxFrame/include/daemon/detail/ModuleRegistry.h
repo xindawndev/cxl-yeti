@@ -1,14 +1,14 @@
 // ModuleRegistry.h
 
-#ifndef _UTIL_DAEMON_DETAIL_MODULE_REGISTRY_H_
-#define _UTIL_DAEMON_DETAIL_MODULE_REGISTRY_H_
+#ifndef _BASE_DAEMON_DETAIL_MODULE_REGISTRY_H_
+#define _BASE_DAEMON_DETAIL_MODULE_REGISTRY_H_
 
 #include "daemon/Daemon.h"
 #include "daemon/detail/Module.h"
 
 #include <boost/thread/mutex.hpp>
 
-namespace util
+namespace base
 {
     namespace daemon
     {
@@ -27,7 +27,7 @@ namespace util
                     typename Arg2
                 >
                 static Module * apply(
-                    util::daemon::Daemon & daemon, 
+                    base::daemon::Daemon & daemon, 
                     Arg1 arg1, 
                     Arg2 arg2)
                 {
@@ -38,7 +38,7 @@ namespace util
                     typename Arg1
                 >
                 static Module * apply(
-                    util::daemon::Daemon & daemon, 
+                    base::daemon::Daemon & daemon, 
                     Arg1 arg1, 
                     no_arg * arg2)
                 {
@@ -46,7 +46,7 @@ namespace util
                 }
 
                 static Module * apply(
-                    util::daemon::Daemon & daemon, 
+                    base::daemon::Daemon & daemon, 
                     no_arg * arg1, 
                     no_arg * arg2)
                 {
@@ -58,7 +58,7 @@ namespace util
             {
             public:
                 ModuleRegistry(
-                    util::daemon::Daemon & daemon);
+                    base::daemon::Daemon & daemon);
 
                 ~ModuleRegistry();
 
@@ -88,7 +88,7 @@ namespace util
                     boost::mutex::scoped_lock lock(mutex_);
 
                     // First see if there is an existing Module object for the given type.
-                    util::daemon::detail::Module * module = first_module_;
+                    base::daemon::detail::Module * module = first_module_;
                     while (module) {
                         if (module_id_matches(*module, Module::id))
                             return *static_cast<Module *>(module);
@@ -136,7 +136,7 @@ namespace util
                     boost::mutex::scoped_lock lock(mutex_);
 
                     // Check if there is an existing Module object for the given type.
-                    util::daemon::detail::Module * module = first_module_;
+                    base::daemon::detail::Module * module = first_module_;
                     while (module) {
                         if (module_id_matches(*module, Module::id))
                             return false;
@@ -164,7 +164,7 @@ namespace util
 
                     boost::mutex::scoped_lock lock(mutex_);
 
-                    util::daemon::detail::Module * module = first_module_;
+                    base::daemon::detail::Module * module = first_module_;
                     while (module) {
                         if (module_id_matches(*module, Module::id))
                             return true;
@@ -176,29 +176,29 @@ namespace util
 
             private:
                 static void init_module_id(
-                    util::daemon::detail::Module & module,
-                    util::daemon::detail::Id const & id)
+                    base::daemon::detail::Module & module,
+                    base::daemon::detail::Id const & id)
                 {
                     module.id_ = &id;
                 }
 
                 static bool module_id_matches(
-                    util::daemon::detail::Module const & module,
-                    util::daemon::detail::Id const & id)
+                    base::daemon::detail::Module const & module,
+                    base::daemon::detail::Id const & id)
                 {
                     return module.id_ == &id;
                 }
 
             private:
-                util::daemon::Daemon & daemon_;
+                base::daemon::Daemon & daemon_;
                 mutable boost::mutex mutex_;
-                util::daemon::detail::Module * first_module_;
-                util::daemon::detail::Module * last_module_;
+                base::daemon::detail::Module * first_module_;
+                base::daemon::detail::Module * last_module_;
                 bool is_started_;
             };
 
         } // namespace detail
     } // namespace daemon
-} // namespace util
+} // namespace base
 
-#endif // _UTIL_DAEMON_DETAIL_MODULE_REGISTRY_H_
+#endif // _BASE_DAEMON_DETAIL_MODULE_REGISTRY_H_

@@ -1,12 +1,12 @@
 // Module.h
 
-#ifndef _UTIL_DAEMON_DETAIL_MODULE_H_
-#define _UTIL_DAEMON_DETAIL_MODULE_H_
+#ifndef _BASE_DAEMON_DETAIL_MODULE_H_
+#define _BASE_DAEMON_DETAIL_MODULE_H_
 
 #include "daemon/Daemon.h"
 #include "daemon/detail/ModuleId.h"
 
-namespace util
+namespace base
 {
     namespace daemon
     {
@@ -54,15 +54,15 @@ namespace util
 
                 friend class detail::ModuleRegistry;
 
-                util::daemon::Daemon & daemon_;
+                base::daemon::Daemon & daemon_;
                 std::string const name_;
-                util::daemon::detail::Id const * id_;
-                util::daemon::detail::Module * next_;
-                util::daemon::detail::Module * prev_;
+                base::daemon::detail::Id const * id_;
+                base::daemon::detail::Module * next_;
+                base::daemon::detail::Module * prev_;
             };
 
         } // namespace detail
     } // namespace daemon
-} // namespace util
+} // namespace base
 
-#endif // _UTIL_DAEMON_MODULE_H_
+#endif // _BASE_DAEMON_MODULE_H_

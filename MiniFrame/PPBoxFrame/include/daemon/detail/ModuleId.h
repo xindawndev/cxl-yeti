@@ -1,11 +1,11 @@
 // ModuleId.h
 
-#ifndef _UTIL_DAEMON_DETAIL_MODULE_ID_H_
-#define _UTIL_DAEMON_DETAIL_MODULE_ID_H_
+#ifndef _BASE_DAEMON_DETAIL_MODULE_ID_H_
+#define _BASE_DAEMON_DETAIL_MODULE_ID_H_
 
 #include "daemon/Daemon.h"
 
-namespace util
+namespace base
 {
     namespace daemon
     {
@@ -27,6 +27,6 @@ namespace util
 
         } // namespace detail
     } // namespace daemon
-} // namespace util
+} // namespace base
 
-#endif // _UTIL_DAEMON_DETAIL_MODULE_ID_H_
+#endif // _BASE_DAEMON_DETAIL_MODULE_ID_H_

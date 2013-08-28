@@ -1,25 +1,25 @@
 // CommonModule.h
 
-#ifndef _PPBOX_COMMON_COMMON_MODULE_H_
-#define _PPBOX_COMMON_COMMON_MODULE_H_
+#ifndef _MINIFRAME_COMMON_COMMON_MODULE_H_
+#define _MINIFRAME_COMMON_COMMON_MODULE_H_
 
 #include <daemon/Module.h>
 #include <daemon/Daemon.h>
 
-namespace ppbox
+namespace miniframe
 {
     namespace common
     {
 
         class CommonModule
-            : public util::daemon::ModuleBase<CommonModule>
+            : public base::daemon::ModuleBase<CommonModule>
         {
         public:
             CommonModule(
-                util::daemon::Daemon & daemon);
+                base::daemon::Daemon & daemon);
 
             CommonModule(
-                util::daemon::Daemon & daemon, 
+                base::daemon::Daemon & daemon, 
                 std::string const & name);
 
             ~CommonModule();
@@ -33,6 +33,6 @@ namespace ppbox
         };
 
     } // namespace common
-} // namespace ppbox
+} // namespace miniframe
 
-#endif // _PPBOX_COMMON_COMMON_MODULE_H_
+#endif // _MINIFRAME_COMMON_COMMON_MODULE_H_

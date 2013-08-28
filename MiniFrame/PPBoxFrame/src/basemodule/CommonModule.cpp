@@ -2,21 +2,21 @@
 
 #include "basemodule/CommonModule.h"
 
-namespace ppbox
+namespace miniframe
 {
     namespace common
     {
 
         CommonModule::CommonModule(
-            util::daemon::Daemon & daemon)
-            : util::daemon::ModuleBase<CommonModule>(daemon, "CommonModule")
+            base::daemon::Daemon & daemon)
+            : base::daemon::ModuleBase<CommonModule>(daemon, "CommonModule")
         {
         }
 
         CommonModule::CommonModule(
-            util::daemon::Daemon & daemon, 
+            base::daemon::Daemon & daemon, 
             std::string const & name)
-            : util::daemon::ModuleBase<CommonModule>(daemon, name)
+            : base::daemon::ModuleBase<CommonModule>(daemon, name)
         {
         }
 
@@ -34,4 +34,4 @@ namespace ppbox
         }
 
     } // namespace common
-} // namespace ppbox
+} // namespace miniframe

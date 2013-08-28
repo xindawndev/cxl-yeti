@@ -2,16 +2,20 @@
 #include "basemodule/CommonModuleBase.h"
 
 class WorkerModule
-    : public ppbox::common::CommonModuleBase<WorkerModule>
+    : public miniframe::common::CommonModuleBase<WorkerModule>
 {
 public:
     WorkerModule(
-        util::daemon::Daemon & daemon)
-        : ppbox::common::CommonModuleBase<WorkerModule>(daemon, "WorkerModule")
+        base::daemon::Daemon & daemon)
+        : miniframe::common::CommonModuleBase<WorkerModule>(daemon, "WorkerModule")
     {
+        printf( "(%d): %s\n", __LINE__, __FUNCTION__ );
     }
 
-    virtual ~WorkerModule() {}
+    virtual ~WorkerModule()
+    {
+        printf( "(%d): %s\n", __LINE__, __FUNCTION__ );
+    }
 
 public:
     virtual boost::system::error_code startup()
@@ -30,16 +34,20 @@ private:
 };
 
 class TestModule
-    : public ppbox::common::CommonModuleBase<TestModule>
+    : public miniframe::common::CommonModuleBase<TestModule>
 {
 public:
     TestModule(
-        util::daemon::Daemon & daemon)
-        : ppbox::common::CommonModuleBase<TestModule>(daemon, "TestModule")
+        base::daemon::Daemon & daemon)
+        : miniframe::common::CommonModuleBase<TestModule>(daemon, "TestModule")
     {
+        printf( "(%d): %s\n", __LINE__, __FUNCTION__ );
     }
 
-    virtual ~TestModule() {}
+    virtual ~TestModule()
+    {
+        printf( "(%d): %s\n", __LINE__, __FUNCTION__ );
+    }
 
 public:
     virtual boost::system::error_code startup()
@@ -59,11 +67,14 @@ private:
 
 int main( int argc, char **argv )
 {
-    util::daemon::Daemon my_daemon( "testdaemon.conf" );
+    base::daemon::Daemon my_daemon( "testdaemon.conf" );
 
-    util::daemon::use_module<WorkerModule>(my_daemon);
-    util::daemon::use_module<TestModule>(my_daemon);
+    base::daemon::use_module<WorkerModule>(my_daemon);
+    base::daemon::use_module<TestModule>(my_daemon);
 
     my_daemon.start( 5 );
+    getchar();
+    my_daemon.stop(true);
+    getchar();
     return 0;
 }
